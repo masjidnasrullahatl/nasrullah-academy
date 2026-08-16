@@ -14,12 +14,13 @@ const Logo = ({ href, showText = true, className }: LogoProps) => {
 	return (
 		<UnstyledButton className={className} component={Link} href={href || '/'}>
 			<Group gap="xs" wrap="nowrap">
-				<ThemeIcon size="lg" radius="xl" color="green">
+				<ThemeIcon size="lg" radius="xl" color="blue">
 					<IconBuildingMosque size={18} />
 				</ThemeIcon>
+
 				{showText && (
 					<Text fw={700} c="dark.8" truncate>
-						Masjid Nasrullah School
+						Masjid School Portal
 					</Text>
 				)}
 			</Group>

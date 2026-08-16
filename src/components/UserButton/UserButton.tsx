@@ -1,15 +1,18 @@
 import { ReactNode } from 'react';
 
-import { Avatar, Group, Text, UnstyledButton } from '@mantine/core';
+import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
 
-import { IconChevronRight } from '@tabler/icons-react';
+import { IconChevronRight, IconLogout } from '@tabler/icons-react';
+
+import { useGetProfile } from '@hooks/react-query/auth/useGetProfile';
+import { useAuth } from '@hooks/useAuth';
 
 import classes from './UserButton.module.css';
 
 type UserProfileButtonProps = {
-	image: string;
-	name: string;
-	email: string;
+	image?: string;
+	name?: string;
+	email?: string;
 	icon?: ReactNode;
 	asAction?: boolean;
 	showText?: boolean;
@@ -24,24 +27,49 @@ const UserProfileButton = ({
 	showText = true,
 	...others
 }: UserProfileButtonProps) => {
+	const { data: profile } = useGetProfile();
+	const { logout, user } = useAuth();
+
+	const profileName =
+		profile?.fullName || name || user?.user_metadata.full_name || '';
+	const profileEmail = profile?.email || email || user?.email || '';
+	const avatarImage = image || user?.user_metadata.avatar_url || '';
+
 	return (
-		<UnstyledButton className={classes.user} p={0} {...others}>
-			<Group wrap="nowrap">
-				<Avatar src={image} radius="xl" />
+		<Menu width={260} position="top-start" shadow="md">
+			<Menu.Target>
+				<UnstyledButton className={classes.user} p={0} {...others}>
+					<Group wrap="nowrap">
+						<Avatar src={avatarImage} radius="xl">
+							{profileName.charAt(0).toUpperCase()}
+						</Avatar>
 
-				{showText && (
-					<div style={{ flex: 1 }}>
-						<Text size="sm" fw="bold" c="blue.5">
-							{name}
-						</Text>
+						{showText && (
+							<div style={{ flex: 1 }}>
+								<Text size="sm" fw="bold" c="blue.5">
+									{profileName}
+								</Text>
 
-						<Text size="xs">{email}</Text>
-					</div>
-				)}
+								<Text size="xs">{profileEmail}</Text>
+							</div>
+						)}
 
-				{icon && asAction && <IconChevronRight size="0.9rem" stroke={1.5} />}
-			</Group>
-		</UnstyledButton>
+						{(icon || asAction) && (
+							<IconChevronRight size="0.9rem" stroke={1.5} />
+						)}
+					</Group>
+				</UnstyledButton>
+			</Menu.Target>
+
+			<Menu.Dropdown>
+				<Menu.Label>{profileName || 'Staff User'}</Menu.Label>
+				<Menu.Item disabled>{profileEmail}</Menu.Item>
+				<Menu.Divider />
+				<Menu.Item leftSection={<IconLogout size={16} />} onClick={logout}>
+					Logout
+				</Menu.Item>
+			</Menu.Dropdown>
+		</Menu>
 	);
 };
 

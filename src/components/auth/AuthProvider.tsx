@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { ReactNode, useEffect, useState } from 'react';
 
-import { PATH_AUTH } from '@configs/routes';
+import { PATH_AUTH, PATH_DASHBOARD } from '@configs/routes';
 
 import { createClient } from '@helpers/supabase/client';
 
@@ -28,6 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 	const isPublicPage = PUBLIC_PAGES.some((page) => pathname?.startsWith(page));
 	const isResetPasswordPage = pathname?.startsWith(RESET_PASSWORD_PAGE);
+	const isSigninPage = pathname?.startsWith(PATH_AUTH.signin);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -52,6 +53,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					if (!isPublicPage) {
 						router.push(PATH_AUTH.signin);
 					}
+					return;
+				}
+
+				if (isSigninPage && !isResetPasswordPage) {
+					router.push(PATH_DASHBOARD.default);
 					return;
 				}
 
@@ -81,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				setIsAuthenticated(true);
 				// If user signs in on a public page, redirect to dashboard
 				if (isPublicPage && !isResetPasswordPage) {
-					router.push('/dashboard');
+					router.push(PATH_DASHBOARD.default);
 				}
 			}
 		});
@@ -89,7 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		return () => {
 			subscription.unsubscribe();
 		};
-	}, [router, isPublicPage, isResetPasswordPage]);
+	}, [router, isPublicPage, isResetPasswordPage, isSigninPage]);
 
 	// Show loading while checking authentication
 	if (isLoading) {

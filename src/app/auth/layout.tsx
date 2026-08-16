@@ -4,8 +4,6 @@ import { ReactNode } from 'react';
 
 import { Center, Stack } from '@mantine/core';
 
-import Logo from '@components/Logo/Logo';
-
 type AuthProps = {
 	children: ReactNode;
 };
@@ -18,12 +16,7 @@ function SignInLayout({ children }: AuthProps) {
 				width: '100vw',
 			}}
 		>
-			<Stack>
-				<Center>
-					<Logo href="/" />
-				</Center>
-				{children}
-			</Stack>
+			<Stack>{children}</Stack>
 		</Center>
 	);
 }

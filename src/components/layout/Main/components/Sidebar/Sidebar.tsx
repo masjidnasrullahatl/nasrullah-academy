@@ -77,6 +77,7 @@ const SidebarNav = ({ onClose, showCloseButton = false }: NavigationProps) => {
 					email={user?.email ?? ''}
 					image={user?.user_metadata.avatar_url ?? ''}
 					name={user?.user_metadata.full_name ?? ''}
+					asAction
 					showText={true}
 				/>
 			</div>
