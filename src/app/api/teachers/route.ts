@@ -9,7 +9,9 @@ import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { CreateProgramSchema } from './types';
+import { toNumber } from '@utils/decimal';
+
+import { CreateTeacherSchema } from './types';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -23,12 +25,15 @@ const getPaging = async (request: AuthRequest) => {
 
 	const skip = (page - 1) * limit;
 
-	const where: Prisma.ProgramsWhereInput = {};
+	const where: Prisma.TeachersWhereInput = {};
 
 	if (keyword) {
 		where.OR = [
-			{ name: { contains: keyword, mode: 'insensitive' } },
-			{ code: { equals: keyword.toUpperCase() as any } },
+			{ firstName: { contains: keyword, mode: 'insensitive' } },
+			{ lastName: { contains: keyword, mode: 'insensitive' } },
+			{ phoneNumber: { contains: keyword, mode: 'insensitive' } },
+			{ email: { contains: keyword, mode: 'insensitive' } },
+			{ zelleId: { contains: keyword, mode: 'insensitive' } },
 		];
 	}
 
@@ -36,19 +41,21 @@ const getPaging = async (request: AuthRequest) => {
 		where.status = status as any;
 	}
 
-	const total = await prisma.programs.count({ where });
+	const total = await prisma.teachers.count({ where });
 
-	const programs = await prisma.programs.findMany({
+	const teachers = await prisma.teachers.findMany({
 		skip,
 		take: limit,
-		orderBy: {
-			name: 'asc',
-		},
+		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 		include: {
+			classes: {
+				include: {
+					program: true,
+				},
+			},
 			_count: {
 				select: {
 					classes: true,
-					enrollments: true,
 				},
 			},
 		},
@@ -56,7 +63,10 @@ const getPaging = async (request: AuthRequest) => {
 	});
 
 	return NextResponse.json({
-		data: programs,
+		data: teachers.map((teacher) => ({
+			...teacher,
+			hourlyRate: toNumber(teacher.hourlyRate),
+		})),
 		total,
 		error: null,
 	});
@@ -65,32 +75,36 @@ const getPaging = async (request: AuthRequest) => {
 const create = async (request: AuthRequest) => {
 	try {
 		const body = await request.json();
-		const data = CreateProgramSchema.parse(body);
+		const data = CreateTeacherSchema.parse(body);
 
 		const prisma = createClient();
 
-		const program = await prisma.programs.create({
+		const teacher = await prisma.teachers.create({
 			data: {
-				code: data.code,
-				name: data.name,
-				description: data.description || null,
+				firstName: data.firstName,
+				lastName: data.lastName,
+				phoneNumber: data.phoneNumber || null,
+				email: data.email || null,
+				zelleId: data.zelleId || null,
+				hourlyRate: data.hourlyRate,
 				status: data.status,
 			},
 		});
 
-		return NextResponse.json({ data: program }, { status: 201 });
+		return NextResponse.json(
+			{
+				data: {
+					...teacher,
+					hourlyRate: toNumber(teacher.hourlyRate),
+				},
+			},
+			{ status: 201 },
+		);
 	} catch (error) {
-		console.log('Create program error', error);
+		console.log('Create teacher error', error);
 
 		if (error instanceof ZodError) {
 			return catchZodError(error);
-		}
-
-		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-			return NextResponse.json(
-				{ error: 'Program code or name already exists', data: null },
-				{ status: 400 },
-			);
 		}
 
 		return NextResponse.json(
