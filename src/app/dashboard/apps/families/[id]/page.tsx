@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
 	ActionIcon,
@@ -12,7 +12,9 @@ import {
 	Container,
 	Grid,
 	Group,
+	Pagination,
 	Paper,
+	Select,
 	Stack,
 	Table,
 	Text,
@@ -24,10 +26,14 @@ import dayjs from 'dayjs';
 
 import PageHeader from '@components/PageHeader';
 
+import { MONTH_OPTIONS } from '@configs/enums';
 import { PATH_APPS, PATH_DASHBOARD } from '@configs/routes';
 
 import { useGetFamilyDetail } from '@hooks/react-query/families/useGetFamilyDetail';
+import { useGetPagingInvoices } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useDeleteStudent } from '@hooks/react-query/students/useDeleteStudent';
+
+import { formatMoney } from '@utils/money';
 
 import { StudentForm } from '../../students/components/StudentForm';
 import { FamilyForm } from '../components/FamilyForm';
@@ -43,8 +49,20 @@ const calcAge = (dateOfBirth?: string | null) => {
 export default function FamilyDetailPage() {
 	const params = useParams<{ id: string }>();
 	const familyId = params.id;
+	const currentDate = new Date();
+
+	const [invoicePage, setInvoicePage] = useState(1);
+	const [invoiceYear, setInvoiceYear] = useState(currentDate.getFullYear());
+	const [invoiceMonth, setInvoiceMonth] = useState<number | undefined>();
 
 	const { data: family } = useGetFamilyDetail(familyId);
+	const { data: invoices, isLoading: isLoadingInvoices } = useGetPagingInvoices({
+		page: invoicePage,
+		limit: 10,
+		familyId,
+		year: invoiceYear,
+		month: invoiceMonth,
+	});
 	const { mutateAsync: deleteStudent, isPending: isDeletingStudent } =
 		useDeleteStudent();
 
@@ -93,6 +111,8 @@ export default function FamilyDetailPage() {
 			},
 		});
 	};
+
+	const hasInvoicePagination = (invoices?.total || 0) > 10;
 
 	return (
 		<>
@@ -216,9 +236,113 @@ export default function FamilyDetailPage() {
 						<Text fw={700} mb="xs">
 							Monthly Invoices
 						</Text>
-						<Text c="dimmed" size="sm">
-							Coming soon — invoice listing for family detail lands in Sprint 5.
-						</Text>
+						<Group mb="md" justify="space-between">
+							<Group>
+								<Select
+									label="Year"
+									w={120}
+									data={Array.from({ length: 8 }).map((_, index) => {
+										const year = currentDate.getFullYear() - 2 + index;
+										return { value: String(year), label: String(year) };
+									})}
+									value={String(invoiceYear)}
+									onChange={(value) => {
+										setInvoiceYear(Number(value || currentDate.getFullYear()));
+										setInvoicePage(1);
+									}}
+								/>
+								<Select
+									label="Month"
+									w={170}
+									clearable
+									data={MONTH_OPTIONS}
+									value={invoiceMonth ? String(invoiceMonth) : null}
+									onChange={(value) => {
+										setInvoiceMonth(value ? Number(value) : undefined);
+										setInvoicePage(1);
+									}}
+								/>
+							</Group>
+							<Text c="dimmed" size="sm">
+								Total: {invoices?.total || 0}
+							</Text>
+						</Group>
+
+						<Table bg="white" border={1}>
+							<Table.Thead>
+								<Table.Tr>
+									<Table.Th>#</Table.Th>
+									<Table.Th>Month</Table.Th>
+									<Table.Th>Program</Table.Th>
+									<Table.Th>Total Due</Table.Th>
+									<Table.Th>Total Paid</Table.Th>
+									<Table.Th>Balance</Table.Th>
+									<Table.Th>Status</Table.Th>
+									<Table.Th>Method</Table.Th>
+									<Table.Th>Paid At</Table.Th>
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>
+								{isLoadingInvoices ? (
+									<Table.Tr>
+										<Table.Td colSpan={9}>Loading invoices...</Table.Td>
+									</Table.Tr>
+								) : invoices?.data.length ? (
+									invoices.data.map((invoice, index) => (
+										<Table.Tr key={invoice.id}>
+											<Table.Td>{(invoicePage - 1) * 10 + index + 1}</Table.Td>
+											<Table.Td>
+												{MONTH_OPTIONS.find(
+													(month) => Number(month.value) === invoice.month,
+												)?.label || invoice.month}
+												/{invoice.year}
+											</Table.Td>
+											<Table.Td>{invoice.program.name}</Table.Td>
+											<Table.Td>{formatMoney(invoice.totalDue)}</Table.Td>
+											<Table.Td>{formatMoney(invoice.totalPaid)}</Table.Td>
+											<Table.Td>{formatMoney(invoice.balance)}</Table.Td>
+											<Table.Td>
+												<Badge
+													color={
+														invoice.paymentStatus === 'PAID'
+															? 'green'
+															: invoice.paymentStatus === 'PARTIAL'
+																? 'yellow'
+																: 'red'
+													}
+												>
+													{invoice.paymentStatus}
+												</Badge>
+											</Table.Td>
+											<Table.Td>{invoice.payMethod}</Table.Td>
+											<Table.Td>
+												{invoice.paidAt
+													? dayjs(invoice.paidAt).format('MM/DD/YYYY')
+													: '-'}
+											</Table.Td>
+										</Table.Tr>
+									))
+								) : (
+									<Table.Tr>
+										<Table.Td colSpan={9}>
+											<Text c="dimmed" size="sm" ta="center">
+												No invoices found for this family.
+											</Text>
+										</Table.Td>
+									</Table.Tr>
+								)}
+							</Table.Tbody>
+						</Table>
+
+						{hasInvoicePagination && (
+							<Group justify="flex-end" mt="md">
+								<Pagination
+									total={Math.ceil((invoices?.total || 0) / 10)}
+									value={invoicePage}
+									onChange={setInvoicePage}
+								/>
+							</Group>
+						)}
 					</Paper>
 				</Stack>
 			</Container>
