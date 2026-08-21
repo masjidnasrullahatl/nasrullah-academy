@@ -1,33 +1,19 @@
 'use client';
 
-import { ActionIcon, Box, Group, Tooltip } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
+import { Burger, Group } from '@mantine/core';
 
-import { IconSearch } from '@tabler/icons-react';
+type HeaderNavProps = {
+	showSidebarToggle?: boolean;
+	onToggleSidebar?: () => void;
+};
 
-const ICON_SIZE = 20;
-
-const HeaderNav = () => {
-	const mobile_match = useMediaQuery('(max-width: 425px)');
-
-	const getTextColor = () => {
-		return undefined;
-	};
-
-	const textColor = getTextColor();
-
+const HeaderNav = ({ showSidebarToggle = false, onToggleSidebar }: HeaderNavProps) => {
 	return (
 		<Group justify="space-between">
-			<Box></Box>
 			<Group>
-				{mobile_match && (
-					<Tooltip label="Search">
-						<ActionIcon>
-							<IconSearch size={ICON_SIZE} color={textColor} />
-						</ActionIcon>
-					</Tooltip>
-				)}
+				{showSidebarToggle && <Burger opened={false} onClick={onToggleSidebar} aria-label="Toggle sidebar" />}
 			</Group>
+			<div />
 		</Group>
 	);
 };

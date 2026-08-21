@@ -3,21 +3,24 @@
 import { useState } from 'react';
 
 import {
+	Alert,
 	Anchor,
 	Button,
 	Container,
 	Group,
 	Input,
 	Pagination,
+	Paper,
 	Select,
 	SimpleGrid,
+	Skeleton,
 	Stack,
 	Text,
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 
-import { IconPlus, IconSchool, IconSearch } from '@tabler/icons-react';
+import { IconAlertCircle, IconPlus, IconSchool, IconSearch } from '@tabler/icons-react';
 
 import PageHeader from '@components/PageHeader';
 
@@ -55,7 +58,12 @@ export default function ClassesPage() {
 		status?: 'ACTIVE' | 'ARCHIVED';
 	}>({ schoolYear: currentYear });
 
-	const { data: classes } = useGetPagingClasses({
+	const {
+		data: classes,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingClasses({
 		page,
 		limit,
 		keyword: filter.keyword,
@@ -106,7 +114,7 @@ export default function ClassesPage() {
 						}
 					/>
 
-					<Group>
+					<Group wrap="wrap">
 						<Input
 							leftSection={<IconSearch size={16} />}
 							placeholder="Search class name"
@@ -158,7 +166,25 @@ export default function ClassesPage() {
 						/>
 					</Group>
 
-					{hasData ? (
+					{isError && (
+						<Alert color="red" icon={<IconAlertCircle size={16} />}>
+							{error.message}
+						</Alert>
+					)}
+
+					{isLoading ? (
+						<SimpleGrid cols={{ base: 1, lg: 2 }}>
+							{Array.from({ length: 4 }).map((_, index) => (
+								<Paper key={index} withBorder p="md">
+									<Stack>
+										<Skeleton h={24} w="45%" />
+										<Skeleton h={18} w="70%" />
+										<Skeleton h={120} w="100%" />
+									</Stack>
+								</Paper>
+							))}
+						</SimpleGrid>
+					) : hasData ? (
 						<SimpleGrid cols={{ base: 1, lg: 2 }}>
 							{classes?.data.map((classItem) => (
 								<ClassCard key={classItem.id} classItem={classItem} />

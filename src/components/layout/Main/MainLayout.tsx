@@ -1,8 +1,8 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 
-import { Box } from '@mantine/core';
+import { Box, Drawer } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 
 import HeaderNav from './components/Header';
@@ -14,33 +14,46 @@ type Props = {
 };
 
 export function MainLayout({ children }: Props) {
-	const mobile_match = useMediaQuery('(max-width: 425px)');
-
-	const shouldOverlay = mobile_match;
+	const [openedSidebar, setOpenedSidebar] = useState(false);
+	const isMobile = useMediaQuery('(max-width: 768px)');
 
 	return (
 		<Box className={layoutClasses.layoutRoot}>
-			<Box
-				className={layoutClasses.sidebar}
-				data-overlay={shouldOverlay}
-				style={{
-					width: 250,
-					left: 0,
-					zIndex: shouldOverlay ? 102 : 101,
-				}}
+			{!isMobile && (
+				<Box
+					className={layoutClasses.sidebar}
+					style={{
+						width: 250,
+						left: 0,
+						zIndex: 101,
+					}}
+				>
+					<SidebarNav showCloseButton={false} onClose={() => {}} />
+				</Box>
+			)}
+
+			<Drawer
+				opened={Boolean(isMobile && openedSidebar)}
+				onClose={() => setOpenedSidebar(false)}
+				withCloseButton={false}
+				padding={0}
+				size={250}
+				styles={{ body: { height: '100%', padding: 0 } }}
 			>
-				<SidebarNav showCloseButton={false} onClose={() => {}} />
-			</Box>
+				<SidebarNav showCloseButton={true} onClose={() => setOpenedSidebar(false)} />
+			</Drawer>
 
 			<Box
 				className={layoutClasses.main}
-				data-overlay={shouldOverlay}
-				ml={250}
+				ml={isMobile ? 0 : 250}
 				mih="100vh"
 				pos="relative"
 			>
 				<Box className={layoutClasses.header} py="sm" px="lg" bg="white">
-					<HeaderNav />
+					<HeaderNav
+						showSidebarToggle={Boolean(isMobile)}
+						onToggleSidebar={() => setOpenedSidebar((prev) => !prev)}
+					/>
 				</Box>
 				<Box className={layoutClasses.content}>{children}</Box>
 			</Box>

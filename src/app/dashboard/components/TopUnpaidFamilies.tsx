@@ -14,7 +14,8 @@ export const TopUnpaidFamilies = ({ data }: TopUnpaidFamiliesProps) => {
 			<Title order={4} mb="md">
 				Top Unpaid Families
 			</Title>
-			<Table bg="white" border={1}>
+			<Table.ScrollContainer minWidth={640}>
+				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -37,7 +38,8 @@ export const TopUnpaidFamilies = ({ data }: TopUnpaidFamiliesProps) => {
 						))
 					)}
 				</Table.Tbody>
-			</Table>
+				</Table>
+			</Table.ScrollContainer>
 		</Paper>
 	);
 };

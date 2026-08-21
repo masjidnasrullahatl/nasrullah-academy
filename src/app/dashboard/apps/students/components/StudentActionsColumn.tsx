@@ -25,7 +25,8 @@ export const StudentActionsColumn = ({ student }: StudentActionsColumnProps) => 
 
 	const handleDelete = () => {
 		modals.openConfirmModal({
-			title: 'Delete student?',
+			title: `Delete ${student.firstName} ${student.lastName}?`,
+			children: 'This permanently deletes this student and related enrollments.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {

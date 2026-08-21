@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import {
+	Alert,
 	Badge,
 	Center,
 	Group,
@@ -15,7 +16,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import { IconMoodEmpty, IconSearch } from '@tabler/icons-react';
+import { IconAlertCircle , IconMoodEmpty, IconSearch } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
@@ -36,7 +37,12 @@ export const StudentsTable = () => {
 		status?: string;
 	}>({});
 
-	const { data: students, isLoading } = useGetPagingStudents({
+	const {
+		data: students,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingStudents({
 		page,
 		limit: 10,
 		keyword: filter.keyword,
@@ -144,7 +150,13 @@ export const StudentsTable = () => {
 
 	return (
 		<Paper p="md">
-			<Group mb="md" justify="end" w="100%">
+			{isError && (
+				<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+					{error.message}
+				</Alert>
+			)}
+
+			<Group mb="md" justify="end" w="100%" wrap="wrap">
 				<Input
 					flex={1}
 					leftSection={<IconSearch size={16} />}
@@ -186,7 +198,8 @@ export const StudentsTable = () => {
 				/>
 			</Group>
 
-			<Table bg="white" border={1}>
+			<Table.ScrollContainer minWidth={1300}>
+				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -217,7 +230,8 @@ export const StudentsTable = () => {
 						</Table.Td>
 					</Table.Tr>
 				</Table.Tfoot>
-			</Table>
+				</Table>
+			</Table.ScrollContainer>
 		</Paper>
 	);
 };

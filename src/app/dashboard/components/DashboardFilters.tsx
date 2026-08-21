@@ -21,10 +21,10 @@ export const DashboardFilters = ({
 
 	return (
 		<Paper p="md" withBorder style={{ position: 'sticky', top: 0, zIndex: 20 }}>
-			<Group>
+			<Group wrap="wrap">
 				<Select
 					label="Year"
-					w={140}
+					w={{ base: '100%', sm: 140 }}
 					value={String(year)}
 					data={(years || [year]).map((yearItem) => ({
 						value: String(yearItem),
@@ -34,7 +34,7 @@ export const DashboardFilters = ({
 				/>
 				<Select
 					label="Program"
-					w={240}
+					w={{ base: '100%', sm: 240 }}
 					value={programId || ''}
 					data={[
 						{ value: '', label: 'All programs' },

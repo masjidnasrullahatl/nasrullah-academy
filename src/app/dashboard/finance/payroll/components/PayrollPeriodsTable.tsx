@@ -1,10 +1,24 @@
 import { useState } from 'react';
 
-import { Badge, Button, Center, Group, Input, Pagination, Paper, Select, Skeleton, Stack, Table, Text } from '@mantine/core';
+import {
+	Alert,
+	Badge,
+	Button,
+	Center,
+	Group,
+	Input,
+	Pagination,
+	Paper,
+	Select,
+	Skeleton,
+	Stack,
+	Table,
+	Text,
+} from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 
-import { IconMoodEmpty, IconPlus, IconSearch } from '@tabler/icons-react';
+import { IconAlertCircle, IconMoodEmpty, IconPlus, IconSearch } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
 import { MONTH_OPTIONS, PAYROLL_STATUS_COLORS, PAYROLL_STATUS_OPTIONS } from '@configs/enums';
@@ -30,7 +44,12 @@ export const PayrollPeriodsTable = ({ selectedPeriodId, onSelectPeriod }: Payrol
 		status?: 'DRAFT' | 'PAID';
 		keyword?: string;
 	}>({});
-	const { data: periods, isLoading } = useGetPagingPayrollPeriods({
+	const {
+		data: periods,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingPayrollPeriods({
 		page,
 		limit: 10,
 		year: filter.year,
@@ -94,8 +113,14 @@ export const PayrollPeriodsTable = ({ selectedPeriodId, onSelectPeriod }: Payrol
 
 	return (
 		<Paper p="md" withBorder>
+			{isError && (
+				<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+					{error.message}
+				</Alert>
+			)}
+
 			<Group mb="md" justify="space-between">
-				<Group>
+				<Group wrap="wrap">
 					<Select
 						placeholder="Year"
 						clearable
@@ -137,7 +162,8 @@ export const PayrollPeriodsTable = ({ selectedPeriodId, onSelectPeriod }: Payrol
 				</Button>
 			</Group>
 
-			<Table bg="white" border={1}>
+			<Table.ScrollContainer minWidth={1200}>
+				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -172,7 +198,8 @@ export const PayrollPeriodsTable = ({ selectedPeriodId, onSelectPeriod }: Payrol
 						</Table.Tr>
 					)}
 				</Table.Tbody>
-			</Table>
+				</Table>
+			</Table.ScrollContainer>
 
 			{hasPagination && (
 				<Group justify="flex-end" mt="md">

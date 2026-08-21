@@ -149,8 +149,16 @@ export default function ClassDetailPage() {
 			return;
 		}
 
+		const enrollment = classItem.enrollments.find(
+			(item: any) => item.student.id === studentId,
+		);
+		const studentName = enrollment
+			? `${enrollment.student.firstName} ${enrollment.student.lastName}`
+			: 'this student';
+
 		modals.openConfirmModal({
-			title: 'Remove student from class?',
+			title: `Remove ${studentName} from ${classItem.name}?`,
+			children: 'This sets the enrollment status to withdrawn for this class.',
 			labels: { confirm: 'Remove', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -260,12 +268,12 @@ export default function ClassDetailPage() {
 					</Grid>
 
 					<Paper p="md" withBorder>
-						<Group justify="space-between" mb="md">
+						<Group justify="space-between" mb="md" wrap="wrap">
 							<Title order={4}>Students</Title>
 							<Input
 								leftSection={<IconSearch size={16} />}
 								placeholder="Search student or family"
-								w={360}
+								w={{ base: '100%', sm: 360 }}
 								onChange={(event) => debouncedChangeKeyword(event.target.value)}
 							/>
 						</Group>

@@ -64,7 +64,8 @@ export const ClassStudentsTable = ({
 												disabled={isRemovingStudent}
 												onClick={() => {
 													modals.openConfirmModal({
-														title: 'Remove student from class?',
+														title: `Remove ${enrollment.student.firstName} ${enrollment.student.lastName} from ${classItem.name}?`,
+														children: 'This sets the enrollment status to withdrawn for this class.',
 														labels: { confirm: 'Remove', cancel: 'Cancel' },
 														confirmProps: { color: 'red' },
 														onConfirm: () => onRemoveStudent(enrollment.student.id),

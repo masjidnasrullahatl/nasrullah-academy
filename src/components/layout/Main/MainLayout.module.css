@@ -20,10 +20,14 @@
 .header {
 	position: fixed;
 	top: 0;
-	left: 250;
+	left: 250px;
 	right: 0;
 	z-index: 100;
 	transition: all 0.3s ease;
+
+	@media (max-width: 767px) {
+		left: 0;
+	}
 
 	&[data-position='sticky'] {
 		position: sticky;

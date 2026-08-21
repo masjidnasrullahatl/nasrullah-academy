@@ -14,6 +14,7 @@ import { PayrollEntryRow, PayrollPeriodRow } from '@hooks/react-query/payroll/us
 import { useUpsertPayrollEntries } from '@hooks/react-query/payroll/useUpsertPayrollEntries';
 
 import { formatMoney } from '@utils/money';
+import { formatDecimal } from '@utils/number';
 
 import { AddTeachersModal } from './AddTeachersModal';
 
@@ -119,7 +120,8 @@ export const PayrollEntriesEditor = ({ period }: PayrollEntriesEditorProps) => {
 
 	const handleDeleteEntry = (entry: EditableEntry) => {
 		modals.openConfirmModal({
-			title: 'Remove payroll entry?',
+			title: `Remove payroll entry for ${entry.teacherName}?`,
+			children: 'This removes the selected teacher from this payroll period.',
 			labels: { confirm: 'Remove', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -307,8 +309,8 @@ export const PayrollEntriesEditor = ({ period }: PayrollEntriesEditorProps) => {
 					<Table.Tfoot>
 						<Table.Tr fw={700}>
 							<Table.Td colSpan={4}>TOTAL</Table.Td>
-							<Table.Td>{totals.weekdayHours.toFixed(2)}</Table.Td>
-							<Table.Td>{totals.weekendHours.toFixed(2)}</Table.Td>
+							<Table.Td>{formatDecimal(totals.weekdayHours)}</Table.Td>
+							<Table.Td>{formatDecimal(totals.weekendHours)}</Table.Td>
 							<Table.Td>{formatMoney(totals.weekdayPay)}</Table.Td>
 							<Table.Td>{formatMoney(totals.weekendPay)}</Table.Td>
 							<Table.Td>{formatMoney(totals.totalPay)}</Table.Td>

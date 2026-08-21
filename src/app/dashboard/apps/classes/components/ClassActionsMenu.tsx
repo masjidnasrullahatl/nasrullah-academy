@@ -52,7 +52,8 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 
 	const handleDelete = () => {
 		modals.openConfirmModal({
-			title: 'Delete class?',
+			title: `Delete class ${classItem.name}?`,
+			children: 'This deletes the class and all enrollments in this class.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {

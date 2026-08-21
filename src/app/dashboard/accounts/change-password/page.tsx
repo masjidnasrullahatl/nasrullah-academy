@@ -76,6 +76,7 @@ export default function Page() {
 	return (
 		<Container fluid>
 			<Stack gap="lg">
+				<title>Change Password | Masjid Nasrullah School</title>
 				<PageHeader title="Change Password" breadcrumbItems={items} />
 				<Grid>
 					<Grid.Col span={{ base: 12, md: 6, lg: 5 }}>

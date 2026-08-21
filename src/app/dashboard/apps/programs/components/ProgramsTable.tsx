@@ -21,7 +21,14 @@ import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconEdit, IconMoodEmpty, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import {
+	IconAlertCircle,
+	IconEdit,
+	IconMoodEmpty,
+	IconPlus,
+	IconSearch,
+	IconTrash,
+} from '@tabler/icons-react';
 
 import { ARCHIVE_STATUS_OPTIONS, PROGRAM_CODE_LABELS } from '@configs/enums';
 
@@ -35,7 +42,12 @@ export const ProgramsTable = () => {
 	const [filter, setFilter] = useState<{ keyword?: string; status?: string }>({});
 	const [deleteError, setDeleteError] = useState('');
 
-	const { data: programs, isLoading } = useGetPagingPrograms({
+	const {
+		data: programs,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingPrograms({
 		page,
 		limit: 10,
 		keyword: filter.keyword,
@@ -69,7 +81,8 @@ export const ProgramsTable = () => {
 
 	const handleDelete = (program: any) => {
 		modals.openConfirmModal({
-			title: 'Delete program?',
+			title: `Delete program ${program.name}?`,
+			children: 'This removes the program and related class/payment references.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -149,13 +162,19 @@ export const ProgramsTable = () => {
 
 	return (
 		<Paper p="md">
+			{isError && (
+				<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+					{error.message}
+				</Alert>
+			)}
+
 			{deleteError && (
 				<Alert color="red" mb="md">
 					{deleteError}
 				</Alert>
 			)}
 
-			<Group mb="md" justify="end" w="100%">
+			<Group mb="md" justify="end" w="100%" wrap="wrap">
 				<Input
 					flex={1}
 					leftSection={<IconSearch size={16} />}
@@ -170,7 +189,8 @@ export const ProgramsTable = () => {
 				/>
 			</Group>
 
-			<Table bg="white" border={1}>
+			<Table.ScrollContainer minWidth={1100}>
+				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -200,7 +220,8 @@ export const ProgramsTable = () => {
 						</Table.Td>
 					</Table.Tr>
 				</Table.Tfoot>
-			</Table>
+				</Table>
+			</Table.ScrollContainer>
 
 			<Group justify="flex-end" mt="md">
 				<Button onClick={handleCreate} loading={isDeleting}>

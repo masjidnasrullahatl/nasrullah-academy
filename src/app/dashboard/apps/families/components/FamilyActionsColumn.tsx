@@ -25,7 +25,7 @@ export const FamilyActionsColumn = ({ family }: FamilyActionsColumnProps) => {
 
 	const handleDelete = () => {
 		modals.openConfirmModal({
-			title: 'Delete family?',
+			title: `Delete family ${family.name}?`,
 			centered: true,
 			children:
 				'Deleting this family will also remove all students and payment records for the family.',

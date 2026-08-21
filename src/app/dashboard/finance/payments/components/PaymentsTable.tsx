@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import {
 	ActionIcon,
+	Alert,
 	Badge,
 	Button,
 	Center,
@@ -20,10 +21,23 @@ import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconCheck, IconEdit, IconMoodEmpty, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import {
+	IconAlertCircle,
+	IconCheck,
+	IconEdit,
+	IconMoodEmpty,
+	IconPlus,
+	IconSearch,
+	IconTrash,
+} from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
-import { MONTH_OPTIONS, PAY_METHOD_OPTIONS,PAYMENT_STATUS_COLORS, PAYMENT_STATUS_OPTIONS } from '@configs/enums';
+import {
+	MONTH_OPTIONS,
+	PAY_METHOD_OPTIONS,
+	PAYMENT_STATUS_COLORS,
+	PAYMENT_STATUS_OPTIONS,
+} from '@configs/enums';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 import { useDeleteInvoice } from '@hooks/react-query/invoices/useDeleteInvoice';
@@ -58,7 +72,12 @@ export const PaymentsTable = () => {
 
 	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
-	const { data: invoices, isLoading } = useGetPagingInvoices({
+	const {
+		data: invoices,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingInvoices({
 		page,
 		limit: 10,
 		year: filter.year,
@@ -109,7 +128,8 @@ export const PaymentsTable = () => {
 
 	const handleDelete = (invoice: InvoiceRow) => {
 		modals.openConfirmModal({
-			title: 'Delete payment row?',
+			title: `Delete payment for ${invoice.family.name}?`,
+			children: `This deletes the ${invoice.month}/${invoice.year} invoice row for ${invoice.program.name}.`,
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -274,8 +294,14 @@ export const PaymentsTable = () => {
 			</Grid>
 
 			<Paper p="md" withBorder>
-				<Group mb="md" justify="space-between">
-					<Group>
+				{isError && (
+					<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+						{error.message}
+					</Alert>
+				)}
+
+				<Group mb="md" justify="space-between" wrap="wrap">
+					<Group wrap="wrap">
 						<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
 							Add payment row
 						</Button>

@@ -15,12 +15,11 @@ import Surface from '@components/Surface';
 import { DashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
 import { formatMoney } from '@utils/money';
+import { formatPercent } from '@utils/number';
 
 type StatCardsProps = {
 	totals: DashboardSummary['totals'];
 };
-
-const formatPercentage = (value: number) => `${(value * 100).toFixed(2)}%`;
 
 export const StatCards = ({ totals }: StatCardsProps) => {
 	return (
@@ -58,7 +57,7 @@ export const StatCards = ({ totals }: StatCardsProps) => {
 					{formatMoney(totals.income)}
 				</Text>
 				<Text c="dimmed" size="sm">
-					Profit {formatMoney(totals.profit)} · Margin {formatPercentage(totals.profitMargin)}
+					Profit {formatMoney(totals.profit)} · Margin {formatPercent(totals.profitMargin)}
 				</Text>
 			</Surface>
 			<Surface feel="bordered">

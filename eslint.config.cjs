@@ -17,6 +17,10 @@ const compat = new FlatCompat({
 
 module.exports = defineConfig([
 	{
+		ignores: ['.next/**', 'node_modules/**'],
+	},
+
+	{
 		languageOptions: {
 			globals: {},
 		},

@@ -62,7 +62,8 @@ export const PayrollPeriodActionsColumn = ({ period }: PayrollPeriodActionsColum
 
 	const handleDelete = () => {
 		modals.openConfirmModal({
-			title: 'Delete payroll period?',
+			title: `Delete payroll period ${period.label}?`,
+			children: 'This deletes the payroll period and all payroll entries inside it.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {

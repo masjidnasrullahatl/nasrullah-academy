@@ -103,7 +103,8 @@ export default function FamilyDetailPage() {
 
 	const handleDeleteStudent = (student: any) => {
 		modals.openConfirmModal({
-			title: 'Delete student?',
+			title: `Delete ${student.firstName} ${student.lastName}?`,
+			children: 'This removes the student record from this family and all related class enrollments.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -164,7 +165,8 @@ export default function FamilyDetailPage() {
 						<Text fw={700} mb="sm">
 							Students
 						</Text>
-						<Table bg="white" border={1}>
+						<Table.ScrollContainer minWidth={1100}>
+							<Table bg="white" border={1}>
 							<Table.Thead>
 								<Table.Tr>
 									<Table.Th>Name</Table.Th>
@@ -229,15 +231,16 @@ export default function FamilyDetailPage() {
 									</Table.Tr>
 								))}
 							</Table.Tbody>
-						</Table>
+							</Table>
+						</Table.ScrollContainer>
 					</Paper>
 
 					<Paper p="md">
 						<Text fw={700} mb="xs">
 							Monthly Invoices
 						</Text>
-						<Group mb="md" justify="space-between">
-							<Group>
+						<Group mb="md" justify="space-between" wrap="wrap">
+							<Group wrap="wrap">
 								<Select
 									label="Year"
 									w={120}
@@ -268,7 +271,8 @@ export default function FamilyDetailPage() {
 							</Text>
 						</Group>
 
-						<Table bg="white" border={1}>
+						<Table.ScrollContainer minWidth={1000}>
+							<Table bg="white" border={1}>
 							<Table.Thead>
 								<Table.Tr>
 									<Table.Th>#</Table.Th>
@@ -332,7 +336,8 @@ export default function FamilyDetailPage() {
 									</Table.Tr>
 								)}
 							</Table.Tbody>
-						</Table>
+							</Table>
+						</Table.ScrollContainer>
 
 						{hasInvoicePagination && (
 							<Group justify="flex-end" mt="md">

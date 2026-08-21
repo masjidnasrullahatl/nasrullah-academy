@@ -35,6 +35,8 @@ import { InvoiceRow } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useUpdateInvoice } from '@hooks/react-query/invoices/useUpdateInvoice';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
+import { formatDecimal } from '@utils/number';
+
 type PaymentFormModalProps = {
 	invoice?: InvoiceRow;
 	defaultYear?: number;
@@ -358,7 +360,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Total Due"
-								value={totalDue.toFixed(2)}
+								value={formatDecimal(totalDue)}
 								readOnly
 								leftSection="$"
 							/>
@@ -366,7 +368,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Total Paid"
-								value={totalPaid.toFixed(2)}
+								value={formatDecimal(totalPaid)}
 								readOnly
 								leftSection="$"
 							/>
@@ -374,7 +376,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Balance"
-								value={balance.toFixed(2)}
+								value={formatDecimal(balance)}
 								readOnly
 								leftSection="$"
 							/>

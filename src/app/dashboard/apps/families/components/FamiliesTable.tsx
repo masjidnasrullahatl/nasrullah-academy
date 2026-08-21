@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import {
+	Alert,
 	Anchor,
 	Badge,
 	Center,
@@ -19,7 +20,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import { IconMoodEmpty, IconSearch } from '@tabler/icons-react';
+import { IconAlertCircle , IconMoodEmpty, IconSearch } from '@tabler/icons-react';
 
 import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 import { PATH_APPS } from '@configs/routes';
@@ -37,7 +38,12 @@ export const FamiliesTable = () => {
 		programId?: string;
 	}>({});
 
-	const { data: families, isLoading } = useGetPagingFamilies({
+	const {
+		data: families,
+		isLoading,
+		isError,
+		error,
+	} = useGetPagingFamilies({
 		page,
 		limit: 10,
 		keyword: filter.keyword,
@@ -134,7 +140,13 @@ export const FamiliesTable = () => {
 
 	return (
 		<Paper p="md">
-			<Group mb="md" justify="end" w="100%">
+			{isError && (
+				<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+					{error.message}
+				</Alert>
+			)}
+
+			<Group mb="md" justify="end" w="100%" wrap="wrap">
 				<Input
 					flex={1}
 					leftSection={<IconSearch size={16} />}
@@ -161,7 +173,8 @@ export const FamiliesTable = () => {
 				/>
 			</Group>
 
-			<Table bg="white" border={1}>
+			<Table.ScrollContainer minWidth={1200}>
+				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -192,7 +205,8 @@ export const FamiliesTable = () => {
 						</Table.Td>
 					</Table.Tr>
 				</Table.Tfoot>
-			</Table>
+				</Table>
+			</Table.ScrollContainer>
 		</Paper>
 	);
 };
