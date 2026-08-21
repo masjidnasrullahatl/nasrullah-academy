@@ -1,6 +1,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
 	Box,
@@ -14,6 +14,8 @@ import {
 import { useMediaQuery } from '@mantine/hooks';
 
 import { IconChevronRight } from '@tabler/icons-react';
+
+import { PATH_DASHBOARD } from '@configs/routes';
 
 import classes from './NavLinks.module.css';
 
@@ -46,6 +48,21 @@ export function LinksGroup(props: LinksGroupProps) {
 	const [opened, setOpened] = useState(initiallyOpened || false);
 	const ChevronIcon = IconChevronRight;
 	const tablet_match = useMediaQuery('(max-width: 768px)');
+	const isLinkActive = useCallback(
+		(targetLink: string) =>
+			targetLink === PATH_DASHBOARD.default
+				? pathname === targetLink
+				: pathname === targetLink || pathname.startsWith(`${targetLink}/`),
+		[pathname],
+	);
+
+	const isActive = useMemo(() => {
+		if (!link) {
+			return false;
+		}
+
+		return isLinkActive(link);
+	}, [isLinkActive, link]);
 
 	const LinkItem = ({ link }: { link: { label: string; link: string } }) => {
 		return (
@@ -58,7 +75,7 @@ export function LinksGroup(props: LinksGroupProps) {
 						closeSidebar();
 					}
 				}}
-				data-active={link.link.toLowerCase() === pathname || undefined}
+				data-active={isLinkActive(link.link) || undefined}
 				data-mini={isMini}
 			>
 				{link.label}
@@ -120,7 +137,7 @@ export function LinksGroup(props: LinksGroupProps) {
 							<UnstyledButton
 								onClick={handleMiniButtonClick}
 								className={classes.control}
-								data-active={opened || undefined}
+								data-active={isActive || undefined}
 								data-mini={isMini}
 							>
 								<Tooltip
@@ -142,7 +159,7 @@ export function LinksGroup(props: LinksGroupProps) {
 					<UnstyledButton
 						onClick={handleMainButtonClick}
 						className={classes.control}
-						data-active={opened || undefined}
+						data-active={isActive || undefined}
 						data-mini={isMini}
 					>
 						<Group justify="space-between" gap={0}>
@@ -187,10 +204,9 @@ export function LinksGroup(props: LinksGroupProps) {
 	]);
 
 	useEffect(() => {
-		const paths = pathname.split('/');
-		setOpened(paths.includes(label.toLowerCase()));
+		setOpened(isActive);
 		// setCurrentPath(last(paths)?.toLowerCase() || undefined);
-	}, [pathname, label]);
+	}, [isActive]);
 
 	return <>{content}</>;
 }

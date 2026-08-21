@@ -1,3 +1,5 @@
+import { Dispatch } from 'react';
+
 import {
 	ActionIcon,
 	Badge,
@@ -10,9 +12,14 @@ import { modals } from '@mantine/modals';
 
 import { IconTrash } from '@tabler/icons-react';
 
+import {
+	ClassRow,
+	ClassStudentRow,
+} from '@hooks/react-query/classes/useGetPagingClasses';
+
 type ClassStudentsTableProps = {
-	classItem: any;
-	onRemoveStudent: any;
+	classItem: ClassRow;
+	onRemoveStudent: Dispatch<string>;
 	isRemovingStudent?: boolean;
 };
 
@@ -23,7 +30,13 @@ export const ClassStudentsTable = ({
 }: ClassStudentsTableProps) => {
 	return (
 		<Table.ScrollContainer minWidth={500} maxHeight={280}>
-			<Table bg="white" border={1}>
+			<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
@@ -43,7 +56,7 @@ export const ClassStudentsTable = ({
 							</Table.Td>
 						</Table.Tr>
 					) : (
-						classItem.enrollments.map((enrollment: any, index: number) => (
+						classItem.enrollments.map((enrollment: ClassStudentRow, index: number) => (
 							<Table.Tr key={enrollment.id}>
 								<Table.Td>{index + 1}</Table.Td>
 								<Table.Td>{`${enrollment.student.firstName} ${enrollment.student.lastName}`}</Table.Td>

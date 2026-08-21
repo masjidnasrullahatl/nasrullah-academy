@@ -11,11 +11,13 @@ import {
 	Pagination,
 	Paper,
 	Select,
+	SimpleGrid,
 	Skeleton,
 	Stack,
 	Table,
 	Text,
 	TextInput,
+	Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
@@ -25,6 +27,7 @@ import {
 	IconAlertCircle,
 	IconCheck,
 	IconEdit,
+	IconEye,
 	IconMoodEmpty,
 	IconPlus,
 	IconSearch,
@@ -34,8 +37,10 @@ import dayjs from 'dayjs';
 
 import {
 	MONTH_OPTIONS,
+	PAY_METHOD_LABELS,
 	PAY_METHOD_OPTIONS,
 	PAYMENT_STATUS_COLORS,
+	PAYMENT_STATUS_LABELS,
 	PAYMENT_STATUS_OPTIONS,
 } from '@configs/enums';
 
@@ -51,7 +56,10 @@ import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPr
 import { formatMoney } from '@utils/money';
 
 import { GenerateMonthButton } from './GenerateMonthButton';
+import { PaymentDetailModal } from './PaymentDetailModal';
 import { PaymentFormModal } from './PaymentFormModal';
+
+const PAGE_SIZE = 20;
 
 export const PaymentsTable = () => {
 	const currentDate = new Date();
@@ -78,7 +86,7 @@ export const PaymentsTable = () => {
 		error,
 	} = useGetPagingInvoices({
 		page,
-		limit: 10,
+		limit: PAGE_SIZE,
 		year: filter.year,
 		month: filter.month,
 		programId: filter.programId,
@@ -121,6 +129,15 @@ export const PaymentsTable = () => {
 			title: 'Edit Monthly Payment',
 			size: 'xl',
 			children: <PaymentFormModal invoice={invoice} />,
+		});
+	};
+
+	const openDetail = (invoice: InvoiceRow) => {
+		const monthLabel = MONTH_OPTIONS.find((item) => Number(item.value) === invoice.month)?.label;
+		modals.open({
+			title: `${invoice.family.name} — ${monthLabel || invoice.month} ${invoice.year}`,
+			size: 'lg',
+			children: <PaymentDetailModal invoice={invoice} />,
 		});
 	};
 
@@ -170,9 +187,9 @@ export const PaymentsTable = () => {
 		});
 	};
 
-	const loadingRows = Array.from({ length: 10 }).map((_, index) => (
+	const loadingRows = Array.from({ length: 8 }).map((_, index) => (
 		<Table.Tr key={index}>
-			{Array.from({ length: 20 }).map((_, columnIndex) => (
+			{Array.from({ length: 10 }).map((_, columnIndex) => (
 				<Table.Td key={columnIndex}>
 					<Skeleton h={28} />
 				</Table.Td>
@@ -180,59 +197,90 @@ export const PaymentsTable = () => {
 		</Table.Tr>
 	));
 
-	const rows = invoices?.data.map((invoice, index) => (
-		<Table.Tr key={invoice.id}>
-			<Table.Td>{(page - 1) * 10 + index + 1}</Table.Td>
-			<Table.Td>{invoice.family.name}</Table.Td>
-			<Table.Td>{invoice.program.name}</Table.Td>
-			<Table.Td ta="center">{invoice.studentCount}</Table.Td>
-			<Table.Td>{invoice.session || '-'}</Table.Td>
-			<Table.Td>{formatMoney(invoice.registrationFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.tuitionFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.bookFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.totalDue)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.paidRegistrationFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.paidTuitionFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.paidBookFee)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.extraPaid)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.totalPaid)}</Table.Td>
-			<Table.Td>{formatMoney(invoice.balance)}</Table.Td>
-			<Table.Td>{invoice.payMethod}</Table.Td>
-			<Table.Td>
-				<Badge color={PAYMENT_STATUS_COLORS[invoice.paymentStatus]}>
-					{invoice.paymentStatus}
-				</Badge>
-			</Table.Td>
-			<Table.Td>{invoice.paidAt ? dayjs(invoice.paidAt).format('MM/DD/YYYY') : '-'}</Table.Td>
-			<Table.Td>{invoice.notes || '-'}</Table.Td>
-			<Table.Td>
-				<Group gap={4} wrap="nowrap">
-					<ActionIcon variant="subtle" onClick={() => handleEdit(invoice)}>
-						<IconEdit size={15} />
-					</ActionIcon>
-					<ActionIcon
-						variant="subtle"
-						color="green"
-						disabled={isUpdating}
-						onClick={() => handleMarkAsPaid(invoice)}
+	const rows = invoices?.data.map((invoice, index) => {
+		const methodLabel = PAY_METHOD_LABELS[invoice.payMethod] || invoice.payMethod;
+		const statusLabel = PAYMENT_STATUS_LABELS[invoice.paymentStatus] || invoice.paymentStatus;
+		const balanceColor = invoice.balance > 0 ? 'red.7' : 'green.7';
+
+		return (
+			<Table.Tr
+				key={invoice.id}
+				style={{ cursor: 'pointer' }}
+				onClick={() => openDetail(invoice)}
+			>
+				<Table.Td>{(page - 1) * PAGE_SIZE + index + 1}</Table.Td>
+				<Table.Td>
+					<Stack gap={2}>
+						<Text fw={500}>{invoice.family.name}</Text>
+						<Text fz="xs" c="dimmed">
+							{invoice.family.primaryPhone || '-'}
+						</Text>
+					</Stack>
+				</Table.Td>
+				<Table.Td>
+					<Badge variant="light">{invoice.program.name}</Badge>
+				</Table.Td>
+				<Table.Td ta="center">{invoice.studentCount}</Table.Td>
+				<Table.Td ta="right">{formatMoney(invoice.totalDue)}</Table.Td>
+				<Table.Td ta="right">{formatMoney(invoice.totalPaid)}</Table.Td>
+				<Table.Td ta="right">
+					<Text c={balanceColor} fw={700} span>
+						{formatMoney(invoice.balance)}
+					</Text>
+				</Table.Td>
+				<Table.Td>
+					<Badge variant="light">{methodLabel}</Badge>
+				</Table.Td>
+				<Table.Td>
+					<Badge color={PAYMENT_STATUS_COLORS[invoice.paymentStatus]} variant="light">
+						{statusLabel}
+					</Badge>
+				</Table.Td>
+				<Table.Td>
+					<Group
+						gap={4}
+						justify="center"
+						wrap="nowrap"
+						onClick={(event) => event.stopPropagation()}
 					>
-						<IconCheck size={15} />
-					</ActionIcon>
-					<ActionIcon
-						variant="subtle"
-						color="red"
-						disabled={isDeleting}
-						onClick={() => handleDelete(invoice)}
-					>
-						<IconTrash size={15} />
-					</ActionIcon>
-				</Group>
-			</Table.Td>
-		</Table.Tr>
-	));
+						<Tooltip label="View details">
+							<ActionIcon variant="subtle" onClick={() => openDetail(invoice)}>
+								<IconEye size={15} />
+							</ActionIcon>
+						</Tooltip>
+						<Tooltip label="Edit">
+							<ActionIcon variant="subtle" onClick={() => handleEdit(invoice)}>
+								<IconEdit size={15} />
+							</ActionIcon>
+						</Tooltip>
+						<Tooltip label="Mark as paid">
+							<ActionIcon
+								variant="subtle"
+								color="green"
+								disabled={isUpdating}
+								onClick={() => handleMarkAsPaid(invoice)}
+							>
+								<IconCheck size={15} />
+							</ActionIcon>
+						</Tooltip>
+						<Tooltip label="Delete">
+							<ActionIcon
+								variant="subtle"
+								color="red"
+								disabled={isDeleting}
+								onClick={() => handleDelete(invoice)}
+							>
+								<IconTrash size={15} />
+							</ActionIcon>
+						</Tooltip>
+					</Group>
+				</Table.Td>
+			</Table.Tr>
+		);
+	});
 
 	const hasData = Boolean(invoices?.total);
-	const hasPagination = (invoices?.total || 0) > 10;
+	const hasPagination = (invoices?.total || 0) > PAGE_SIZE;
 
 	return (
 		<Stack>
@@ -286,41 +334,30 @@ export const PaymentsTable = () => {
 					</Alert>
 				)}
 
-				<Group mb="md" justify="space-between" wrap="wrap">
-					<Group wrap="wrap">
-						<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-							Add payment row
-						</Button>
-						<GenerateMonthButton
-							year={filter.year}
-							month={filter.month}
-							programId={filter.programId}
-							programLabel={selectedProgram?.name}
-						/>
-					</Group>
-				</Group>
-
-				<Group mb="md" wrap="wrap">
+				<SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 6 }} mb="md">
 					<Select
-						label="Year"
-						w={120}
+						placeholder="Year"
+						clearable
 						data={Array.from({ length: 8 }).map((_, index) => {
 							const year = currentDate.getFullYear() - 2 + index;
 							return { value: String(year), label: String(year) };
 						})}
 						value={String(filter.year)}
-						onChange={(value) => handleChangeFilter('year', Number(value || currentDate.getFullYear()))}
+						onChange={(value) =>
+							handleChangeFilter('year', Number(value || currentDate.getFullYear()))
+						}
 					/>
 					<Select
-						label="Month"
-						w={170}
+						placeholder="Month"
+						clearable
 						data={MONTH_OPTIONS}
 						value={String(filter.month)}
-						onChange={(value) => handleChangeFilter('month', Number(value || currentDate.getMonth() + 1))}
+						onChange={(value) =>
+							handleChangeFilter('month', Number(value || currentDate.getMonth() + 1))
+						}
 					/>
 					<Select
-						label="Program"
-						w={180}
+						placeholder="All programs"
 						clearable
 						searchable
 						data={programs?.data.map((program) => ({ value: program.id, label: program.name }))}
@@ -328,8 +365,7 @@ export const PaymentsTable = () => {
 						onChange={(value) => handleChangeFilter('programId', value || undefined)}
 					/>
 					<Select
-						label="Family"
-						w={220}
+						placeholder="All families"
 						clearable
 						searchable
 						data={families?.data.map((family) => ({ value: family.id, label: family.name }))}
@@ -337,53 +373,57 @@ export const PaymentsTable = () => {
 						onChange={(value) => handleChangeFilter('familyId', value || undefined)}
 					/>
 					<Select
-						label="Pay Method"
-						w={150}
+						placeholder="All methods"
 						clearable
 						data={PAY_METHOD_OPTIONS}
 						value={filter.payMethod || null}
 						onChange={(value) => handleChangeFilter('payMethod', value || undefined)}
 					/>
 					<Select
-						label="Status"
-						w={150}
+						placeholder="All statuses"
 						clearable
 						data={PAYMENT_STATUS_OPTIONS}
 						value={filter.paymentStatus || null}
 						onChange={(value) => handleChangeFilter('paymentStatus', value || undefined)}
 					/>
 					<TextInput
-						label="Search"
 						leftSection={<IconSearch size={16} />}
-						placeholder="Family name or phone"
+						placeholder="Search family name or phone"
 						onChange={(event) => debounceChangeKeyword(event.target.value)}
-						w={260}
+					/>
+				</SimpleGrid>
+
+				<Group mb="md" justify="flex-end" wrap="wrap">
+					<Button variant="default" leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+						Add payment row
+					</Button>
+					<GenerateMonthButton
+						year={filter.year}
+						month={filter.month}
+						programId={filter.programId}
+						programLabel={selectedProgram?.name}
 					/>
 				</Group>
 
-				<Table.ScrollContainer minWidth={2000}>
-					<Table bg="white" border={1}>
+				<Table.ScrollContainer minWidth={1100}>
+					<Table
+						striped="even"
+						highlightOnHover
+						withTableBorder
+						verticalSpacing="sm"
+						horizontalSpacing="md"
+					>
 						<Table.Thead>
 							<Table.Tr>
 								<Table.Th>#</Table.Th>
 								<Table.Th>Family</Table.Th>
 								<Table.Th>Program</Table.Th>
-								<Table.Th>#Kids</Table.Th>
-								<Table.Th>Session</Table.Th>
-								<Table.Th>Reg</Table.Th>
-								<Table.Th>Tuition</Table.Th>
-								<Table.Th>Books</Table.Th>
-								<Table.Th>Total Due</Table.Th>
-								<Table.Th>Paid Reg</Table.Th>
-								<Table.Th>Paid Tuition</Table.Th>
-								<Table.Th>Paid Books</Table.Th>
-								<Table.Th>Extra</Table.Th>
-								<Table.Th>Total Paid</Table.Th>
-								<Table.Th>Balance</Table.Th>
+								<Table.Th ta="center">#Kids</Table.Th>
+								<Table.Th ta="right">Total Due</Table.Th>
+								<Table.Th ta="right">Total Paid</Table.Th>
+								<Table.Th ta="right">Balance</Table.Th>
 								<Table.Th>Method</Table.Th>
 								<Table.Th>Status</Table.Th>
-								<Table.Th>Paid At</Table.Th>
-								<Table.Th>Notes</Table.Th>
 								<Table.Th ta="center">Actions</Table.Th>
 							</Table.Tr>
 						</Table.Thead>
@@ -394,8 +434,8 @@ export const PaymentsTable = () => {
 								rows
 							) : (
 								<Table.Tr>
-									<Table.Td colSpan={20}>
-										<Center h={220}>
+									<Table.Td colSpan={10}>
+										<Center h={200}>
 											<Stack align="center">
 												<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
 												<Text fw={600}>No payments found</Text>
@@ -408,20 +448,18 @@ export const PaymentsTable = () => {
 						</Table.Tbody>
 						<Table.Tfoot>
 							<Table.Tr>
-								<Table.Td colSpan={5} fw={700}>
+								<Table.Td colSpan={3} fw={700}>
 									Sum:
 								</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.registrationFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.tuitionFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.bookFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.paidRegistrationFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.paidTuitionFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.paidBookFee || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.extraPaid || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
-								<Table.Td>{formatMoney(invoices?.summary.balance || 0)}</Table.Td>
-								<Table.Td colSpan={5} />
+								<Table.Td ta="center">{invoices?.summary.studentCount || 0}</Table.Td>
+								<Table.Td ta="right">{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
+								<Table.Td ta="right">{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
+								<Table.Td ta="right">
+									<Text c={(invoices?.summary.balance || 0) > 0 ? 'red.7' : 'green.7'} fw={700} span>
+										{formatMoney(invoices?.summary.balance || 0)}
+									</Text>
+								</Table.Td>
+								<Table.Td colSpan={3} />
 							</Table.Tr>
 						</Table.Tfoot>
 					</Table>
@@ -430,7 +468,7 @@ export const PaymentsTable = () => {
 				{hasPagination && (
 					<Group justify="flex-end" mt="md">
 						<Pagination
-							total={Math.ceil((invoices?.total || 0) / 10)}
+							total={Math.ceil((invoices?.total || 0) / PAGE_SIZE)}
 							value={page}
 							onChange={setPage}
 						/>

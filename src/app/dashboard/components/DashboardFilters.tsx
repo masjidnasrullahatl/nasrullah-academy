@@ -24,8 +24,10 @@ export const DashboardFilters = ({
 			<Group wrap="wrap">
 				<Select
 					label="Year"
+					placeholder="Select year"
 					w={{ base: '100%', sm: 140 }}
 					value={String(year)}
+					clearable
 					data={(years || [year]).map((yearItem) => ({
 						value: String(yearItem),
 						label: String(yearItem),
@@ -34,8 +36,10 @@ export const DashboardFilters = ({
 				/>
 				<Select
 					label="Program"
+					placeholder="All programs"
 					w={{ base: '100%', sm: 240 }}
 					value={programId || ''}
+					clearable
 					data={[
 						{ value: '', label: 'All programs' },
 						...((programs?.data || []).map((program) => ({

@@ -23,12 +23,13 @@ import {
 import { ARCHIVE_STATUS_OPTIONS, CLASS_SESSION_OPTIONS } from '@configs/enums';
 
 import { useCreateClass } from '@hooks/react-query/classes/useCreateClass';
+import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
 type ClassFormModalProps = {
-	classItem?: any;
+	classItem?: ClassRow;
 };
 
 type FormValue = {
@@ -82,7 +83,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 			status: values.status,
 		};
 
-		if (isEdit) {
+		if (isEdit && classItem) {
 			await updateClass({ id: classItem.id, data: payload as UpdateClassPayload });
 		} else {
 			await createClass(payload as CreateClassPayload);
@@ -107,9 +108,15 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 
 			<form onSubmit={form.onSubmit(handleSubmit)}>
 				<Stack>
-					<TextInput label="Class name" withAsterisk {...form.getInputProps('name')} />
+					<TextInput
+						label="Class name"
+						placeholder="Hifz A"
+						withAsterisk
+						{...form.getInputProps('name')}
+					/>
 					<Select
 						label="Program"
+						placeholder="Select program"
 						data={programs?.data.map((program) => ({
 							value: program.id,
 							label: program.name,
@@ -121,6 +128,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 						label="Teacher"
 						clearable
 						searchable
+						placeholder="Select a teacher"
 						data={teachers?.data.map((teacher) => ({
 							value: teacher.id,
 							label: `${teacher.firstName} ${teacher.lastName}`,
@@ -130,15 +138,21 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 					<Group grow>
 						<Select
 							label="Session"
+							placeholder="Select session"
 							data={CLASS_SESSION_OPTIONS}
 							withAsterisk
 							{...form.getInputProps('session')}
 						/>
-						<TextInput label="Room" {...form.getInputProps('room')} />
+						<TextInput
+							label="Room"
+							placeholder="Room 101"
+							{...form.getInputProps('room')}
+						/>
 					</Group>
 					<Group grow>
 						<NumberInput
 							label="School Year"
+							placeholder="2026"
 							withAsterisk
 							min={2000}
 							max={2100}
@@ -146,6 +160,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 						/>
 						<NumberInput
 							label="Capacity"
+							placeholder="0"
 							min={0}
 							allowDecimal={false}
 							{...form.getInputProps('capacity')}
@@ -153,6 +168,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 					</Group>
 					<Select
 						label="Status"
+						placeholder="Select status"
 						data={ARCHIVE_STATUS_OPTIONS}
 						withAsterisk
 						{...form.getInputProps('status')}

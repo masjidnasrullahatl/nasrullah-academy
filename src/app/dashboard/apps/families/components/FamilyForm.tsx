@@ -170,6 +170,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								label="Family / Parent name"
+								placeholder="Ibrahima Alpha Diallo"
 								withAsterisk
 								{...form.getInputProps('name')}
 							/>
@@ -177,20 +178,30 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<Select
 								label="Status"
+								placeholder="Select status"
 								data={RECORD_STATUS_OPTIONS}
 								withAsterisk
 								{...form.getInputProps('status')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<TextInput label="Father name" {...form.getInputProps('fatherName')} />
+							<TextInput
+								label="Father name"
+								placeholder="Ibrahima Alpha Diallo"
+								{...form.getInputProps('fatherName')}
+							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<TextInput label="Mother name" {...form.getInputProps('motherName')} />
+							<TextInput
+								label="Mother name"
+								placeholder="Aminata Diallo"
+								{...form.getInputProps('motherName')}
+							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								label="Primary phone"
+								placeholder="404-838-3879"
 								withAsterisk
 								{...form.getInputProps('primaryPhone')}
 							/>
@@ -198,17 +209,31 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								label="Secondary phone"
+								placeholder="404-838-3879"
 								{...form.getInputProps('secondaryPhone')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<TextInput label="Email" {...form.getInputProps('email')} />
+							<TextInput
+								label="Email"
+								placeholder="parent@example.com"
+								{...form.getInputProps('email')}
+							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<TextInput label="Address" {...form.getInputProps('address')} />
+							<TextInput
+								label="Address"
+								placeholder="1234 Main St, Atlanta, GA"
+								{...form.getInputProps('address')}
+							/>
 						</Grid.Col>
 						<Grid.Col span={12}>
-							<Textarea label="Notes" minRows={2} {...form.getInputProps('notes')} />
+							<Textarea
+								label="Notes"
+								placeholder="Scholarship, payment arrangement, ..."
+								minRows={2}
+								{...form.getInputProps('notes')}
+							/>
 						</Grid.Col>
 					</Grid>
 
@@ -249,6 +274,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 3 }}>
 											<TextInput
 												label="First name"
+												placeholder="Yusuf"
 												withAsterisk
 												{...form.getInputProps(`students.${index}.firstName`)}
 											/>
@@ -256,6 +282,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 3 }}>
 											<TextInput
 												label="Last name"
+												placeholder="Diallo"
 												withAsterisk
 												{...form.getInputProps(`students.${index}.lastName`)}
 											/>
@@ -263,6 +290,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 2 }}>
 											<Select
 												label="Gender"
+												placeholder="Select gender"
 												data={GENDER_OPTIONS}
 												withAsterisk
 												{...form.getInputProps(`students.${index}.gender`)}
@@ -271,6 +299,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 4 }}>
 											<DateInput
 												label="Date of birth"
+												placeholder="MM/DD/YYYY"
 												value={form.values.students[index].dateOfBirth}
 												onChange={(value) =>
 													form.setFieldValue(
@@ -283,6 +312,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 2 }}>
 											<Select
 												label="Status"
+												placeholder="Select status"
 												data={RECORD_STATUS_OPTIONS}
 												withAsterisk
 												{...form.getInputProps(`students.${index}.status`)}
@@ -291,6 +321,7 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 										<Grid.Col span={{ base: 12, md: 10 }}>
 											<TextInput
 												label="Notes"
+												placeholder="Scholarship, payment arrangement, ..."
 												{...form.getInputProps(`students.${index}.notes`)}
 											/>
 										</Grid.Col>

@@ -5,12 +5,13 @@ import { notifications } from '@mantine/notifications';
 import { IconDotsVertical, IconEdit, IconTrash } from '@tabler/icons-react';
 
 import { useDeleteClass } from '@hooks/react-query/classes/useDeleteClass';
+import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
 
 import { ClassFormModal } from './ClassFormModal';
 
 type ClassActionsMenuProps = {
-	classItem: any;
+	classItem: ClassRow;
 };
 
 export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {

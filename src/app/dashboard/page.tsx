@@ -8,7 +8,7 @@ import { useGetDashboardSummary } from '@hooks/react-query/dashboard/useGetDashb
 
 import { DashboardFilters } from './components/DashboardFilters';
 import { GenderDonut } from './components/GenderDonut';
-import { IncomeExpenseChart } from './components/IncomeExpenseChart';
+import { IncomeChart } from './components/IncomeChart';
 import { MonthlySummaryTable } from './components/MonthlySummaryTable';
 import { PaymentStatusDonut } from './components/PaymentStatusDonut';
 import { StatCards } from './components/StatCards';
@@ -55,7 +55,7 @@ export default function DashboardPage() {
 				) : (
 					<>
 						<StatCards totals={summary.totals} />
-						<IncomeExpenseChart data={summary.monthly} />
+						<IncomeChart data={summary.monthly} />
 						<SimpleGrid cols={{ base: 1, md: 2 }}>
 							<GenderDonut genderSplit={summary.genderSplit} />
 							<PaymentStatusDonut paymentStatus={summary.paymentStatus} />

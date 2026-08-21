@@ -194,7 +194,13 @@ export const TeachersTable = () => {
 			</Group>
 
 			<Table.ScrollContainer minWidth={1000}>
-				<Table bg="white" border={1}>
+				<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>

@@ -23,8 +23,7 @@ const mapProfile = (request: AuthRequest): ProfilePayload => {
 	return {
 		id: request.user.id,
 		email: request.user.email ?? '',
-		fullName:
-			userMetadata.full_name ?? userMetadata.fullName ?? request.user.email ?? '',
+		fullName: userMetadata.full_name ?? userMetadata.fullName ?? '',
 		phoneNumber: userMetadata.phone_number ?? userMetadata.phoneNumber ?? '',
 	};
 };
@@ -72,11 +71,7 @@ const update = async (
 			data: {
 				id: updatedUser.user.id,
 				email: updatedUser.user.email ?? '',
-				fullName:
-					userMetadata.full_name ??
-					userMetadata.fullName ??
-					updatedUser.user.email ??
-					'',
+				fullName: userMetadata.full_name ?? userMetadata.fullName ?? '',
 				phoneNumber: userMetadata.phone_number ?? userMetadata.phoneNumber ?? '',
 			},
 		});

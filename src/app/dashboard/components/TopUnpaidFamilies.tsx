@@ -15,7 +15,13 @@ export const TopUnpaidFamilies = ({ data }: TopUnpaidFamiliesProps) => {
 				Top Unpaid Families
 			</Title>
 			<Table.ScrollContainer minWidth={640}>
-				<Table bg="white" border={1}>
+				<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>

@@ -19,9 +19,10 @@ import { IconAlertTriangle, IconSearch } from '@tabler/icons-react';
 
 import { useAssignStudentsToClass } from '@hooks/react-query/classes/useAssignStudentsToClass';
 import { useGetAvailableStudents } from '@hooks/react-query/classes/useGetAvailableStudents';
+import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 
 type AssignStudentsModalProps = {
-	classItem: any;
+	classItem: ClassRow;
 };
 
 export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => {
@@ -59,8 +60,9 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 		);
 	};
 
+	const capacity = classItem.capacity || 0;
 	const willExceedCapacity =
-		Boolean(classItem.capacity) && classItem.studentCount + checkedIds.length > classItem.capacity;
+		capacity > 0 && classItem.studentCount + checkedIds.length > capacity;
 
 	const handleSubmit = async () => {
 		await assignStudents({

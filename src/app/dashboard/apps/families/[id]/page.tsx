@@ -166,7 +166,13 @@ export default function FamilyDetailPage() {
 							Students
 						</Text>
 						<Table.ScrollContainer minWidth={1100}>
-							<Table bg="white" border={1}>
+							<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 							<Table.Thead>
 								<Table.Tr>
 									<Table.Th>Name</Table.Th>
@@ -243,6 +249,7 @@ export default function FamilyDetailPage() {
 							<Group wrap="wrap">
 								<Select
 									label="Year"
+									placeholder="Select year"
 									w={120}
 									data={Array.from({ length: 8 }).map((_, index) => {
 										const year = currentDate.getFullYear() - 2 + index;
@@ -256,6 +263,7 @@ export default function FamilyDetailPage() {
 								/>
 								<Select
 									label="Month"
+									placeholder="Select month"
 									w={170}
 									clearable
 									data={MONTH_OPTIONS}
@@ -272,7 +280,13 @@ export default function FamilyDetailPage() {
 						</Group>
 
 						<Table.ScrollContainer minWidth={1000}>
-							<Table bg="white" border={1}>
+							<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 							<Table.Thead>
 								<Table.Tr>
 									<Table.Th>#</Table.Th>

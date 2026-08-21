@@ -1,6 +1,7 @@
 import {
 	IconChalkboard,
 	IconKey,
+	IconLayoutDashboard,
 	IconReceipt,
 	IconSchool,
 	IconUser,
@@ -8,9 +9,19 @@ import {
 	IconUsersGroup,
 } from '@tabler/icons-react';
 
-import { PATH_ACCOUNTS, PATH_APPS, PATH_FINANCE } from './routes';
+import { PATH_ACCOUNTS, PATH_APPS, PATH_DASHBOARD, PATH_FINANCE } from './routes';
 
 export const SIDEBAR_LINKS = [
+	{
+		title: 'Overview',
+		links: [
+			{
+				label: 'Dashboard',
+				icon: IconLayoutDashboard,
+				link: PATH_DASHBOARD.default,
+			},
+		],
+	},
 	{
 		title: 'School',
 		links: [

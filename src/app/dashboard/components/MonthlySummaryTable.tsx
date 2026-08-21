@@ -16,7 +16,13 @@ export const MonthlySummaryTable = ({ monthly, totals }: MonthlySummaryTableProp
 				Monthly Dashboard Summary
 			</Title>
 			<Table.ScrollContainer minWidth={680}>
-				<Table bg="white" border={1}>
+				<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>Month</Table.Th>

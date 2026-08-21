@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-import { Alert, Button, Checkbox, Group, Stack, Text } from '@mantine/core';
+import { Alert, Button, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconSparkles } from '@tabler/icons-react';
 
 import { MONTH_OPTIONS } from '@configs/enums';
 
@@ -79,8 +79,15 @@ export const GenerateMonthButton = ({
 	};
 
 	return (
-		<Button onClick={handleGenerate} variant="default" loading={isPending}>
-			Generate month
-		</Button>
+		<Tooltip label={!programId ? 'Select a program first' : 'Generate invoices for selected month'}>
+			<Button
+				onClick={handleGenerate}
+				leftSection={<IconSparkles size={16} />}
+				disabled={!programId}
+				loading={isPending}
+			>
+				Generate month
+			</Button>
+		</Tooltip>
 	);
 };

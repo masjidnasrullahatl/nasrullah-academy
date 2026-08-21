@@ -1,3 +1,11 @@
+import {
+	Classes,
+	Enrollments,
+	Families,
+	Programs,
+	Students,
+	Teachers,
+} from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetClassesQueryParams } from '@app/api/classes/types';
@@ -6,6 +14,19 @@ import { ApiPagingResponse } from '@app/api/types/common';
 import { QUERY_KEYS } from '@configs/query-key';
 
 import { fetchAuth } from '@helpers/supabase/fetchAuth';
+
+export type ClassStudentRow = Enrollments & {
+	student: Students & { family: Families };
+};
+
+export type ClassRow = Classes & {
+	program: Programs;
+	teacher: Teachers | null;
+	enrollments: ClassStudentRow[];
+	studentCount: number;
+	boysCount: number;
+	girlsCount: number;
+};
 
 export const useGetPagingClasses = (params: GetClassesQueryParams) => {
 	return useQuery({
@@ -23,7 +44,7 @@ export const useGetPagingClasses = (params: GetClassesQueryParams) => {
 			});
 
 			const response = await fetchAuth(`/api/classes?${queryParams}`);
-			const data: ApiPagingResponse<any> = await response.json();
+			const data: ApiPagingResponse<ClassRow> = await response.json();
 
 			return data;
 		},

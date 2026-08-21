@@ -99,13 +99,32 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 			<form onSubmit={form.onSubmit(handleSubmit)}>
 				<Stack>
 					<Group grow>
-						<TextInput label="First name" withAsterisk {...form.getInputProps('firstName')} />
-						<TextInput label="Last name" withAsterisk {...form.getInputProps('lastName')} />
+						<TextInput
+							label="First name"
+							placeholder="Ibrahima Alpha"
+							withAsterisk
+							{...form.getInputProps('firstName')}
+						/>
+						<TextInput
+							label="Last name"
+							placeholder="Diallo"
+							withAsterisk
+							{...form.getInputProps('lastName')}
+						/>
 					</Group>
-					<TextInput label="Phone number" {...form.getInputProps('phoneNumber')} />
-					<TextInput label="Email" {...form.getInputProps('email')} />
+					<TextInput
+						label="Phone number"
+						placeholder="404-838-3879"
+						{...form.getInputProps('phoneNumber')}
+					/>
+					<TextInput
+						label="Email"
+						placeholder="teacher@example.com"
+						{...form.getInputProps('email')}
+					/>
 					<Select
 						label="Status"
+						placeholder="Select status"
 						data={RECORD_STATUS_OPTIONS}
 						withAsterisk
 						{...form.getInputProps('status')}

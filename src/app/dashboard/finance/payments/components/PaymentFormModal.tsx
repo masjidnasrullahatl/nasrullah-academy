@@ -218,6 +218,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<Select
 								label="Family"
+								placeholder="Select family"
 								withAsterisk
 								disabled={isEdit}
 								searchable
@@ -231,8 +232,10 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<Select
 								label="Program"
+								placeholder="Select program"
 								withAsterisk
 								disabled={isEdit}
+								searchable
 								data={programs?.data.map((program) => ({
 									value: program.id,
 									label: program.name,
@@ -243,6 +246,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Year"
+								placeholder="2026"
 								withAsterisk
 								min={2000}
 								max={2100}
@@ -253,6 +257,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<Select
 								label="Month"
+								placeholder="Select month"
 								withAsterisk
 								data={MONTH_OPTIONS}
 								value={String(form.values.month)}
@@ -262,6 +267,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="#Kids"
+								placeholder="0"
 								min={0}
 								allowDecimal={false}
 								{...form.getInputProps('studentCount')}
@@ -272,6 +278,7 @@ export const PaymentFormModal = ({
 					<Select
 						label="Session"
 						clearable
+						placeholder="Select session"
 						data={CLASS_SESSION_OPTIONS}
 						value={form.values.session || ''}
 						onChange={(value) => form.setFieldValue('session', (value || null) as FormValue['session'])}
@@ -281,6 +288,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Registration Fee"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -292,6 +300,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Tuition Fee"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -303,6 +312,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Book Fee"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -314,6 +324,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Paid Registration"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -327,6 +338,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Paid Tuition"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -338,6 +350,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Paid Book"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -349,6 +362,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Extra Paid"
+								placeholder="0.00"
 								prefix="$"
 								decimalScale={2}
 								fixedDecimalScale
@@ -360,6 +374,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Total Due"
+								placeholder="0.00"
 								value={formatDecimal(totalDue)}
 								readOnly
 								leftSection="$"
@@ -368,6 +383,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Total Paid"
+								placeholder="0.00"
 								value={formatDecimal(totalPaid)}
 								readOnly
 								leftSection="$"
@@ -376,6 +392,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<TextInput
 								label="Balance"
+								placeholder="0.00"
 								value={formatDecimal(balance)}
 								readOnly
 								leftSection="$"
@@ -387,6 +404,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<Select
 								label="Pay Method"
+								placeholder="Select pay method"
 								data={PAY_METHOD_OPTIONS}
 								{...form.getInputProps('payMethod')}
 							/>
@@ -394,6 +412,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<Select
 								label="Payment Status"
+								placeholder="Select payment status"
 								data={PAYMENT_STATUS_OPTIONS}
 								value={form.values.paymentStatus}
 								onChange={(value) => {
@@ -405,6 +424,7 @@ export const PaymentFormModal = ({
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<DateInput
 								label="Paid Date"
+								placeholder="MM/DD/YYYY"
 								value={form.values.paidAt}
 								onChange={(value) =>
 									form.setFieldValue('paidAt', value ? new Date(value) : null)
@@ -415,7 +435,12 @@ export const PaymentFormModal = ({
 						</Grid.Col>
 					</Grid>
 
-					<Textarea label="Notes" minRows={2} {...form.getInputProps('notes')} />
+					<Textarea
+						label="Notes"
+						placeholder="Scholarship, payment arrangement, ..."
+						minRows={2}
+						{...form.getInputProps('notes')}
+					/>
 
 					<Group justify="flex-end">
 						<Button variant="default" onClick={() => modals.closeAll()}>

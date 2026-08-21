@@ -199,7 +199,13 @@ export const StudentsTable = () => {
 			</Group>
 
 			<Table.ScrollContainer minWidth={1300}>
-				<Table bg="white" border={1}>
+				<Table
+					striped="even"
+					highlightOnHover
+					withTableBorder
+					verticalSpacing="sm"
+					horizontalSpacing="md"
+				>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>

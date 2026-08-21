@@ -5,11 +5,11 @@ import { DashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSu
 
 import { formatMoney } from '@utils/money';
 
-type IncomeExpenseChartProps = {
+type IncomeChartProps = {
 	data: DashboardSummary['monthly'];
 };
 
-export const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
+export const IncomeChart = ({ data }: IncomeChartProps) => {
 	return (
 		<Paper p="md" withBorder>
 			<Title order={4} mb="md">
@@ -20,7 +20,6 @@ export const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
 				data={data}
 				dataKey="label"
 				series={[{ name: 'income', label: 'Income', color: 'green' }]}
-				withLegend
 				withTooltip
 				valueFormatter={formatMoney}
 				tickLine="xy"

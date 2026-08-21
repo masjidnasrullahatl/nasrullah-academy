@@ -104,6 +104,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<Select
 								label="Family"
+								placeholder="Select family"
 								data={families?.data.map((family) => ({
 									value: family.id,
 									label: family.name,
@@ -116,6 +117,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 3 }}>
 							<Select
 								label="Gender"
+								placeholder="Select gender"
 								data={GENDER_OPTIONS}
 								withAsterisk
 								{...form.getInputProps('gender')}
@@ -124,6 +126,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 3 }}>
 							<Select
 								label="Status"
+								placeholder="Select status"
 								data={RECORD_STATUS_OPTIONS}
 								withAsterisk
 								{...form.getInputProps('status')}
@@ -132,6 +135,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								label="First name"
+								placeholder="Yusuf"
 								withAsterisk
 								{...form.getInputProps('firstName')}
 							/>
@@ -139,6 +143,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								label="Last name"
+								placeholder="Diallo"
 								withAsterisk
 								{...form.getInputProps('lastName')}
 							/>
@@ -146,6 +151,7 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						<Grid.Col span={{ base: 12, md: 6 }}>
 							<DateInput
 								label="Date of birth"
+								placeholder="MM/DD/YYYY"
 								value={form.values.dateOfBirth}
 								onChange={(value) =>
 									form.setFieldValue('dateOfBirth', (value as Date | null) || null)
@@ -153,7 +159,11 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<TextInput label="Notes" {...form.getInputProps('notes')} />
+							<TextInput
+								label="Notes"
+								placeholder="Scholarship, payment arrangement, ..."
+								{...form.getInputProps('notes')}
+							/>
 						</Grid.Col>
 					</Grid>
 

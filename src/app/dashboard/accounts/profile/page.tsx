@@ -117,7 +117,7 @@ export default function ProfilePage() {
 									/>
 									<TextInput
 										label="Full name"
-										placeholder="Abdullah Ahmed"
+										placeholder="Enter your full name"
 										withAsterisk
 										{...form.getInputProps('fullName')}
 									/>
