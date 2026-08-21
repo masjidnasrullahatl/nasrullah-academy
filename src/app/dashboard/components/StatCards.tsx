@@ -4,7 +4,6 @@ import { SimpleGrid, Text, ThemeIcon } from '@mantine/core';
 
 import {
 	IconAlertTriangle,
-	IconCashBanknoteOff,
 	IconCoin,
 	IconUsers,
 	IconUsersGroup,
@@ -15,7 +14,6 @@ import Surface from '@components/Surface';
 import { DashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
 import { formatMoney } from '@utils/money';
-import { formatPercent } from '@utils/number';
 
 type StatCardsProps = {
 	totals: DashboardSummary['totals'];
@@ -23,7 +21,7 @@ type StatCardsProps = {
 
 export const StatCards = ({ totals }: StatCardsProps) => {
 	return (
-		<SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }}>
+		<SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
 			<Surface feel="bordered">
 				<ThemeIcon size="lg" color="blue" variant="light">
 					<IconUsers size={18} />
@@ -55,20 +53,6 @@ export const StatCards = ({ totals }: StatCardsProps) => {
 				</Text>
 				<Text fw={700} size="xl">
 					{formatMoney(totals.income)}
-				</Text>
-				<Text c="dimmed" size="sm">
-					Profit {formatMoney(totals.profit)} · Margin {formatPercent(totals.profitMargin)}
-				</Text>
-			</Surface>
-			<Surface feel="bordered">
-				<ThemeIcon size="lg" color="orange" variant="light">
-					<IconCashBanknoteOff size={18} />
-				</ThemeIcon>
-				<Text mt="sm" c="dimmed" size="sm">
-					Expense (YTD)
-				</Text>
-				<Text fw={700} size="xl">
-					{formatMoney(totals.expense)}
 				</Text>
 			</Surface>
 			<Surface feel="bordered">

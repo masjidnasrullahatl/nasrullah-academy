@@ -11,7 +11,6 @@ import { fetchAuth } from '@helpers/supabase/fetchAuth';
 type TeacherRow = Teachers & {
 	classes: Array<Classes & { program: Programs }>;
 	_count: { classes: number };
-	hourlyRate: number;
 };
 
 export const useGetPagingTeachers = (params: GetTeachersQueryParams) => {

@@ -2,7 +2,6 @@ import {
 	Alert,
 	Button,
 	Group,
-	NumberInput,
 	Select,
 	Stack,
 	TextInput,
@@ -34,8 +33,6 @@ type FormValue = {
 	lastName: string;
 	phoneNumber: string;
 	email: string;
-	zelleId: string;
-	hourlyRate: number;
 	status: 'ACTIVE' | 'INACTIVE';
 };
 
@@ -56,8 +53,6 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 			lastName: teacher?.lastName || '',
 			phoneNumber: teacher?.phoneNumber || '',
 			email: teacher?.email || '',
-			zelleId: teacher?.zelleId || '',
-			hourlyRate: Number(teacher?.hourlyRate || 0),
 			status: teacher?.status || 'ACTIVE',
 		},
 		validate: zod4Resolver(CreateTeacherSchema),
@@ -70,8 +65,6 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 				lastName: values.lastName,
 				phoneNumber: values.phoneNumber || null,
 				email: values.email || null,
-				zelleId: values.zelleId || null,
-				hourlyRate: values.hourlyRate,
 				status: values.status,
 			};
 			await updateTeacher({ id: teacher.id, data: payload });
@@ -81,8 +74,6 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 				lastName: values.lastName,
 				phoneNumber: values.phoneNumber || null,
 				email: values.email || null,
-				zelleId: values.zelleId || null,
-				hourlyRate: values.hourlyRate,
 				status: values.status,
 			};
 			await createTeacher(payload);
@@ -113,15 +104,6 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 					</Group>
 					<TextInput label="Phone number" {...form.getInputProps('phoneNumber')} />
 					<TextInput label="Email" {...form.getInputProps('email')} />
-					<TextInput label="Zelle ID" {...form.getInputProps('zelleId')} />
-					<NumberInput
-						label="Hourly Rate"
-						prefix="$"
-						decimalScale={2}
-						min={0}
-						withAsterisk
-						{...form.getInputProps('hourlyRate')}
-					/>
 					<Select
 						label="Status"
 						data={RECORD_STATUS_OPTIONS}

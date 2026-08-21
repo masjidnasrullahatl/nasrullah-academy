@@ -11,7 +11,6 @@ import { GenderDonut } from './components/GenderDonut';
 import { IncomeExpenseChart } from './components/IncomeExpenseChart';
 import { MonthlySummaryTable } from './components/MonthlySummaryTable';
 import { PaymentStatusDonut } from './components/PaymentStatusDonut';
-import { ProfitChart } from './components/ProfitChart';
 import { StatCards } from './components/StatCards';
 import { TopUnpaidFamilies } from './components/TopUnpaidFamilies';
 
@@ -57,7 +56,6 @@ export default function DashboardPage() {
 					<>
 						<StatCards totals={summary.totals} />
 						<IncomeExpenseChart data={summary.monthly} />
-						<ProfitChart data={summary.monthly} />
 						<SimpleGrid cols={{ base: 1, md: 2 }}>
 							<GenderDonut genderSplit={summary.genderSplit} />
 							<PaymentStatusDonut paymentStatus={summary.paymentStatus} />

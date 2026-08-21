@@ -1,5 +1,4 @@
 import {
-	Anchor,
 	Avatar,
 	Badge,
 	Button,
@@ -12,8 +11,6 @@ import {
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-
-import { PATH_APPS } from '@configs/routes';
 
 import { useRemoveStudentFromClass } from '@hooks/react-query/classes/useRemoveStudentFromClass';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
@@ -83,9 +80,7 @@ export const ClassCard = ({ classItem }: ClassCardProps) => {
 			<Stack>
 				<Group justify="space-between" align="flex-start">
 					<Stack gap={2}>
-						<Anchor href={`${PATH_APPS.classes}/${classItem.id}`} w="fit-content">
-							<Title order={4}>{classItem.name}</Title>
-						</Anchor>
+						<Title order={4}>{classItem.name}</Title>
 						<Group gap="xs">
 							<Badge>{classItem.program.name}</Badge>
 							<Badge color="blue" variant="light">

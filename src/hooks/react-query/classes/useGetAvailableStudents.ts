@@ -13,7 +13,7 @@ type Params = {
 
 export const useGetAvailableStudents = (classId?: string, params?: Params) => {
 	return useQuery({
-		queryKey: [QUERY_KEYS.CLASSES.GET_DETAIL, classId, 'available-students', params],
+		queryKey: [QUERY_KEYS.CLASSES.GET_AVAILABLE_STUDENTS, classId, params],
 		enabled: Boolean(classId),
 		queryFn: async () => {
 			const queryParams = new URLSearchParams({

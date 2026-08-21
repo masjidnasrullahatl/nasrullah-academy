@@ -5,7 +5,6 @@ import type {
 	Gender,
 	PaymentStatus,
 	PayMethod,
-	PayrollStatus,
 	ProgramCode,
 	RecordStatus,
 } from '@prisma/client';
@@ -138,21 +137,6 @@ export const PAYMENT_STATUS_OPTIONS: SelectOption[] = [
 	{ value: 'PARTIAL', label: PAYMENT_STATUS_LABELS.PARTIAL },
 	{ value: 'UNPAID', label: PAYMENT_STATUS_LABELS.UNPAID },
 	{ value: 'NA', label: PAYMENT_STATUS_LABELS.NA },
-];
-
-export const PAYROLL_STATUS_LABELS: Record<PayrollStatus, string> = {
-	DRAFT: 'Draft',
-	PAID: 'Paid',
-};
-
-export const PAYROLL_STATUS_COLORS: Record<PayrollStatus, string> = {
-	DRAFT: 'yellow',
-	PAID: 'green',
-};
-
-export const PAYROLL_STATUS_OPTIONS: SelectOption[] = [
-	{ value: 'DRAFT', label: PAYROLL_STATUS_LABELS.DRAFT },
-	{ value: 'PAID', label: PAYROLL_STATUS_LABELS.PAID },
 ];
 
 export const MONTH_OPTIONS: SelectOption[] = [

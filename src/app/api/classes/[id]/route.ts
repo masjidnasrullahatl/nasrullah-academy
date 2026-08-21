@@ -10,44 +10,6 @@ import { createClient } from '@helpers/prisma/server';
 
 import { UpdateClassSchema } from '../types';
 
-const getDetail = async (
-	request: AuthRequest,
-	{ params }: ParamsRequest<{ id: string }>,
-) => {
-	const { id } = await params;
-	const prisma = createClient();
-
-	const classItem = await prisma.classes.findUnique({
-		where: { id },
-		include: {
-			program: true,
-			teacher: true,
-			enrollments: {
-				where: { status: 'ACTIVE' },
-				include: {
-					student: {
-						include: {
-							family: true,
-						},
-					},
-					program: true,
-					class: {
-						include: {
-							teacher: true,
-						},
-					},
-				},
-			},
-		},
-	});
-
-	if (!classItem) {
-		return NextResponse.json({ error: 'Class not found' }, { status: 404 });
-	}
-
-	return NextResponse.json({ data: classItem, error: null });
-};
-
 const update = async (
 	request: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
@@ -167,6 +129,5 @@ const remove = async (
 	return NextResponse.json({ data: classItem, error: null });
 };
 
-export const GET = withAuth(getDetail);
 export const PUT = withAuth(update);
 export const DELETE = withAuth(remove);

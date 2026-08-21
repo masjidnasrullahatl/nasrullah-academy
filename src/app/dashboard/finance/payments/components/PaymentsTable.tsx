@@ -41,7 +41,6 @@ import {
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 import { useDeleteInvoice } from '@hooks/react-query/invoices/useDeleteInvoice';
-import { useExportInvoices } from '@hooks/react-query/invoices/useExportInvoices';
 import {
 	InvoiceRow,
 	useGetPagingInvoices,
@@ -91,7 +90,6 @@ export const PaymentsTable = () => {
 
 	const { mutateAsync: deleteInvoice, isPending: isDeleting } = useDeleteInvoice();
 	const { mutateAsync: updateInvoice, isPending: isUpdating } = useUpdateInvoice();
-	const { mutateAsync: exportInvoices, isPending: isExporting } = useExportInvoices();
 
 	const selectedProgram = programs?.data.find((program) => program.id === filter.programId);
 
@@ -169,18 +167,6 @@ export const PaymentsTable = () => {
 			title: 'Marked as paid',
 			message: 'Invoice paid fields were filled from fee values',
 			color: 'green',
-		});
-	};
-
-	const handleExport = async () => {
-		await exportInvoices({
-			year: filter.year,
-			month: filter.month,
-			programId: filter.programId,
-			paymentStatus: filter.paymentStatus as InvoiceRow['paymentStatus'],
-			payMethod: filter.payMethod as InvoiceRow['payMethod'],
-			familyId: filter.familyId,
-			keyword: filter.keyword,
 		});
 	};
 
@@ -311,9 +297,6 @@ export const PaymentsTable = () => {
 							programId={filter.programId}
 							programLabel={selectedProgram?.name}
 						/>
-						<Button variant="default" onClick={handleExport} loading={isExporting}>
-							Export
-						</Button>
 					</Group>
 				</Group>
 

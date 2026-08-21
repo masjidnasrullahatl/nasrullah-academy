@@ -59,11 +59,6 @@ enum PaymentStatus {
   NA
 }
 
-enum PayrollStatus {
-  DRAFT
-  PAID
-}
-
 model Programs {
   id String @id @default(uuid())
 
@@ -135,12 +130,9 @@ model Teachers {
   lastName    String       @map("last_name")
   phoneNumber String?      @map("phone_number")
   email       String?
-  zelleId     String?      @map("zelle_id")
-  hourlyRate  Decimal      @default(0) @map("hourly_rate") @db.Decimal(10, 2)
   status      RecordStatus @default(ACTIVE)
 
-  classes        Classes[]
-  payrollEntries PayrollEntries[]
+  classes Classes[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -231,49 +223,4 @@ model MonthlyInvoices {
   @@unique([familyId, programId, year, month])
   @@index([year, month, programId])
   @@map("monthly_invoices")
-}
-
-model PayrollPeriods {
-  id String @id @default(uuid())
-
-  label     String
-  year      Int
-  month     Int
-  startDate DateTime      @map("start_date")
-  endDate   DateTime      @map("end_date")
-  status    PayrollStatus @default(DRAFT)
-  notes     String?
-
-  entries PayrollEntries[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([year, month])
-  @@map("payroll_periods")
-}
-
-model PayrollEntries {
-  id String @id @default(uuid())
-
-  hourlyRate   Decimal       @default(0) @map("hourly_rate") @db.Decimal(10, 2)
-  weekdayHours Decimal       @default(0) @map("weekday_hours") @db.Decimal(10, 2)
-  weekendHours Decimal       @default(0) @map("weekend_hours") @db.Decimal(10, 2)
-  weekdayPay   Decimal       @default(0) @map("weekday_pay") @db.Decimal(10, 2)
-  weekendPay   Decimal       @default(0) @map("weekend_pay") @db.Decimal(10, 2)
-  totalPay     Decimal       @default(0) @map("total_pay") @db.Decimal(10, 2)
-  payStatus    PayrollStatus @default(DRAFT) @map("pay_status")
-  notes        String?
-
-  periodId String         @map("period_id")
-  period   PayrollPeriods @relation(fields: [periodId], references: [id], onDelete: Cascade)
-
-  teacherId String   @map("teacher_id")
-  teacher   Teachers @relation(fields: [teacherId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([periodId, teacherId])
-  @@map("payroll_entries")
 }

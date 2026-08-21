@@ -1,6 +1,4 @@
 import {
-	IconBook,
-	IconCash,
 	IconChalkboard,
 	IconKey,
 	IconReceipt,
@@ -36,11 +34,6 @@ export const SIDEBAR_LINKS = [
 				icon: IconChalkboard,
 				link: PATH_APPS.teachers,
 			},
-			{
-				label: 'Programs',
-				icon: IconBook,
-				link: PATH_APPS.programs,
-			},
 		],
 	},
 	{
@@ -50,11 +43,6 @@ export const SIDEBAR_LINKS = [
 				label: 'Monthly Payments',
 				icon: IconReceipt,
 				link: PATH_FINANCE.payments,
-			},
-			{
-				label: 'Teacher Payroll',
-				icon: IconCash,
-				link: PATH_FINANCE.payroll,
 			},
 		],
 	},

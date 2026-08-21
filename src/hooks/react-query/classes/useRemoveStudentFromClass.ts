@@ -24,7 +24,7 @@ export const useRemoveStudentFromClass = () => {
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CLASSES.GET_PAGING] });
 			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.CLASSES.GET_DETAIL, variables.classId],
+				queryKey: [QUERY_KEYS.CLASSES.GET_AVAILABLE_STUDENTS, variables.classId],
 			});
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENTS.GET_PAGING] });
 		},

@@ -15,9 +15,6 @@ export type DashboardSummary = {
 		teachers: number;
 		classes: number;
 		income: number;
-		expense: number;
-		profit: number;
-		profitMargin: number;
 		unpaidBalance: number;
 	};
 	monthly: Array<{
@@ -25,9 +22,6 @@ export type DashboardSummary = {
 		label: string;
 		students: number;
 		income: number;
-		expense: number;
-		profit: number;
-		profitMargin: number;
 		unpaidBalance: number;
 	}>;
 	genderSplit: { boys: number; girls: number };

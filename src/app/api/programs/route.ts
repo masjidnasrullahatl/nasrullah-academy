@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { Prisma } from '@prisma/client';
-import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { catchZodError } from '@app/api/utils/catchZodError';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
-
-import { CreateProgramSchema } from './types';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -62,43 +58,4 @@ const getPaging = async (request: AuthRequest) => {
 	});
 };
 
-const create = async (request: AuthRequest) => {
-	try {
-		const body = await request.json();
-		const data = CreateProgramSchema.parse(body);
-
-		const prisma = createClient();
-
-		const program = await prisma.programs.create({
-			data: {
-				code: data.code,
-				name: data.name,
-				description: data.description || null,
-				status: data.status,
-			},
-		});
-
-		return NextResponse.json({ data: program }, { status: 201 });
-	} catch (error) {
-		console.log('Create program error', error);
-
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
-
-		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-			return NextResponse.json(
-				{ error: 'Program code or name already exists', data: null },
-				{ status: 400 },
-			);
-		}
-
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
-	}
-};
-
 export const GET = withAuth(getPaging);
-export const POST = withAuth(create);

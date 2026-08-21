@@ -24,7 +24,7 @@ export const useUpdateClass = () => {
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CLASSES.GET_PAGING] });
 			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.CLASSES.GET_DETAIL, variables.id],
+				queryKey: [QUERY_KEYS.CLASSES.GET_AVAILABLE_STUDENTS, variables.id],
 			});
 		},
 	});

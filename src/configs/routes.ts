@@ -20,13 +20,11 @@ export const PATH_APPS = {
 	students: path(ROOT_APPS, '/students'),
 	classes: path(ROOT_APPS, '/classes'),
 	teachers: path(ROOT_APPS, '/teachers'),
-	programs: path(ROOT_APPS, '/programs'),
 };
 
 export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
-	payroll: path(ROOT_FINANCE, '/payroll'),
 };
 
 export const PATH_ACCOUNTS = {

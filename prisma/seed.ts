@@ -3,7 +3,6 @@ import {
 	ClassSession,
 	PaymentStatus,
 	PayMethod,
-	PayrollStatus,
 	PrismaClient,
 	ProgramCode,
 	RecordStatus,
@@ -12,12 +11,6 @@ import {
 const prisma = new PrismaClient();
 
 const YEAR = 2026;
-
-const monthShortName = (month: number) =>
-	new Date(Date.UTC(YEAR, month - 1, 1)).toLocaleString('en-US', {
-		month: 'short',
-		timeZone: 'UTC',
-	});
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
@@ -83,12 +76,10 @@ async function seedPrograms() {
 }
 
 async function resetTransactionalTables() {
-	await prisma.payrollEntries.deleteMany();
 	await prisma.enrollments.deleteMany();
 	await prisma.monthlyInvoices.deleteMany();
 	await prisma.classes.deleteMany();
 	await prisma.students.deleteMany();
-	await prisma.payrollPeriods.deleteMany();
 	await prisma.teachers.deleteMany();
 	await prisma.families.deleteMany();
 }
@@ -100,48 +91,36 @@ async function seedTeachers() {
 			lastName: 'Syed',
 			phoneNumber: '678-201-4401',
 			email: 'saleem.syed@masjidnasrullah.org',
-			zelleId: 'saleem.syed@zelle.com',
-			hourlyRate: 22,
 		},
 		{
 			firstName: 'Taha',
 			lastName: 'Jamal',
 			phoneNumber: '470-322-9184',
 			email: 'taha.jamal@masjidnasrullah.org',
-			zelleId: 'taha.jamal@zelle.com',
-			hourlyRate: 15,
 		},
 		{
 			firstName: 'Monirul',
 			lastName: 'Alam',
 			phoneNumber: '404-890-2661',
 			email: 'monirul.alam@masjidnasrullah.org',
-			zelleId: 'monirul.alam@zelle.com',
-			hourlyRate: 20,
 		},
 		{
 			firstName: 'Oli Ullah',
 			lastName: 'Islam',
 			phoneNumber: '678-433-5570',
 			email: 'oli.ullah@masjidnasrullah.org',
-			zelleId: 'oli.ullah@zelle.com',
-			hourlyRate: 15.63,
 		},
 		{
 			firstName: 'Aida',
 			lastName: 'Rahman',
 			phoneNumber: '770-881-9023',
 			email: 'aida.rahman@masjidnasrullah.org',
-			zelleId: 'aida.rahman@zelle.com',
-			hourlyRate: 15,
 		},
 		{
 			firstName: 'Muhammed',
 			lastName: 'Elsalamy',
 			phoneNumber: '404-781-4488',
 			email: 'muhammed.elsalamy@masjidnasrullah.org',
-			zelleId: 'muhammed.elsalamy@zelle.com',
-			hourlyRate: 20,
 		},
 	];
 
@@ -695,92 +674,6 @@ async function seedMonthlyInvoices(
 	}
 }
 
-async function seedPayroll(
-	teachers: Array<{ id: string; hourlyRate: any; status: RecordStatus }>,
-) {
-	const periods = [];
-
-	for (let month = 1; month <= 6; month += 1) {
-		const lastDay = new Date(Date.UTC(YEAR, month, 0)).getUTCDate();
-		const monthLabel = monthShortName(month);
-		const status = month <= 5 ? PayrollStatus.PAID : PayrollStatus.DRAFT;
-
-		const firstHalf = await prisma.payrollPeriods.create({
-			data: {
-				label: `WEEKDAYS+WEEKENDS PAY - ${monthLabel} 1st half`,
-				year: YEAR,
-				month,
-				startDate: new Date(Date.UTC(YEAR, month - 1, 1)),
-				endDate: new Date(Date.UTC(YEAR, month - 1, 15)),
-				status,
-				notes: month <= 5 ? 'Settled payroll' : 'Pending review',
-			},
-		});
-
-		const secondHalf = await prisma.payrollPeriods.create({
-			data: {
-				label: `WEEKDAYS+WEEKENDS PAY - ${monthLabel} 2nd half`,
-				year: YEAR,
-				month,
-				startDate: new Date(Date.UTC(YEAR, month - 1, 16)),
-				endDate: new Date(Date.UTC(YEAR, month - 1, lastDay)),
-				status,
-				notes: month <= 5 ? 'Settled payroll' : 'Pending review',
-			},
-		});
-
-		periods.push(firstHalf, secondHalf);
-	}
-
-	const activeTeachers = teachers.filter(
-		(teacher) => teacher.status === RecordStatus.ACTIVE,
-	);
-
-	for (let periodIndex = 0; periodIndex < periods.length; periodIndex += 1) {
-		const period = periods[periodIndex];
-		for (let teacherIndex = 0; teacherIndex < activeTeachers.length; teacherIndex += 1) {
-			const teacher = activeTeachers[teacherIndex];
-			const hourlyRate = Number(teacher.hourlyRate);
-			const weekdayHours = round2(8 + ((teacherIndex * 3 + periodIndex * 2) % 17));
-			const weekendHours = round2(4 + ((teacherIndex * 2 + periodIndex * 3) % 13));
-			const weekdayPay = round2(weekdayHours * hourlyRate);
-			const weekendPay = round2(weekendHours * hourlyRate);
-			const totalPay = round2(weekdayPay + weekendPay);
-
-			await prisma.payrollEntries.upsert({
-				where: {
-					periodId_teacherId: {
-						periodId: period.id,
-						teacherId: teacher.id,
-					},
-				},
-				update: {
-					hourlyRate,
-					weekdayHours,
-					weekendHours,
-					weekdayPay,
-					weekendPay,
-					totalPay,
-					payStatus: period.status,
-					notes: period.status === PayrollStatus.PAID ? 'Paid' : 'Planned',
-				},
-				create: {
-					periodId: period.id,
-					teacherId: teacher.id,
-					hourlyRate,
-					weekdayHours,
-					weekendHours,
-					weekdayPay,
-					weekendPay,
-					totalPay,
-					payStatus: period.status,
-					notes: period.status === PayrollStatus.PAID ? 'Paid' : 'Planned',
-				},
-			});
-		}
-	}
-}
-
 async function printSummary() {
 	const [
 		programs,
@@ -790,8 +683,6 @@ async function printSummary() {
 		classes,
 		enrollments,
 		monthlyInvoices,
-		payrollPeriods,
-		payrollEntries,
 	] = await Promise.all([
 		prisma.programs.count(),
 		prisma.families.count(),
@@ -800,8 +691,6 @@ async function printSummary() {
 		prisma.classes.count(),
 		prisma.enrollments.count(),
 		prisma.monthlyInvoices.count(),
-		prisma.payrollPeriods.count(),
-		prisma.payrollEntries.count(),
 	]);
 
 	console.log('Seed completed with table counts:');
@@ -812,8 +701,6 @@ async function printSummary() {
 	console.log(`- Classes: ${classes}`);
 	console.log(`- Enrollments: ${enrollments}`);
 	console.log(`- MonthlyInvoices: ${monthlyInvoices}`);
-	console.log(`- PayrollPeriods: ${payrollPeriods}`);
-	console.log(`- PayrollEntries: ${payrollEntries}`);
 }
 
 async function main() {
@@ -840,7 +727,6 @@ async function main() {
 		{ hifzId: programs.hifz.id, weekendId: programs.weekend.id },
 	);
 
-	await seedPayroll(teachers);
 	await printSummary();
 }
 

@@ -8,41 +8,7 @@ import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { toNumber } from '@utils/decimal';
-
 import { UpdateTeacherSchema } from '../types';
-
-const getDetail = async (
-	request: AuthRequest,
-	{ params }: ParamsRequest<{ id: string }>,
-) => {
-	const { id } = await params;
-	const prisma = createClient();
-
-	const teacher = await prisma.teachers.findUnique({
-		where: { id },
-		include: {
-			classes: {
-				include: {
-					program: true,
-				},
-			},
-			payrollEntries: true,
-		},
-	});
-
-	if (!teacher) {
-		return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
-	}
-
-	return NextResponse.json({
-		data: {
-			...teacher,
-			hourlyRate: toNumber(teacher.hourlyRate),
-		},
-		error: null,
-	});
-};
 
 const update = async (
 	request: AuthRequest,
@@ -67,19 +33,11 @@ const update = async (
 				lastName: data.lastName,
 				phoneNumber: data.phoneNumber || null,
 				email: data.email || null,
-				zelleId: data.zelleId || null,
-				hourlyRate: data.hourlyRate,
 				status: data.status,
 			},
 		});
 
-		return NextResponse.json({
-			data: {
-				...teacher,
-				hourlyRate: toNumber(teacher.hourlyRate),
-			},
-			error: null,
-		});
+		return NextResponse.json({ data: teacher, error: null });
 	} catch (error) {
 		console.log('Update teacher error', error);
 
@@ -106,7 +64,6 @@ const remove = async (
 		include: {
 			_count: {
 				select: {
-					payrollEntries: true,
 					classes: true,
 				},
 			},
@@ -115,17 +72,6 @@ const remove = async (
 
 	if (!teacher) {
 		return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
-	}
-
-	if (teacher._count.payrollEntries > 0) {
-		return NextResponse.json(
-			{
-				error:
-					'Cannot delete teacher with payroll entries. Please keep teacher for payroll history.',
-				data: null,
-			},
-			{ status: 400 },
-		);
 	}
 
 	if (teacher._count.classes > 0) {
@@ -140,6 +86,5 @@ const remove = async (
 	return NextResponse.json({ data: teacher, error: null });
 };
 
-export const GET = withAuth(getDetail);
 export const PUT = withAuth(update);
 export const DELETE = withAuth(remove);

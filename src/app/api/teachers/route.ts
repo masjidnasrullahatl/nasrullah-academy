@@ -9,8 +9,6 @@ import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { toNumber } from '@utils/decimal';
-
 import { CreateTeacherSchema } from './types';
 
 const getPaging = async (request: AuthRequest) => {
@@ -33,7 +31,6 @@ const getPaging = async (request: AuthRequest) => {
 			{ lastName: { contains: keyword, mode: 'insensitive' } },
 			{ phoneNumber: { contains: keyword, mode: 'insensitive' } },
 			{ email: { contains: keyword, mode: 'insensitive' } },
-			{ zelleId: { contains: keyword, mode: 'insensitive' } },
 		];
 	}
 
@@ -62,14 +59,7 @@ const getPaging = async (request: AuthRequest) => {
 		where,
 	});
 
-	return NextResponse.json({
-		data: teachers.map((teacher) => ({
-			...teacher,
-			hourlyRate: toNumber(teacher.hourlyRate),
-		})),
-		total,
-		error: null,
-	});
+	return NextResponse.json({ data: teachers, total, error: null });
 };
 
 const create = async (request: AuthRequest) => {
@@ -85,21 +75,11 @@ const create = async (request: AuthRequest) => {
 				lastName: data.lastName,
 				phoneNumber: data.phoneNumber || null,
 				email: data.email || null,
-				zelleId: data.zelleId || null,
-				hourlyRate: data.hourlyRate,
 				status: data.status,
 			},
 		});
 
-		return NextResponse.json(
-			{
-				data: {
-					...teacher,
-					hourlyRate: toNumber(teacher.hourlyRate),
-				},
-			},
-			{ status: 201 },
-		);
+		return NextResponse.json({ data: teacher }, { status: 201 });
 	} catch (error) {
 		console.log('Create teacher error', error);
 

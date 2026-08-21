@@ -34,8 +34,6 @@ import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 import { useDeleteTeacher } from '@hooks/react-query/teachers/useDeleteTeacher';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
-import { formatMoney } from '@utils/money';
-
 import { TeacherFormModal } from './TeacherFormModal';
 
 export const TeachersTable = () => {
@@ -106,7 +104,7 @@ export const TeachersTable = () => {
 
 	const loadingRows = Array.from({ length: 10 }).map((_, index) => (
 		<Table.Tr key={index}>
-			{Array.from({ length: 9 }).map((_, columnIndex) => (
+			{Array.from({ length: 7 }).map((_, columnIndex) => (
 				<Table.Td key={columnIndex}>
 					<Skeleton h={30} w="100%" />
 				</Table.Td>
@@ -116,7 +114,7 @@ export const TeachersTable = () => {
 
 	const emptyRows = (
 		<Table.Tr>
-			<Table.Td colSpan={9}>
+			<Table.Td colSpan={7}>
 				<Center h={260}>
 					<Stack justify="center" align="center">
 						<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
@@ -136,8 +134,6 @@ export const TeachersTable = () => {
 			<Table.Td>{`${teacher.firstName} ${teacher.lastName}`}</Table.Td>
 			<Table.Td>{teacher.phoneNumber || '-'}</Table.Td>
 			<Table.Td>{teacher.email || '-'}</Table.Td>
-			<Table.Td>{teacher.zelleId || '-'}</Table.Td>
-			<Table.Td>{formatMoney(Number(teacher.hourlyRate || 0))}</Table.Td>
 			<Table.Td>
 				<Group gap={4}>
 					{teacher.classes.map((classItem) => (
@@ -186,7 +182,7 @@ export const TeachersTable = () => {
 				<Input
 					flex={1}
 					leftSection={<IconSearch size={16} />}
-					placeholder="Search by name, phone, email or Zelle"
+					placeholder="Search by name, phone, or email"
 					onChange={(event) => debounceChangeKeyword(event.target.value)}
 				/>
 				<Select
@@ -197,7 +193,7 @@ export const TeachersTable = () => {
 				/>
 			</Group>
 
-			<Table.ScrollContainer minWidth={1300}>
+			<Table.ScrollContainer minWidth={1000}>
 				<Table bg="white" border={1}>
 				<Table.Thead>
 					<Table.Tr>
@@ -205,8 +201,6 @@ export const TeachersTable = () => {
 						<Table.Th>Name</Table.Th>
 						<Table.Th>Phone</Table.Th>
 						<Table.Th>Email</Table.Th>
-						<Table.Th>Zelle ID</Table.Th>
-						<Table.Th>Hourly Rate</Table.Th>
 						<Table.Th>Classes</Table.Th>
 						<Table.Th ta="center">Status</Table.Th>
 						<Table.Th ta="center">Actions</Table.Th>
@@ -215,7 +209,7 @@ export const TeachersTable = () => {
 				<Table.Tbody>{isLoading ? loadingRows : hasData ? rows : emptyRows}</Table.Tbody>
 				<Table.Tfoot>
 					<Table.Tr>
-						<Table.Td colSpan={9}>
+						<Table.Td colSpan={7}>
 							<Group justify="space-between">
 								<Text>Total: {teachers?.total || 0}</Text>
 								{hasPagination && (
