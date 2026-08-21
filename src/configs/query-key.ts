@@ -7,5 +7,5 @@ export const QUERY_KEYS = {
 	PROGRAMS: { GET_PAGING: 'programs.get-paging' },
 	INVOICES: { GET_PAGING: 'invoices.get-paging', GET_DETAIL: 'invoices.get-detail' },
 	PAYROLL: { PERIODS: 'payroll.periods', ENTRIES: 'payroll.entries' },
-	DASHBOARD: { SUMMARY: 'dashboard.summary' },
+	DASHBOARD: { SUMMARY: 'dashboard.summary', YEARS: 'dashboard.years' },
 };
