@@ -19,6 +19,8 @@ import {
 	UpdateTeacherPayload,
 } from '@app/api/teachers/types';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useCreateTeacher } from '@hooks/react-query/teachers/useCreateTeacher';
@@ -129,14 +131,14 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 						withAsterisk
 						{...form.getInputProps('status')}
 					/>
-					<Group justify="flex-end">
+					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Teacher' : 'Create Teacher'}
 						</Button>
-					</Group>
+					</ModalFooter>
 				</Stack>
 			</form>
 		</Stack>

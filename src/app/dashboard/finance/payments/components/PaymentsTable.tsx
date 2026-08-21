@@ -23,15 +23,22 @@ import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
+import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
+	IconBook,
+	IconCalendar,
+	IconCalendarMonth,
 	IconCheck,
+	IconCircleDot,
+	IconCreditCard,
 	IconEdit,
 	IconEye,
 	IconMoodEmpty,
 	IconPlus,
 	IconSearch,
 	IconTrash,
+	IconUsersGroup,
 } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
@@ -190,7 +197,16 @@ export const PaymentsTable = () => {
 	const loadingRows = Array.from({ length: 8 }).map((_, index) => (
 		<Table.Tr key={index}>
 			{Array.from({ length: 10 }).map((_, columnIndex) => (
-				<Table.Td key={columnIndex}>
+				<Table.Td
+					key={columnIndex}
+					className={
+						columnIndex === 0
+							? stickyStyles.stickyLeft
+							: columnIndex === 9
+								? stickyStyles.stickyRight
+								: undefined
+					}
+				>
 					<Skeleton h={28} />
 				</Table.Td>
 			))}
@@ -208,7 +224,7 @@ export const PaymentsTable = () => {
 				style={{ cursor: 'pointer' }}
 				onClick={() => openDetail(invoice)}
 			>
-				<Table.Td>{(page - 1) * PAGE_SIZE + index + 1}</Table.Td>
+				<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * PAGE_SIZE + index + 1}</Table.Td>
 				<Table.Td>
 					<Stack gap={2}>
 						<Text fw={500}>{invoice.family.name}</Text>
@@ -236,7 +252,7 @@ export const PaymentsTable = () => {
 						{statusLabel}
 					</Badge>
 				</Table.Td>
-				<Table.Td>
+				<Table.Td className={stickyStyles.stickyRight}>
 					<Group
 						gap={4}
 						justify="center"
@@ -334,9 +350,10 @@ export const PaymentsTable = () => {
 					</Alert>
 				)}
 
-				<SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 6 }} mb="md">
+				<SimpleGrid cols={{ base: 1, sm: 2, md: 4, lg: 7 }} spacing="xs" mb="md">
 					<Select
 						placeholder="Year"
+						leftSection={<IconCalendar size={16} />}
 						clearable
 						data={Array.from({ length: 8 }).map((_, index) => {
 							const year = currentDate.getFullYear() - 2 + index;
@@ -349,6 +366,7 @@ export const PaymentsTable = () => {
 					/>
 					<Select
 						placeholder="Month"
+						leftSection={<IconCalendarMonth size={16} />}
 						clearable
 						data={MONTH_OPTIONS}
 						value={String(filter.month)}
@@ -358,6 +376,7 @@ export const PaymentsTable = () => {
 					/>
 					<Select
 						placeholder="All programs"
+						leftSection={<IconBook size={16} />}
 						clearable
 						searchable
 						data={programs?.data.map((program) => ({ value: program.id, label: program.name }))}
@@ -366,6 +385,7 @@ export const PaymentsTable = () => {
 					/>
 					<Select
 						placeholder="All families"
+						leftSection={<IconUsersGroup size={16} />}
 						clearable
 						searchable
 						data={families?.data.map((family) => ({ value: family.id, label: family.name }))}
@@ -374,6 +394,7 @@ export const PaymentsTable = () => {
 					/>
 					<Select
 						placeholder="All methods"
+						leftSection={<IconCreditCard size={16} />}
 						clearable
 						data={PAY_METHOD_OPTIONS}
 						value={filter.payMethod || null}
@@ -381,6 +402,7 @@ export const PaymentsTable = () => {
 					/>
 					<Select
 						placeholder="All statuses"
+						leftSection={<IconCircleDot size={16} />}
 						clearable
 						data={PAYMENT_STATUS_OPTIONS}
 						value={filter.paymentStatus || null}
@@ -394,7 +416,7 @@ export const PaymentsTable = () => {
 				</SimpleGrid>
 
 				<Group mb="md" justify="flex-end" wrap="wrap">
-					<Button variant="default" leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+					<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
 						Add payment row
 					</Button>
 					<GenerateMonthButton
@@ -414,8 +436,8 @@ export const PaymentsTable = () => {
 						horizontalSpacing="md"
 					>
 						<Table.Thead>
-							<Table.Tr>
-								<Table.Th>#</Table.Th>
+						<Table.Tr>
+							<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
 								<Table.Th>Family</Table.Th>
 								<Table.Th>Program</Table.Th>
 								<Table.Th ta="center">#Kids</Table.Th>
@@ -424,8 +446,10 @@ export const PaymentsTable = () => {
 								<Table.Th ta="right">Balance</Table.Th>
 								<Table.Th>Method</Table.Th>
 								<Table.Th>Status</Table.Th>
-								<Table.Th ta="center">Actions</Table.Th>
-							</Table.Tr>
+							<Table.Th ta="center" className={stickyStyles.stickyRight}>
+								Actions
+							</Table.Th>
+						</Table.Tr>
 						</Table.Thead>
 						<Table.Tbody>
 							{isLoading ? (
@@ -433,35 +457,41 @@ export const PaymentsTable = () => {
 							) : hasData ? (
 								rows
 							) : (
-								<Table.Tr>
-									<Table.Td colSpan={10}>
-										<Center h={200}>
-											<Stack align="center">
-												<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
-												<Text fw={600}>No payments found</Text>
-												<Button onClick={handleCreate}>Add payment row</Button>
-											</Stack>
-										</Center>
-									</Table.Td>
-								</Table.Tr>
-							)}
-						</Table.Tbody>
-						<Table.Tfoot>
 							<Table.Tr>
-								<Table.Td colSpan={3} fw={700}>
-									Sum:
+								<Table.Td className={stickyStyles.stickyLeft} />
+								<Table.Td colSpan={8}>
+									<Center h={200}>
+										<Stack align="center">
+											<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
+											<Text fw={600}>No payments found</Text>
+										</Stack>
+									</Center>
 								</Table.Td>
-								<Table.Td ta="center">{invoices?.summary.studentCount || 0}</Table.Td>
-								<Table.Td ta="right">{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
-								<Table.Td ta="right">{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
-								<Table.Td ta="right">
-									<Text c={(invoices?.summary.balance || 0) > 0 ? 'red.7' : 'green.7'} fw={700} span>
-										{formatMoney(invoices?.summary.balance || 0)}
-									</Text>
-								</Table.Td>
-								<Table.Td colSpan={3} />
+								<Table.Td className={stickyStyles.stickyRight} />
 							</Table.Tr>
-						</Table.Tfoot>
+						)}
+					</Table.Tbody>
+					<Table.Tfoot
+						style={{
+							borderTop: '2px solid var(--mantine-color-gray-3)',
+							backgroundColor: 'var(--mantine-color-gray-0)',
+						}}
+					>
+						<Table.Tr>
+							<Table.Td colSpan={3} fw={700} className={stickyStyles.stickyLeft}>
+								Sum:
+							</Table.Td>
+							<Table.Td ta="center" fw={700}>{invoices?.summary.studentCount || 0}</Table.Td>
+							<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
+							<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
+							<Table.Td ta="right">
+								<Text c={(invoices?.summary.balance || 0) > 0 ? 'red.7' : 'green.7'} fw={700} span>
+									{formatMoney(invoices?.summary.balance || 0)}
+								</Text>
+							</Table.Td>
+							<Table.Td colSpan={3} className={stickyStyles.stickyRight} />
+						</Table.Tr>
+					</Table.Tfoot>
 					</Table>
 				</Table.ScrollContainer>
 

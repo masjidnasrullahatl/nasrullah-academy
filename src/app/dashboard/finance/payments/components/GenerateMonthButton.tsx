@@ -6,6 +6,8 @@ import { notifications } from '@mantine/notifications';
 
 import { IconAlertCircle, IconSparkles } from '@tabler/icons-react';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { MONTH_OPTIONS } from '@configs/enums';
 
 import { useGenerateInvoices } from '@hooks/react-query/invoices/useGenerateInvoices';
@@ -29,28 +31,9 @@ export const GenerateMonthButton = ({
 	const monthLabel = MONTH_OPTIONS.find((item) => Number(item.value) === month)?.label || month;
 
 	const handleGenerate = () => {
-		modals.openConfirmModal({
+		modals.open({
 			title: 'Generate month invoices',
-			labels: { confirm: 'Generate', cancel: 'Cancel' },
-			confirmProps: { loading: isPending, disabled: !programId },
-			onConfirm: async () => {
-				if (!programId) {
-					return;
-				}
-
-				const result = await generateInvoices({
-					year,
-					month,
-					programId,
-					copyFromPreviousMonth,
-				});
-
-				notifications.show({
-					title: 'Invoices generated',
-					message: `Created ${result.created} invoices, skipped ${result.skipped} existing`,
-					color: 'green',
-				});
-			},
+			size: 'md',
 			children: (
 				<Stack>
 					{!programId && (
@@ -73,6 +56,38 @@ export const GenerateMonthButton = ({
 							onChange={(event) => setCopyFromPreviousMonth(event.currentTarget.checked)}
 						/>
 					</Group>
+
+					<ModalFooter>
+						<Button variant="default" onClick={() => modals.closeAll()}>
+							Cancel
+						</Button>
+						<Button
+							loading={isPending}
+							disabled={!programId}
+							onClick={async () => {
+								if (!programId) {
+									return;
+								}
+
+								const result = await generateInvoices({
+									year,
+									month,
+									programId,
+									copyFromPreviousMonth,
+								});
+
+								notifications.show({
+									title: 'Invoices generated',
+									message: `Created ${result.created} invoices, skipped ${result.skipped} existing`,
+									color: 'green',
+								});
+
+								modals.closeAll();
+							}}
+						>
+							Generate
+						</Button>
+					</ModalFooter>
 				</Stack>
 			),
 		});

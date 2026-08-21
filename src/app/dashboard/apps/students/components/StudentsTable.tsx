@@ -16,7 +16,16 @@ import {
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import { IconAlertCircle , IconMoodEmpty, IconSearch } from '@tabler/icons-react';
+import stickyStyles from '@styles/sticky-table.module.css';
+import {
+	IconAlertCircle,
+	IconCircleDot,
+	IconGenderBigender,
+	IconMoodEmpty,
+	IconSchool,
+	IconSearch,
+	IconUsersGroup,
+} from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
@@ -85,7 +94,16 @@ export const StudentsTable = () => {
 	const loadingRows = Array.from({ length: 10 }).map((_, index) => (
 		<Table.Tr key={index}>
 			{Array.from({ length: 9 }).map((_, columnIndex) => (
-				<Table.Td key={columnIndex}>
+				<Table.Td
+					key={columnIndex}
+					className={
+						columnIndex === 0
+							? stickyStyles.stickyLeft
+							: columnIndex === 8
+								? stickyStyles.stickyRight
+								: undefined
+					}
+				>
 					<Skeleton h={30} w="100%" />
 				</Table.Td>
 			))}
@@ -94,7 +112,8 @@ export const StudentsTable = () => {
 
 	const emptyRows = (
 		<Table.Tr>
-			<Table.Td colSpan={9}>
+			<Table.Td className={stickyStyles.stickyLeft} />
+			<Table.Td colSpan={7}>
 				<Center h={260}>
 					<Stack justify="center" align="center">
 						<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
@@ -102,19 +121,18 @@ export const StudentsTable = () => {
 					</Stack>
 				</Center>
 			</Table.Td>
+			<Table.Td className={stickyStyles.stickyRight} />
 		</Table.Tr>
 	);
 
 	const rows = students?.data.map((student, index) => (
 		<Table.Tr key={student.id}>
-			<Table.Td>{(page - 1) * 10 + index + 1}</Table.Td>
+			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * 10 + index + 1}</Table.Td>
 			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
 			<Table.Td>{student.family?.name}</Table.Td>
 			<Table.Td>{student.gender}</Table.Td>
 			<Table.Td>
-				{student.dateOfBirth
-					? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
-					: '-'}
+				{student.dateOfBirth ? dayjs(student.dateOfBirth).format('MM/DD/YYYY') : '-'}
 			</Table.Td>
 			<Table.Td>
 				<Group gap={4}>
@@ -135,11 +153,9 @@ export const StudentsTable = () => {
 				</Group>
 			</Table.Td>
 			<Table.Td ta="center">
-				<Badge color={student.status === 'ACTIVE' ? 'green' : 'gray'}>
-					{student.status}
-				</Badge>
+				<Badge color={student.status === 'ACTIVE' ? 'green' : 'gray'}>{student.status}</Badge>
 			</Table.Td>
-			<Table.Td ta="center">
+			<Table.Td ta="center" className={stickyStyles.stickyRight}>
 				<StudentActionsColumn student={student} />
 			</Table.Td>
 		</Table.Tr>
@@ -166,6 +182,7 @@ export const StudentsTable = () => {
 
 				<Select
 					placeholder="Family"
+					leftSection={<IconUsersGroup size={16} />}
 					data={families?.data.map((family) => ({
 						value: family.id,
 						label: family.name,
@@ -177,6 +194,7 @@ export const StudentsTable = () => {
 
 				<Select
 					placeholder="Class"
+					leftSection={<IconSchool size={16} />}
 					data={classOptions}
 					onChange={(value) => handleChangeFilter('classId', value || '')}
 					clearable
@@ -185,6 +203,7 @@ export const StudentsTable = () => {
 
 				<Select
 					placeholder="Gender"
+					leftSection={<IconGenderBigender size={16} />}
 					data={GENDER_OPTIONS}
 					onChange={(value) => handleChangeFilter('gender', value || '')}
 					clearable
@@ -192,6 +211,7 @@ export const StudentsTable = () => {
 
 				<Select
 					placeholder="Status"
+					leftSection={<IconCircleDot size={16} />}
 					data={RECORD_STATUS_OPTIONS}
 					onChange={(value) => handleChangeFilter('status', value || '')}
 					clearable
@@ -206,36 +226,44 @@ export const StudentsTable = () => {
 					verticalSpacing="sm"
 					horizontalSpacing="md"
 				>
-				<Table.Thead>
-					<Table.Tr>
-						<Table.Th>#</Table.Th>
-						<Table.Th>Student Name</Table.Th>
-						<Table.Th>Family</Table.Th>
-						<Table.Th>Gender</Table.Th>
-						<Table.Th>Date of Birth</Table.Th>
-						<Table.Th>Class(es)</Table.Th>
-						<Table.Th>Program(s)</Table.Th>
-						<Table.Th ta="center">Status</Table.Th>
-						<Table.Th ta="center">Actions</Table.Th>
-					</Table.Tr>
-				</Table.Thead>
-				<Table.Tbody>{isLoading ? loadingRows : hasData ? rows : emptyRows}</Table.Tbody>
-				<Table.Tfoot>
-					<Table.Tr>
-						<Table.Td colSpan={9}>
-							<Group justify="space-between">
-								<Text>Total: {students?.total || 0}</Text>
-								{hasPagination && (
-									<Pagination
-										total={Math.ceil((students?.total || 0) / 10)}
-										value={page}
-										onChange={setPage}
-									/>
-								)}
-							</Group>
-						</Table.Td>
-					</Table.Tr>
-				</Table.Tfoot>
+					<Table.Thead>
+						<Table.Tr>
+							<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+							<Table.Th>Student Name</Table.Th>
+							<Table.Th>Family</Table.Th>
+							<Table.Th>Gender</Table.Th>
+							<Table.Th>Date of Birth</Table.Th>
+							<Table.Th>Class(es)</Table.Th>
+							<Table.Th>Program(s)</Table.Th>
+							<Table.Th ta="center">Status</Table.Th>
+							<Table.Th ta="center" className={stickyStyles.stickyRight}>
+								Actions
+							</Table.Th>
+						</Table.Tr>
+					</Table.Thead>
+					<Table.Tbody>{isLoading ? loadingRows : hasData ? rows : emptyRows}</Table.Tbody>
+					<Table.Tfoot
+						style={{
+							borderTop: '2px solid var(--mantine-color-gray-3)',
+							backgroundColor: 'var(--mantine-color-gray-0)',
+						}}
+					>
+						<Table.Tr>
+							<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
+								<Group justify="space-between">
+									<Text fw={700}>Total: {students?.total || 0}</Text>
+									{hasPagination && (
+										<Pagination
+											total={Math.ceil((students?.total || 0) / 10)}
+											value={page}
+											onChange={setPage}
+										/>
+									)}
+								</Group>
+							</Table.Td>
+							<Table.Td className={stickyStyles.stickyRight} />
+						</Table.Tr>
+					</Table.Tfoot>
 				</Table>
 			</Table.ScrollContainer>
 		</Paper>

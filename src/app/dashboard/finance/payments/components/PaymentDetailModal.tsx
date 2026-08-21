@@ -3,6 +3,8 @@ import { modals } from '@mantine/modals';
 
 import dayjs from 'dayjs';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import {
 	CLASS_SESSION_LABELS,
 	PAY_METHOD_LABELS,
@@ -110,12 +112,12 @@ export const PaymentDetailModal = ({ invoice }: PaymentDetailModalProps) => {
 				{invoice.notes ? <Text style={{ whiteSpace: 'pre-wrap' }}>{invoice.notes}</Text> : <Text c="dimmed">No notes</Text>}
 			</Stack>
 
-			<Group justify="flex-end">
+			<ModalFooter>
 				<Button onClick={handleOpenEdit}>Edit</Button>
 				<Button variant="default" onClick={() => modals.closeAll()}>
 					Close
 				</Button>
-			</Group>
+			</ModalFooter>
 		</Stack>
 	);
 };

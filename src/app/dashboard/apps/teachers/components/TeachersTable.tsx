@@ -15,13 +15,16 @@ import {
 	Stack,
 	Table,
 	Text,
+	Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
+import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
+	IconCircleDot,
 	IconEdit,
 	IconMoodEmpty,
 	IconPlus,
@@ -105,7 +108,16 @@ export const TeachersTable = () => {
 	const loadingRows = Array.from({ length: 10 }).map((_, index) => (
 		<Table.Tr key={index}>
 			{Array.from({ length: 7 }).map((_, columnIndex) => (
-				<Table.Td key={columnIndex}>
+				<Table.Td
+					key={columnIndex}
+					className={
+						columnIndex === 0
+							? stickyStyles.stickyLeft
+							: columnIndex === 6
+								? stickyStyles.stickyRight
+								: undefined
+					}
+				>
 					<Skeleton h={30} w="100%" />
 				</Table.Td>
 			))}
@@ -114,7 +126,8 @@ export const TeachersTable = () => {
 
 	const emptyRows = (
 		<Table.Tr>
-			<Table.Td colSpan={7}>
+			<Table.Td className={stickyStyles.stickyLeft} />
+			<Table.Td colSpan={5}>
 				<Center h={260}>
 					<Stack justify="center" align="center">
 						<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
@@ -125,12 +138,13 @@ export const TeachersTable = () => {
 					</Stack>
 				</Center>
 			</Table.Td>
+			<Table.Td className={stickyStyles.stickyRight} />
 		</Table.Tr>
 	);
 
 	const rows = teachers?.data.map((teacher, index) => (
 		<Table.Tr key={teacher.id}>
-			<Table.Td>{(page - 1) * 10 + index + 1}</Table.Td>
+			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * 10 + index + 1}</Table.Td>
 			<Table.Td>{`${teacher.firstName} ${teacher.lastName}`}</Table.Td>
 			<Table.Td>{teacher.phoneNumber || '-'}</Table.Td>
 			<Table.Td>{teacher.email || '-'}</Table.Td>
@@ -144,18 +158,20 @@ export const TeachersTable = () => {
 				</Group>
 			</Table.Td>
 			<Table.Td ta="center">
-				<Badge color={teacher.status === 'ACTIVE' ? 'green' : 'gray'}>
-					{teacher.status}
-				</Badge>
+				<Badge color={teacher.status === 'ACTIVE' ? 'green' : 'gray'}>{teacher.status}</Badge>
 			</Table.Td>
-			<Table.Td>
-				<Group gap="xs" justify="center">
-					<ActionIcon onClick={() => handleEdit(teacher)}>
-						<IconEdit size={16} />
-					</ActionIcon>
-					<ActionIcon color="red" onClick={() => handleDelete(teacher)}>
-						<IconTrash size={16} />
-					</ActionIcon>
+			<Table.Td className={stickyStyles.stickyRight}>
+				<Group gap="xs" justify="center" wrap="nowrap">
+					<Tooltip label="Edit">
+						<ActionIcon onClick={() => handleEdit(teacher)}>
+							<IconEdit size={16} />
+						</ActionIcon>
+					</Tooltip>
+					<Tooltip label="Delete">
+						<ActionIcon color="red" onClick={() => handleDelete(teacher)}>
+							<IconTrash size={16} />
+						</ActionIcon>
+					</Tooltip>
 				</Group>
 			</Table.Td>
 		</Table.Tr>
@@ -187,6 +203,7 @@ export const TeachersTable = () => {
 				/>
 				<Select
 					placeholder="Status"
+					leftSection={<IconCircleDot size={16} />}
 					data={RECORD_STATUS_OPTIONS}
 					onChange={(value) => handleChangeFilter('status', value || '')}
 					clearable
@@ -201,34 +218,42 @@ export const TeachersTable = () => {
 					verticalSpacing="sm"
 					horizontalSpacing="md"
 				>
-				<Table.Thead>
-					<Table.Tr>
-						<Table.Th>#</Table.Th>
-						<Table.Th>Name</Table.Th>
-						<Table.Th>Phone</Table.Th>
-						<Table.Th>Email</Table.Th>
-						<Table.Th>Classes</Table.Th>
-						<Table.Th ta="center">Status</Table.Th>
-						<Table.Th ta="center">Actions</Table.Th>
-					</Table.Tr>
-				</Table.Thead>
-				<Table.Tbody>{isLoading ? loadingRows : hasData ? rows : emptyRows}</Table.Tbody>
-				<Table.Tfoot>
-					<Table.Tr>
-						<Table.Td colSpan={7}>
-							<Group justify="space-between">
-								<Text>Total: {teachers?.total || 0}</Text>
-								{hasPagination && (
-									<Pagination
-										total={Math.ceil((teachers?.total || 0) / 10)}
-										value={page}
-										onChange={setPage}
-									/>
-								)}
-							</Group>
-						</Table.Td>
-					</Table.Tr>
-				</Table.Tfoot>
+					<Table.Thead>
+						<Table.Tr>
+							<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+							<Table.Th>Name</Table.Th>
+							<Table.Th>Phone</Table.Th>
+							<Table.Th>Email</Table.Th>
+							<Table.Th>Classes</Table.Th>
+							<Table.Th ta="center">Status</Table.Th>
+							<Table.Th ta="center" className={stickyStyles.stickyRight}>
+								Actions
+							</Table.Th>
+						</Table.Tr>
+					</Table.Thead>
+					<Table.Tbody>{isLoading ? loadingRows : hasData ? rows : emptyRows}</Table.Tbody>
+					<Table.Tfoot
+						style={{
+							borderTop: '2px solid var(--mantine-color-gray-3)',
+							backgroundColor: 'var(--mantine-color-gray-0)',
+						}}
+					>
+						<Table.Tr>
+							<Table.Td colSpan={6} fw={700} className={stickyStyles.stickyLeft}>
+								<Group justify="space-between">
+									<Text fw={700}>Total: {teachers?.total || 0}</Text>
+									{hasPagination && (
+										<Pagination
+											total={Math.ceil((teachers?.total || 0) / 10)}
+											value={page}
+											onChange={setPage}
+										/>
+									)}
+								</Group>
+							</Table.Td>
+							<Table.Td className={stickyStyles.stickyRight} />
+						</Table.Tr>
+					</Table.Tfoot>
 				</Table>
 			</Table.ScrollContainer>
 

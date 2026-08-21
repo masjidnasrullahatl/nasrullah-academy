@@ -1,4 +1,4 @@
-import { Alert, Button, Grid, Group, Select, Stack, TextInput } from '@mantine/core';
+import { Alert, Button, Grid, Select, Stack, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
@@ -11,6 +11,8 @@ import {
 	CreateStudentPayload,
 	CreateStudentSchema,
 } from '@app/api/students/types';
+
+import { ModalFooter } from '@components/ModalFooter';
 
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
@@ -167,14 +169,14 @@ export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
 						</Grid.Col>
 					</Grid>
 
-					<Group justify="flex-end">
+					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Student' : 'Create Student'}
 						</Button>
-					</Group>
+					</ModalFooter>
 				</Stack>
 			</form>
 		</Stack>

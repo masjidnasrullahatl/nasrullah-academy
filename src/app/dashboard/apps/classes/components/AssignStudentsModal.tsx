@@ -17,6 +17,8 @@ import { notifications } from '@mantine/notifications';
 
 import { IconAlertTriangle, IconSearch } from '@tabler/icons-react';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { useAssignStudentsToClass } from '@hooks/react-query/classes/useAssignStudentsToClass';
 import { useGetAvailableStudents } from '@hooks/react-query/classes/useGetAvailableStudents';
 import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
@@ -130,14 +132,14 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 				</Stack>
 			</ScrollArea>
 
-			<Group justify="flex-end">
+			<ModalFooter>
 				<Button variant="default" onClick={() => modals.closeAll()}>
 					Cancel
 				</Button>
 				<Button onClick={handleSubmit} loading={isPending} disabled={checkedIds.length === 0}>
 					Assign students
 				</Button>
-			</Group>
+			</ModalFooter>
 		</Stack>
 	);
 };

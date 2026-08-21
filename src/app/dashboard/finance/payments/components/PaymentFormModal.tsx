@@ -4,7 +4,6 @@ import {
 	Alert,
 	Button,
 	Grid,
-	Group,
 	NumberInput,
 	Select,
 	Stack,
@@ -26,6 +25,8 @@ import {
 	UpdateInvoicePayload,
 	UpdateInvoiceSchema,
 } from '@app/api/invoices/types';
+
+import { ModalFooter } from '@components/ModalFooter';
 
 import { CLASS_SESSION_OPTIONS, MONTH_OPTIONS, PAY_METHOD_OPTIONS,PAYMENT_STATUS_OPTIONS } from '@configs/enums';
 
@@ -442,14 +443,14 @@ export const PaymentFormModal = ({
 						{...form.getInputProps('notes')}
 					/>
 
-					<Group justify="flex-end">
+					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Payment' : 'Create Payment'}
 						</Button>
-					</Group>
+					</ModalFooter>
 				</Stack>
 			</form>
 		</Stack>

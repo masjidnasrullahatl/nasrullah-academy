@@ -1,0 +1,43 @@
+.stickyLeft,
+.stickyRight {
+	position: sticky;
+	z-index: 2;
+	background-color: var(--mantine-color-white);
+}
+
+.stickyLeft {
+	left: 0;
+}
+
+.stickyRight {
+	right: 0;
+}
+
+thead .stickyLeft,
+thead .stickyRight {
+	z-index: 3;
+	background-color: var(--mantine-color-gray-0);
+}
+
+tbody tr:nth-of-type(even) .stickyLeft,
+tbody tr:nth-of-type(even) .stickyRight {
+	background-color: var(--mantine-color-gray-0);
+}
+
+.stickyLeft {
+	box-shadow: 1px 0 0 0 var(--mantine-color-gray-3);
+}
+
+.stickyRight {
+	box-shadow: -1px 0 0 0 var(--mantine-color-gray-3);
+}
+
+tfoot .stickyLeft,
+tfoot .stickyRight {
+	background-color: var(--mantine-color-gray-0);
+}
+
+tbody tr:hover .stickyLeft,
+tbody tr:hover .stickyRight {
+	background-color: var(--mantine-color-gray-1);
+}

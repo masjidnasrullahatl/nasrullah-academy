@@ -90,7 +90,24 @@ export default function RootLayout({
 			<body>
 				<QueryClientProvider client={queryClient}>
 					<AuthProvider>
-						<MantineProvider defaultColorScheme="light">
+						<MantineProvider
+							defaultColorScheme="light"
+							theme={{
+								components: {
+									Modal: {
+										styles: {
+											header: {
+												borderBottom: '1px solid var(--mantine-color-gray-3)',
+												marginBottom: 'var(--mantine-spacing-md)',
+											},
+											title: {
+												fontWeight: 600,
+											},
+										},
+									},
+								},
+							}}
+						>
 							<DatesProvider
 								settings={{
 									firstDayOfWeek: 0,

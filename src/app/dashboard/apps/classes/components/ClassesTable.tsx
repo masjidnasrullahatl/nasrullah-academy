@@ -19,9 +19,14 @@ import {
 import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 
+import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
+	IconBook,
+	IconCalendar,
 	IconChalkboard,
+	IconCircleDot,
+	IconClock,
 	IconMoodEmpty,
 	IconSearch,
 	IconUsers,
@@ -107,7 +112,16 @@ export const ClassesTable = () => {
 	const loadingRows = Array.from({ length: 8 }).map((_, index) => (
 		<Table.Tr key={index}>
 			{Array.from({ length: 9 }).map((_, columnIndex) => (
-				<Table.Td key={columnIndex}>
+				<Table.Td
+					key={columnIndex}
+					className={
+						columnIndex === 0
+							? stickyStyles.stickyLeft
+							: columnIndex === 8
+								? stickyStyles.stickyRight
+								: undefined
+					}
+				>
 					<Skeleton h={28} />
 				</Table.Td>
 			))}
@@ -116,7 +130,7 @@ export const ClassesTable = () => {
 
 	const rows = classes?.data.map((classItem, index) => (
 		<Table.Tr key={classItem.id}>
-			<Table.Td>{(page - 1) * limit + index + 1}</Table.Td>
+			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * limit + index + 1}</Table.Td>
 			<Table.Td>{classItem.name}</Table.Td>
 			<Table.Td>{classItem.program.name}</Table.Td>
 			<Table.Td>
@@ -134,23 +148,15 @@ export const ClassesTable = () => {
 					{ARCHIVE_STATUS_LABELS[classItem.status]}
 				</Badge>
 			</Table.Td>
-			<Table.Td>
+			<Table.Td className={stickyStyles.stickyRight}>
 				<Group gap="xs" justify="center" wrap="nowrap">
 					<Tooltip label="Assign teacher">
-						<ActionIcon
-							variant="light"
-							color="blue"
-							onClick={() => openAssignTeacher(classItem)}
-						>
+						<ActionIcon onClick={() => openAssignTeacher(classItem)}>
 							<IconChalkboard size={16} />
 						</ActionIcon>
 					</Tooltip>
 					<Tooltip label="View students">
-						<ActionIcon
-							variant="light"
-							color="teal"
-							onClick={() => openStudents(classItem)}
-						>
+						<ActionIcon color="teal" onClick={() => openStudents(classItem)}>
 							<IconUsers size={16} />
 						</ActionIcon>
 					</Tooltip>
@@ -180,6 +186,7 @@ export const ClassesTable = () => {
 				/>
 				<Select
 					placeholder="School year"
+					leftSection={<IconCalendar size={16} />}
 					value={filter.schoolYear?.toString() || ''}
 					data={Array.from({ length: 8 }).map((_, index) => {
 						const year = currentYear - 2 + index;
@@ -191,6 +198,7 @@ export const ClassesTable = () => {
 				/>
 				<Select
 					placeholder="Program"
+					leftSection={<IconBook size={16} />}
 					clearable
 					searchable
 					data={programs?.data.map((program) => ({
@@ -201,6 +209,7 @@ export const ClassesTable = () => {
 				/>
 				<Select
 					placeholder="Teacher"
+					leftSection={<IconChalkboard size={16} />}
 					clearable
 					searchable
 					data={teachers?.data.map((teacher) => ({
@@ -211,12 +220,14 @@ export const ClassesTable = () => {
 				/>
 				<Select
 					placeholder="Session"
+					leftSection={<IconClock size={16} />}
 					clearable
 					data={CLASS_SESSION_OPTIONS}
 					onChange={(value) => handleChangeFilter('session', value || undefined)}
 				/>
 				<Select
 					placeholder="Status"
+					leftSection={<IconCircleDot size={16} />}
 					clearable
 					data={ARCHIVE_STATUS_OPTIONS}
 					onChange={(value) => handleChangeFilter('status', value || undefined)}
@@ -232,8 +243,8 @@ export const ClassesTable = () => {
 					horizontalSpacing="md"
 				>
 					<Table.Thead>
-						<Table.Tr>
-							<Table.Th>#</Table.Th>
+					<Table.Tr>
+						<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
 							<Table.Th>Class</Table.Th>
 							<Table.Th>Program</Table.Th>
 							<Table.Th>Teacher</Table.Th>
@@ -241,8 +252,10 @@ export const ClassesTable = () => {
 							<Table.Th>Room</Table.Th>
 							<Table.Th>Students</Table.Th>
 							<Table.Th>Status</Table.Th>
-							<Table.Th ta="center">Actions</Table.Th>
-						</Table.Tr>
+						<Table.Th ta="center" className={stickyStyles.stickyRight}>
+							Actions
+						</Table.Th>
+					</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
 						{isLoading ? (
@@ -251,7 +264,8 @@ export const ClassesTable = () => {
 							rows
 						) : (
 							<Table.Tr>
-								<Table.Td colSpan={9}>
+								<Table.Td className={stickyStyles.stickyLeft} />
+								<Table.Td colSpan={7}>
 									<Center h={220}>
 										<Stack align="center">
 											<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
@@ -259,6 +273,7 @@ export const ClassesTable = () => {
 										</Stack>
 									</Center>
 								</Table.Td>
+								<Table.Td className={stickyStyles.stickyRight} />
 							</Table.Tr>
 						)}
 					</Table.Tbody>

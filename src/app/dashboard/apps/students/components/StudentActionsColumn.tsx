@@ -41,7 +41,7 @@ export const StudentActionsColumn = ({ student }: StudentActionsColumnProps) => 
 	};
 
 	return (
-		<Group gap="xs" justify="center">
+		<Group gap="xs" justify="center" wrap="nowrap">
 			<Tooltip label="Edit">
 				<ActionIcon onClick={handleEdit} disabled={isPending}>
 					<IconEdit size={16} />

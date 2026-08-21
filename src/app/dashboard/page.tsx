@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from 'react';
 
-import { Alert, Container, Loader, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Alert, Container, SimpleGrid, Stack } from '@mantine/core';
 
 import { useGetDashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
 import { DashboardFilters } from './components/DashboardFilters';
+import { DashboardSkeleton } from './components/DashboardSkeleton';
 import { GenderDonut } from './components/GenderDonut';
 import { IncomeChart } from './components/IncomeChart';
 import { MonthlySummaryTable } from './components/MonthlySummaryTable';
@@ -48,10 +49,7 @@ export default function DashboardPage() {
 				{error && <Alert color="red">{error.message}</Alert>}
 
 				{isLoading || !summary ? (
-					<Stack align="center" py="xl">
-						<Loader />
-						<Text c="dimmed">Loading dashboard data...</Text>
-					</Stack>
+					<DashboardSkeleton />
 				) : (
 					<>
 						<StatCards totals={summary.totals} />

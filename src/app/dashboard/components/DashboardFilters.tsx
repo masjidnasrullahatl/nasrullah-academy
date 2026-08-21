@@ -1,5 +1,7 @@
 import { Group, Paper, Select } from '@mantine/core';
 
+import { IconBook, IconCalendar } from '@tabler/icons-react';
+
 import { useGetDashboardYears } from '@hooks/react-query/dashboard/useGetDashboardYears';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
@@ -25,6 +27,7 @@ export const DashboardFilters = ({
 				<Select
 					label="Year"
 					placeholder="Select year"
+					leftSection={<IconCalendar size={16} />}
 					w={{ base: '100%', sm: 140 }}
 					value={String(year)}
 					clearable
@@ -37,6 +40,7 @@ export const DashboardFilters = ({
 				<Select
 					label="Program"
 					placeholder="All programs"
+					leftSection={<IconBook size={16} />}
 					w={{ base: '100%', sm: 240 }}
 					value={programId || ''}
 					clearable

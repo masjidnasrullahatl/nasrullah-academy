@@ -41,12 +41,17 @@ export const MonthlySummaryTable = ({ monthly, totals }: MonthlySummaryTableProp
 						</Table.Tr>
 					))}
 				</Table.Tbody>
-				<Table.Tfoot>
+				<Table.Tfoot
+					style={{
+						borderTop: '2px solid var(--mantine-color-gray-3)',
+						backgroundColor: 'var(--mantine-color-gray-0)',
+					}}
+				>
 					<Table.Tr fw={700}>
-						<Table.Td>TOTAL</Table.Td>
-						<Table.Td>{totals.students}</Table.Td>
-						<Table.Td>{formatMoney(totals.income)}</Table.Td>
-						<Table.Td>{formatMoney(totals.unpaidBalance)}</Table.Td>
+						<Table.Td fw={700}>TOTAL</Table.Td>
+						<Table.Td fw={700}>{totals.students}</Table.Td>
+						<Table.Td fw={700}>{formatMoney(totals.income)}</Table.Td>
+						<Table.Td fw={700}>{formatMoney(totals.unpaidBalance)}</Table.Td>
 					</Table.Tr>
 				</Table.Tfoot>
 				</Table>

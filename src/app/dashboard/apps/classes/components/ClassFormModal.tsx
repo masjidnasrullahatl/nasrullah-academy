@@ -20,6 +20,8 @@ import {
 	UpdateClassPayload,
 } from '@app/api/classes/types';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { ARCHIVE_STATUS_OPTIONS, CLASS_SESSION_OPTIONS } from '@configs/enums';
 
 import { useCreateClass } from '@hooks/react-query/classes/useCreateClass';
@@ -174,14 +176,14 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 						{...form.getInputProps('status')}
 					/>
 
-					<Group justify="flex-end">
+					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Class' : 'Create Class'}
 						</Button>
-					</Group>
+					</ModalFooter>
 				</Stack>
 			</form>
 		</Stack>

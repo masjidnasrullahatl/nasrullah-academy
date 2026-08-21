@@ -4,6 +4,8 @@ import { Avatar, Button, Group, Select, Stack, Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
@@ -100,14 +102,14 @@ export const AssignTeacherModal = ({ classId }: AssignTeacherModalProps) => {
 				onChange={setTeacherId}
 			/>
 
-			<Group justify="flex-end">
+			<ModalFooter>
 				<Button variant="default" onClick={() => modals.closeAll()}>
 					Cancel
 				</Button>
 				<Button onClick={handleSave} loading={isPending}>
 					Save
 				</Button>
-			</Group>
+			</ModalFooter>
 		</Stack>
 	);
 };

@@ -27,6 +27,8 @@ import {
 	CreateFamilySchema,
 } from '@app/api/families/types';
 
+import { ModalFooter } from '@components/ModalFooter';
+
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useCreateFamily } from '@hooks/react-query/families/useCreateFamily';
@@ -331,14 +333,14 @@ export const FamilyForm = ({ family }: FamilyFormProps) => {
 						</Stack>
 					)}
 
-					<Group justify="flex-end" mt="sm">
+					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Family' : 'Create Family'}
 						</Button>
-					</Group>
+					</ModalFooter>
 				</Stack>
 			</form>
 		</Stack>
