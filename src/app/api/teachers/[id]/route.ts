@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import { internalServerError, notFound, success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -22,9 +21,7 @@ const update = async (
 		const prisma = createClient();
 
 		const existing = await prisma.teachers.findUnique({ where: { id } });
-		if (!existing) {
-			return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
-		}
+		if (!existing) return notFound('Teacher not found');
 
 		const teacher = await prisma.teachers.update({
 			where: { id },
@@ -37,18 +34,13 @@ const update = async (
 			},
 		});
 
-		return NextResponse.json({ data: teacher, error: null });
+		return success(teacher);
 	} catch (error) {
 		console.log('Update teacher error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 
@@ -70,9 +62,7 @@ const remove = async (
 		},
 	});
 
-	if (!teacher) {
-		return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
-	}
+	if (!teacher) return notFound('Teacher not found');
 
 	if (teacher._count.classes > 0) {
 		await prisma.classes.updateMany({
@@ -83,7 +73,7 @@ const remove = async (
 
 	await prisma.teachers.delete({ where: { id } });
 
-	return NextResponse.json({ data: teacher, error: null });
+	return success(teacher);
 };
 
 export const PUT = withAuth(update);

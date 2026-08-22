@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
-
 import { PaymentStatus, PayMethod, Prisma, ProgramCode } from '@prisma/client';
 
 import { AuthRequest } from '@app/api/types/common';
+import { success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -255,17 +254,14 @@ const getSummary = async (request: AuthRequest) => {
 		balance: toNumber(item._sum?.balance),
 	}));
 
-	return NextResponse.json({
-		data: {
-			totals,
-			monthly,
-			genderSplit,
-			paymentStatus,
-			payMethodSplit: payMethod,
-			topUnpaidFamilies,
-			programCode: programCode || null,
-		},
-		error: null,
+	return success({
+		totals,
+		monthly,
+		genderSplit,
+		paymentStatus,
+		payMethodSplit: payMethod,
+		topUnpaidFamilies,
+		programCode: programCode || null,
 	});
 };
 

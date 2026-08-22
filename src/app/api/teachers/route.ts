@@ -4,10 +4,12 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { catchZodError } from '@app/api/utils/catchZodError';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
+
+import { catchZodError } from '../utils/catchZodError';
+import { internalServerError, success } from '../utils/response';
 
 import { CreateTeacherSchema } from './types';
 
@@ -34,9 +36,7 @@ const getPaging = async (request: AuthRequest) => {
 		];
 	}
 
-	if (status) {
-		where.status = status as any;
-	}
+	if (status) where.status = status as any;
 
 	const total = await prisma.teachers.count({ where });
 
@@ -79,18 +79,13 @@ const create = async (request: AuthRequest) => {
 			},
 		});
 
-		return NextResponse.json({ data: teacher }, { status: 201 });
+		return success(teacher);
 	} catch (error) {
 		console.log('Create teacher error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 

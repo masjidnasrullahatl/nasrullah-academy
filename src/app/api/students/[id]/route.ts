@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
-import { AuthRequest,ParamsRequest  } from '@app/api/types/common';
+import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import { internalServerError, notFound, success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -35,11 +34,9 @@ const getDetail = async (
 		},
 	});
 
-	if (!student) {
-		return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-	}
+	if (!student) return notFound('Student not found');
 
-	return NextResponse.json({ data: student, error: null });
+	return success(student);
 };
 
 const update = async (
@@ -57,9 +54,7 @@ const update = async (
 			where: { id },
 		});
 
-		if (!existingStudent) {
-			return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-		}
+		if (!existingStudent) return notFound('Student not found');
 
 		const student = await prisma.students.update({
 			where: { id },
@@ -83,18 +78,13 @@ const update = async (
 			},
 		});
 
-		return NextResponse.json({ data: student, error: null });
+		return success(student);
 	} catch (error) {
 		console.log('Update student error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 
@@ -110,15 +100,13 @@ const remove = async (
 		where: { id },
 	});
 
-	if (!student) {
-		return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-	}
+	if (!student) return notFound('Student not found');
 
 	await prisma.students.delete({
 		where: { id },
 	});
 
-	return NextResponse.json({ data: student, error: null });
+	return success(student);
 };
 
 export const GET = withAuth(getDetail);

@@ -28,9 +28,7 @@ const getPaging = async (request: AuthRequest) => {
 		];
 	}
 
-	if (status) {
-		where.status = status as any;
-	}
+	if (status) where.status = status as any;
 
 	const total = await prisma.programs.count({ where });
 

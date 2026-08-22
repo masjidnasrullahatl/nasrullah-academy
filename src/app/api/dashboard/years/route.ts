@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-
+import { success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -19,7 +18,7 @@ const getYears = async () => {
 
 	const data = Array.from(yearSet).sort((a, b) => b - a);
 
-	return NextResponse.json({ data, error: null });
+	return success(data);
 };
 
 export const GET = withAuth(getYears);

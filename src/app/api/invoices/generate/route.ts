@@ -1,14 +1,13 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import { internalServerError, success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { GenerateInvoicesSchema } from '../types';
+import { GenerateInvoicesSchema } from './types';
 
 const getPreviousMonth = (year: number, month: number) => {
 	if (month === 1) {
@@ -56,9 +55,7 @@ const generateInvoices = async (request: AuthRequest) => {
 			orderBy: [{ name: 'asc' }],
 		});
 
-		if (!families.length) {
-			return NextResponse.json({ data: { created: 0, skipped: 0 }, error: null });
-		}
+		if (!families.length) return success({ created: 0, skipped: 0 });
 
 		const familyIds = families.map((family) => family.id);
 		const existingInvoices = await prisma.monthlyInvoices.findMany({
@@ -164,18 +161,13 @@ const generateInvoices = async (request: AuthRequest) => {
 			created += 1;
 		}
 
-		return NextResponse.json({ data: { created, skipped }, error: null });
+		return success({ created, skipped });
 	} catch (error) {
 		console.log('Generate invoices error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 

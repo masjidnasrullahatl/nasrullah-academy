@@ -4,10 +4,12 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { catchZodError } from '@app/api/utils/catchZodError';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
+
+import { catchZodError } from '../utils/catchZodError';
+import { internalServerError, success } from '../utils/response';
 
 import { CreateStudentSchema } from './types';
 
@@ -38,25 +40,15 @@ const getPaging = async (request: AuthRequest) => {
 		];
 	}
 
-	if (familyId) {
-		where.familyId = familyId;
-	}
+	if (familyId) where.familyId = familyId;
 
-	if (gender) {
-		where.gender = gender as any;
-	}
+	if (gender) where.gender = gender as any;
 
-	if (status) {
-		where.status = status as any;
-	}
+	if (status) where.status = status as any;
 
-	if (classId) {
-		enrollmentFilter.classId = classId;
-	}
+	if (classId) enrollmentFilter.classId = classId;
 
-	if (programId) {
-		enrollmentFilter.programId = programId;
-	}
+	if (programId) enrollmentFilter.programId = programId;
 
 	if (classId || programId) {
 		where.enrollments = {
@@ -120,18 +112,13 @@ const create = async (request: AuthRequest) => {
 			},
 		});
 
-		return NextResponse.json({ data: student }, { status: 201 });
+		return success(student);
 	} catch (error) {
 		console.log('Create student error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 

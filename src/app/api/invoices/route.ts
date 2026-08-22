@@ -4,34 +4,15 @@ import { PaymentStatus, PayMethod, Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { catchZodError } from '@app/api/utils/catchZodError';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
+import { catchZodError } from '../utils/catchZodError';
+import { badRequest, internalServerError, success } from '../utils/response';
+
 import { CreateInvoiceSchema } from './types';
-
-const toNumber = (value: Prisma.Decimal | number | null | undefined) => Number(value ?? 0);
-
-const calcTotals = (payload: {
-	registrationFee: number;
-	tuitionFee: number;
-	bookFee: number;
-	paidRegistrationFee: number;
-	paidTuitionFee: number;
-	paidBookFee: number;
-	extraPaid: number;
-}) => {
-	const totalDue = payload.registrationFee + payload.tuitionFee + payload.bookFee;
-	const totalPaid =
-		payload.paidRegistrationFee +
-		payload.paidTuitionFee +
-		payload.paidBookFee +
-		payload.extraPaid;
-	const balance = totalDue - totalPaid;
-
-	return { totalDue, totalPaid, balance };
-};
+import { calcTotals, mapInvoice, toNumber } from './utils';
 
 const buildWhere = (searchParams: URLSearchParams): Prisma.MonthlyInvoicesWhereInput => {
 	const year = Number(searchParams.get('year') || 0);
@@ -44,24 +25,12 @@ const buildWhere = (searchParams: URLSearchParams): Prisma.MonthlyInvoicesWhereI
 
 	const where: Prisma.MonthlyInvoicesWhereInput = {};
 
-	if (year) {
-		where.year = year;
-	}
-	if (month) {
-		where.month = month;
-	}
-	if (programId) {
-		where.programId = programId;
-	}
-	if (familyId) {
-		where.familyId = familyId;
-	}
-	if (paymentStatus) {
-		where.paymentStatus = paymentStatus as PaymentStatus;
-	}
-	if (payMethod) {
-		where.payMethod = payMethod as PayMethod;
-	}
+	if (year) where.year = year;
+	if (month) where.month = month;
+	if (programId) where.programId = programId;
+	if (familyId) where.familyId = familyId;
+	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
+	if (payMethod) where.payMethod = payMethod as PayMethod;
 	if (keyword) {
 		where.family = {
 			OR: [
@@ -75,22 +44,6 @@ const buildWhere = (searchParams: URLSearchParams): Prisma.MonthlyInvoicesWhereI
 
 	return where;
 };
-
-const mapInvoice = (
-	invoice: Prisma.MonthlyInvoicesGetPayload<{ include: { family: true; program: true } }>,
-) => ({
-	...invoice,
-	registrationFee: toNumber(invoice.registrationFee),
-	tuitionFee: toNumber(invoice.tuitionFee),
-	bookFee: toNumber(invoice.bookFee),
-	totalDue: toNumber(invoice.totalDue),
-	paidRegistrationFee: toNumber(invoice.paidRegistrationFee),
-	paidTuitionFee: toNumber(invoice.paidTuitionFee),
-	paidBookFee: toNumber(invoice.paidBookFee),
-	extraPaid: toNumber(invoice.extraPaid),
-	totalPaid: toNumber(invoice.totalPaid),
-	balance: toNumber(invoice.balance),
-});
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -169,12 +122,7 @@ const create = async (request: AuthRequest) => {
 			},
 		});
 
-		if (existing) {
-			return NextResponse.json(
-				{ error: 'Invoice already exists for this family/program/month', data: null },
-				{ status: 409 },
-			);
-		}
+		if (existing) return badRequest('Invoice already exists for this family/program/month');
 
 		const totals = calcTotals(data);
 
@@ -207,18 +155,13 @@ const create = async (request: AuthRequest) => {
 			},
 		});
 
-		return NextResponse.json({ data: mapInvoice(invoice), error: null }, { status: 201 });
+		return success(mapInvoice(invoice));
 	} catch (error) {
 		console.log('Create invoice error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 

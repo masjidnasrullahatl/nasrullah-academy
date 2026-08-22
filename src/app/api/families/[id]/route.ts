@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
-import { AuthRequest,ParamsRequest  } from '@app/api/types/common';
+import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import { internalServerError, notFound, success } from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -46,11 +45,9 @@ const getDetail = async (
 		},
 	});
 
-	if (!family) {
-		return NextResponse.json({ error: 'Family not found' }, { status: 404 });
-	}
+	if (!family) return notFound('Family not found');
 
-	return NextResponse.json({ data: family, error: null });
+	return success(family);
 };
 
 const update = async (
@@ -71,9 +68,7 @@ const update = async (
 			},
 		});
 
-		if (!existingFamily) {
-			return NextResponse.json({ error: 'Family not found' }, { status: 404 });
-		}
+		if (!existingFamily) return notFound('Family not found');
 
 		await prisma.$transaction(async (tx) => {
 			await tx.families.update({
@@ -149,18 +144,13 @@ const update = async (
 			},
 		});
 
-		return NextResponse.json({ data: family, error: null });
+		return success(family);
 	} catch (error) {
 		console.log('Update family error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 
@@ -176,15 +166,13 @@ const remove = async (
 		where: { id },
 	});
 
-	if (!family) {
-		return NextResponse.json({ error: 'Family not found' }, { status: 404 });
-	}
+	if (!family) return notFound('Family not found');
 
 	await prisma.families.delete({
 		where: { id },
 	});
 
-	return NextResponse.json({ data: family, error: null });
+	return success(family);
 };
 
 export const GET = withAuth(getDetail);
