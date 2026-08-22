@@ -59,7 +59,7 @@ type FormValue = {
 	paidTuitionFee: number;
 	paidBookFee: number;
 	extraPaid: number;
-	payMethod: 'KEELA' | 'ZELLE' | 'CASH' | 'CASHAPP' | 'CHECK' | 'FREE' | 'OTHER' | 'NA';
+	payMethod: 'KEELA' | 'ZELLE' | 'CASH' | 'CASHAPP' | 'SQUARE' | 'CHECK' | 'FREE' | 'OTHER' | 'NA';
 	paymentStatus: 'PAID' | 'PARTIAL' | 'UNPAID' | 'NA';
 	paidAt: Date | null;
 	notes: string;

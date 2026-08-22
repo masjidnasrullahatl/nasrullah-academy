@@ -32,7 +32,7 @@ export const CreateInvoiceSchema = z.object({
 	session: z.enum(['AM', 'PM', 'AM_PM', 'NA']).optional().nullable(),
 	...InvoiceFeeFields,
 	payMethod: z
-		.enum(['KEELA', 'ZELLE', 'CASH', 'CASHAPP', 'CHECK', 'FREE', 'OTHER', 'NA'])
+		.enum(['KEELA', 'ZELLE', 'CASH', 'CASHAPP', 'SQUARE', 'CHECK', 'FREE', 'OTHER', 'NA'])
 		.default('NA'),
 	paymentStatus: z.enum(['PAID', 'PARTIAL', 'UNPAID', 'NA']).default('UNPAID'),
 	paidAt: z.string().optional().nullable(),

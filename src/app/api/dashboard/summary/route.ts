@@ -225,6 +225,7 @@ const getSummary = async (request: AuthRequest) => {
 			PayMethod.ZELLE,
 			PayMethod.CASH,
 			PayMethod.CASHAPP,
+			PayMethod.SQUARE,
 			PayMethod.CHECK,
 			PayMethod.FREE,
 			PayMethod.OTHER,

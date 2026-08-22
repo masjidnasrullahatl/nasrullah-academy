@@ -546,7 +546,13 @@ async function seedMonthlyInvoices(
 	}
 
 	const keys = Array.from(familyProgramStudents.keys());
-	const payMethodCycle = [PayMethod.KEELA, PayMethod.ZELLE, PayMethod.CASH, PayMethod.CASHAPP];
+	const payMethodCycle = [
+		PayMethod.KEELA,
+		PayMethod.ZELLE,
+		PayMethod.CASH,
+		PayMethod.CASHAPP,
+		PayMethod.SQUARE,
+	];
 	let invoiceIndex = 0;
 
 	for (const key of keys) {
