@@ -21,6 +21,7 @@ const generateInvoices = async (request: AuthRequest) => {
 	try {
 		const body = await request.json();
 		const data = GenerateInvoicesSchema.parse(body);
+
 		const prisma = createClient();
 
 		const families = await prisma.families.findMany({
@@ -30,10 +31,7 @@ const generateInvoices = async (request: AuthRequest) => {
 					some: {
 						status: 'ACTIVE',
 						enrollments: {
-							some: {
-								status: 'ACTIVE',
-								programId: data.programId,
-							},
+							some: { status: 'ACTIVE', programId: data.programId },
 						},
 					},
 				},
@@ -43,10 +41,7 @@ const generateInvoices = async (request: AuthRequest) => {
 					where: { status: 'ACTIVE' },
 					include: {
 						enrollments: {
-							where: {
-								status: 'ACTIVE',
-								programId: data.programId,
-							},
+							where: { status: 'ACTIVE', programId: data.programId },
 							select: { id: true },
 						},
 					},
@@ -58,6 +53,7 @@ const generateInvoices = async (request: AuthRequest) => {
 		if (!families.length) return success({ created: 0, skipped: 0 });
 
 		const familyIds = families.map((family) => family.id);
+
 		const existingInvoices = await prisma.monthlyInvoices.findMany({
 			where: {
 				programId: data.programId,
@@ -65,12 +61,12 @@ const generateInvoices = async (request: AuthRequest) => {
 				month: data.month,
 				familyId: { in: familyIds },
 			},
-			select: {
-				familyId: true,
-			},
+			select: { familyId: true },
 		});
 
-		const existingFamilyIds = new Set(existingInvoices.map((invoice) => invoice.familyId));
+		const existingFamilyIds = new Set(
+			existingInvoices.map((invoice) => invoice.familyId),
+		);
 
 		let previousByFamily = new Map<
 			string,

@@ -4,10 +4,12 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { catchZodError } from '@app/api/utils/catchZodError';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
+
+import { catchZodError } from '../utils/catchZodError';
+import { badRequest, internalServerError, success } from '../utils/response';
 
 import { CreateClassSchema } from './types';
 
@@ -27,24 +29,13 @@ const getPaging = async (request: AuthRequest) => {
 	const skip = (page - 1) * limit;
 
 	const where: Prisma.ClassesWhereInput = {};
-	if (keyword) {
-		where.name = { contains: keyword, mode: 'insensitive' };
-	}
-	if (programId) {
-		where.programId = programId;
-	}
-	if (teacherId) {
-		where.teacherId = teacherId;
-	}
-	if (schoolYear) {
-		where.schoolYear = schoolYear;
-	}
-	if (session) {
-		where.session = session as any;
-	}
-	if (status) {
-		where.status = status as any;
-	}
+
+	if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
+	if (programId) where.programId = programId;
+	if (teacherId) where.teacherId = teacherId;
+	if (schoolYear) where.schoolYear = schoolYear;
+	if (session) where.session = session as any;
+	if (status) where.status = status as any;
 
 	const total = await prisma.classes.count({ where });
 
@@ -57,25 +48,23 @@ const getPaging = async (request: AuthRequest) => {
 			teacher: true,
 			enrollments: {
 				where: { status: 'ACTIVE' },
-				include: {
-					student: {
-						include: {
-							family: true,
-						},
-					},
-				},
+				include: { student: { include: { family: true } } },
 			},
 		},
 		where,
 	});
 
 	const data = classes.map((item) => {
-		const activeStudents = item.enrollments.map((enrollment) => enrollment.student);
+		const activeStudents = item.enrollments.map(
+			(enrollment) => enrollment.student,
+		);
 		return {
 			...item,
 			studentCount: activeStudents.length,
-			boysCount: activeStudents.filter((student) => student.gender === 'BOY').length,
-			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL').length,
+			boysCount: activeStudents.filter((student) => student.gender === 'BOY')
+				.length,
+			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL')
+				.length,
 		};
 	});
 
@@ -100,9 +89,8 @@ const create = async (request: AuthRequest) => {
 		});
 
 		if (existing) {
-			return NextResponse.json(
-				{ error: 'Class already exists for this program and school year', data: null },
-				{ status: 409 },
+			return badRequest(
+				'Class already exists for this program and school year',
 			);
 		}
 
@@ -122,29 +110,18 @@ const create = async (request: AuthRequest) => {
 				teacher: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },
-					include: {
-						student: {
-							include: {
-								family: true,
-							},
-						},
-					},
+					include: { student: { include: { family: true } } },
 				},
 			},
 		});
 
-		return NextResponse.json({ data: classItem }, { status: 201 });
+		return success(classItem);
 	} catch (error) {
 		console.log('Create class error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 

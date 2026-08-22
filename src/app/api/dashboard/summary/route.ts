@@ -21,7 +21,8 @@ const MONTH_LABELS = [
 	'Dec',
 ];
 
-const toNumber = (value: Prisma.Decimal | number | null | undefined) => Number(value ?? 0);
+const toNumber = (value: Prisma.Decimal | number | null | undefined) =>
+	Number(value ?? 0);
 
 const getSummary = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -47,10 +48,7 @@ const getSummary = async (request: AuthRequest) => {
 	const enrollmentWhere: Prisma.EnrollmentsWhereInput = {
 		status: 'ACTIVE',
 		...(programId ? { programId } : {}),
-		class: {
-			schoolYear: year,
-			status: 'ACTIVE',
-		},
+		class: { schoolYear: year, status: 'ACTIVE' },
 	};
 
 	const classWhere: Prisma.ClassesWhereInput = {
@@ -73,11 +71,7 @@ const getSummary = async (request: AuthRequest) => {
 			by: ['month'],
 			orderBy: { month: 'asc' },
 			where: invoiceWhere,
-			_sum: {
-				totalPaid: true,
-				balance: true,
-				studentCount: true,
-			},
+			_sum: { totalPaid: true, balance: true, studentCount: true },
 		}),
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
@@ -86,9 +80,7 @@ const getSummary = async (request: AuthRequest) => {
 				...invoiceWhere,
 				balance: { gt: 0 },
 			},
-			_sum: {
-				balance: true,
-			},
+			_sum: { balance: true },
 		}),
 		prisma.enrollments.findMany({
 			where: enrollmentWhere,
@@ -99,11 +91,7 @@ const getSummary = async (request: AuthRequest) => {
 						gender: true,
 						familyId: true,
 						status: true,
-						family: {
-							select: {
-								status: true,
-							},
-						},
+						family: { select: { status: true } },
 					},
 				},
 			},
@@ -139,7 +127,10 @@ const getSummary = async (request: AuthRequest) => {
 	]);
 
 	const unpaidByMonth = new Map(
-		invoiceUnpaidMonthly.map((item) => [item.month, toNumber(item._sum?.balance)]),
+		invoiceUnpaidMonthly.map((item) => [
+			item.month,
+			toNumber(item._sum?.balance),
+		]),
 	);
 
 	const monthlyMap = new Map(
@@ -155,6 +146,7 @@ const getSummary = async (request: AuthRequest) => {
 
 	const monthly = MONTH_LABELS.map((label, index) => {
 		const month = index + 1;
+
 		const invoiceMetrics = monthlyMap.get(month) || {
 			students: 0,
 			income: 0,
@@ -170,7 +162,10 @@ const getSummary = async (request: AuthRequest) => {
 		};
 	});
 
-	const uniqueStudents = new Map<string, { gender: 'BOY' | 'GIRL'; familyId: string }>();
+	const uniqueStudents = new Map<
+		string,
+		{ gender: 'BOY' | 'GIRL'; familyId: string }
+	>();
 	for (const enrollment of activeEnrollments) {
 		const student = enrollment.student;
 		if (student.status !== 'ACTIVE' || student.family.status !== 'ACTIVE') {
@@ -185,8 +180,12 @@ const getSummary = async (request: AuthRequest) => {
 	}
 
 	const students = uniqueStudents.size;
-	const families = new Set(Array.from(uniqueStudents.values()).map((item) => item.familyId)).size;
-	const boys = Array.from(uniqueStudents.values()).filter((item) => item.gender === 'BOY').length;
+	const families = new Set(
+		Array.from(uniqueStudents.values()).map((item) => item.familyId),
+	).size;
+	const boys = Array.from(uniqueStudents.values()).filter(
+		(item) => item.gender === 'BOY',
+	).length;
 	const girls = students - boys;
 
 	const totals = {
@@ -210,7 +209,9 @@ const getSummary = async (request: AuthRequest) => {
 			PaymentStatus.NA,
 		] as PaymentStatus[]
 	).map((status) => {
-		const found = paymentStatusGroups.find((item) => item.paymentStatus === status);
+		const found = paymentStatusGroups.find(
+			(item) => item.paymentStatus === status,
+		);
 		return {
 			status,
 			count: Number((found as any)?._count?._all || 0),
@@ -246,7 +247,9 @@ const getSummary = async (request: AuthRequest) => {
 				select: { id: true, name: true },
 			})
 		: [];
-	const familyNameMap = new Map(familiesById.map((item) => [item.id, item.name]));
+	const familyNameMap = new Map(
+		familiesById.map((item) => [item.id, item.name]),
+	);
 
 	const topUnpaidFamilies = topUnpaidFamilyGroups.map((item) => ({
 		familyId: item.familyId,

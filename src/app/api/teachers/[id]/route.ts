@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, notFound, success } from '@app/api/utils/response';
+import {
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -21,6 +25,7 @@ const update = async (
 		const prisma = createClient();
 
 		const existing = await prisma.teachers.findUnique({ where: { id } });
+
 		if (!existing) return notFound('Teacher not found');
 
 		const teacher = await prisma.teachers.update({
@@ -53,13 +58,7 @@ const remove = async (
 
 	const teacher = await prisma.teachers.findUnique({
 		where: { id },
-		include: {
-			_count: {
-				select: {
-					classes: true,
-				},
-			},
-		},
+		include: { _count: { select: { classes: true } } },
 	});
 
 	if (!teacher) return notFound('Teacher not found');

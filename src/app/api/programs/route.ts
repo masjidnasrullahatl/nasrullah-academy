@@ -35,17 +35,8 @@ const getPaging = async (request: AuthRequest) => {
 	const programs = await prisma.programs.findMany({
 		skip,
 		take: limit,
-		orderBy: {
-			name: 'asc',
-		},
-		include: {
-			_count: {
-				select: {
-					classes: true,
-					enrollments: true,
-				},
-			},
-		},
+		orderBy: { name: 'asc' },
+		include: { _count: { select: { classes: true, enrollments: true } } },
 		where,
 	});
 

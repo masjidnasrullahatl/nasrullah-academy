@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, notFound, success } from '@app/api/utils/response';
+import {
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -19,10 +23,7 @@ const getDetail = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: {
-			family: true,
-			program: true,
-		},
+		include: { family: true, program: true },
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -40,7 +41,9 @@ const update = async (
 		const data = UpdateInvoiceSchema.parse(body);
 
 		const prisma = createClient();
+
 		const existing = await prisma.monthlyInvoices.findUnique({ where: { id } });
+
 		if (!existing) return notFound('Invoice not found');
 
 		const totals = calcTotals(data);
@@ -67,10 +70,7 @@ const update = async (
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: {
-				family: true,
-				program: true,
-			},
+			include: { family: true, program: true },
 		});
 
 		return success(mapInvoice(invoice));
@@ -92,10 +92,7 @@ const remove = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: {
-			family: true,
-			program: true,
-		},
+		include: { family: true, program: true },
 	});
 
 	if (!invoice) return notFound('Invoice not found');

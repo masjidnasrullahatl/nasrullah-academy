@@ -1,14 +1,18 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import {
+	badRequest,
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { AssignStudentsSchema } from '../../types';
+import { AssignStudentsSchema } from './types';
 
 const assignStudents = async (
 	request: AuthRequest,
@@ -21,26 +25,20 @@ const assignStudents = async (
 
 		const prisma = createClient();
 
-		const classItem = await prisma.classes.findUnique({ where: { id: classId } });
-		if (!classItem) {
-			return NextResponse.json({ error: 'Class not found' }, { status: 404 });
-		}
+		const classItem = await prisma.classes.findUnique({
+			where: { id: classId },
+		});
+
+		if (!classItem) return notFound('Class not found');
 
 		let createdCount = 0;
 
 		for (const studentId of data.studentIds) {
 			const existing = await prisma.enrollments.findUnique({
-				where: {
-					studentId_classId: {
-						studentId,
-						classId,
-					},
-				},
+				where: { studentId_classId: { studentId, classId } },
 			});
 
-			if (existing?.status === 'ACTIVE') {
-				continue;
-			}
+			if (existing?.status === 'ACTIVE') continue;
 
 			if (existing) {
 				await prisma.enrollments.update({
@@ -69,23 +67,13 @@ const assignStudents = async (
 			createdCount += 1;
 		}
 
-		return NextResponse.json({
-			data: {
-				createdCount,
-			},
-			error: null,
-		});
+		return success({ createdCount });
 	} catch (error) {
 		console.log('Assign students to class error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError('Internal server error');
 	}
 };
 
@@ -97,40 +85,25 @@ const removeStudent = async (
 	const { searchParams } = new URL(request.url);
 
 	const studentId = searchParams.get('studentId');
-	if (!studentId) {
-		return NextResponse.json(
-			{ error: 'studentId is required', data: null },
-			{ status: 400 },
-		);
-	}
+
+	if (!studentId) return badRequest('studentId is required');
 
 	const prisma = createClient();
 
 	const enrollment = await prisma.enrollments.findUnique({
-		where: {
-			studentId_classId: {
-				studentId,
-				classId,
-			},
-		},
+		where: { studentId_classId: { studentId, classId } },
 	});
 
 	if (!enrollment || enrollment.status !== 'ACTIVE') {
-		return NextResponse.json(
-			{ error: 'Active enrollment not found', data: null },
-			{ status: 404 },
-		);
+		return notFound('Active enrollment not found');
 	}
 
 	const updated = await prisma.enrollments.update({
 		where: { id: enrollment.id },
-		data: {
-			status: 'WITHDRAWN',
-			endDate: new Date(),
-		},
+		data: { status: 'WITHDRAWN', endDate: new Date() },
 	});
 
-	return NextResponse.json({ data: updated, error: null });
+	return success(updated);
 };
 
 const getAvailableStudents = async (
@@ -146,13 +119,8 @@ const getAvailableStudents = async (
 	const prisma = createClient();
 
 	const activeEnrollments = await prisma.enrollments.findMany({
-		where: {
-			classId,
-			status: 'ACTIVE',
-		},
-		select: {
-			studentId: true,
-		},
+		where: { classId, status: 'ACTIVE' },
+		select: { studentId: true },
 	});
 
 	const excludedIds = activeEnrollments.map((item) => item.studentId);
@@ -160,40 +128,25 @@ const getAvailableStudents = async (
 	const students = await prisma.students.findMany({
 		where: {
 			status: 'ACTIVE',
-			...(excludedIds.length > 0
-				? {
-					id: {
-						notIn: excludedIds,
-					},
-				}
-				: {}),
+			...(excludedIds.length > 0 ? { id: { notIn: excludedIds } } : {}),
 			...(keyword
 				? {
-					OR: [
-						{ firstName: { contains: keyword, mode: 'insensitive' } },
-						{ lastName: { contains: keyword, mode: 'insensitive' } },
-						{ family: { name: { contains: keyword, mode: 'insensitive' } } },
-					],
-				}
+						OR: [
+							{ firstName: { contains: keyword, mode: 'insensitive' } },
+							{ lastName: { contains: keyword, mode: 'insensitive' } },
+							{ family: { name: { contains: keyword, mode: 'insensitive' } } },
+						],
+					}
 				: {}),
 			...(programId
-				? {
-					enrollments: {
-						some: {
-							programId,
-							status: 'ACTIVE',
-						},
-					},
-				}
+				? { enrollments: { some: { programId, status: 'ACTIVE' } } }
 				: {}),
 		},
-		include: {
-			family: true,
-		},
+		include: { family: true },
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 	});
 
-	return NextResponse.json({ data: students, error: null });
+	return success(students);
 };
 
 export const POST = withAuth(assignStudents);

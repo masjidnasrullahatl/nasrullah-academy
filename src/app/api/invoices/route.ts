@@ -14,7 +14,9 @@ import { badRequest, internalServerError, success } from '../utils/response';
 import { CreateInvoiceSchema } from './types';
 import { calcTotals, mapInvoice, toNumber } from './utils';
 
-const buildWhere = (searchParams: URLSearchParams): Prisma.MonthlyInvoicesWhereInput => {
+const buildWhere = (
+	searchParams: URLSearchParams,
+): Prisma.MonthlyInvoicesWhereInput => {
 	const year = Number(searchParams.get('year') || 0);
 	const month = Number(searchParams.get('month') || 0);
 	const keyword = searchParams.get('keyword') || '';
@@ -61,10 +63,7 @@ const getPaging = async (request: AuthRequest) => {
 			where,
 			skip,
 			take: limit,
-			include: {
-				family: true,
-				program: true,
-			},
+			include: { family: true, program: true },
 			orderBy: [{ family: { name: 'asc' } }],
 		}),
 		prisma.monthlyInvoices.aggregate({
@@ -122,7 +121,9 @@ const create = async (request: AuthRequest) => {
 			},
 		});
 
-		if (existing) return badRequest('Invoice already exists for this family/program/month');
+		if (existing) {
+			return badRequest('Invoice already exists for this family/program/month');
+		}
 
 		const totals = calcTotals(data);
 

@@ -42,15 +42,7 @@ const getPaging = async (request: AuthRequest) => {
 	}
 
 	if (programId) {
-		where.students = {
-			some: {
-				enrollments: {
-					some: {
-						programId,
-					},
-				},
-			},
-		};
+		where.students = { some: { enrollments: { some: { programId } } } };
 	}
 
 	const total = await prisma.families.count({ where });
@@ -58,12 +50,8 @@ const getPaging = async (request: AuthRequest) => {
 	const families = await prisma.families.findMany({
 		skip,
 		take: limit,
-		orderBy: {
-			name: 'asc',
-		},
-		include: {
-			students: true,
-		},
+		orderBy: { name: 'asc' },
+		include: { students: true },
 		where,
 	});
 
@@ -75,8 +63,10 @@ const getPaging = async (request: AuthRequest) => {
 		return {
 			...family,
 			studentCount: activeStudents.length,
-			boysCount: activeStudents.filter((student) => student.gender === 'BOY').length,
-			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL').length,
+			boysCount: activeStudents.filter((student) => student.gender === 'BOY')
+				.length,
+			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL')
+				.length,
 		};
 	});
 
@@ -118,9 +108,7 @@ const create = async (request: AuthRequest) => {
 					})),
 				},
 			},
-			include: {
-				students: true,
-			},
+			include: { students: true },
 		});
 
 		return success(family);

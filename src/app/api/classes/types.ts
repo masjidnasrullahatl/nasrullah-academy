@@ -25,10 +25,5 @@ export const CreateClassSchema = z.object({
 
 export const UpdateClassSchema = CreateClassSchema;
 
-export const AssignStudentsSchema = z.object({
-	studentIds: z.array(z.string()).min(1, 'Select at least one student'),
-});
-
 export type CreateClassPayload = z.infer<typeof CreateClassSchema>;
 export type UpdateClassPayload = z.infer<typeof UpdateClassSchema>;
-export type AssignStudentsPayload = z.infer<typeof AssignStudentsSchema>;

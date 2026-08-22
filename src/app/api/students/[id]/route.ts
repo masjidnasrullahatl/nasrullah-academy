@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, notFound, success } from '@app/api/utils/response';
+import {
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -22,14 +26,7 @@ const getDetail = async (
 		include: {
 			family: true,
 			enrollments: {
-				include: {
-					class: {
-						include: {
-							teacher: true,
-						},
-					},
-					program: true,
-				},
+				include: { class: { include: { teacher: true } }, program: true },
 			},
 		},
 	});
@@ -70,10 +67,7 @@ const update = async (
 			include: {
 				family: true,
 				enrollments: {
-					include: {
-						class: true,
-						program: true,
-					},
+					include: { class: { include: { teacher: true } }, program: true },
 				},
 			},
 		});
@@ -102,9 +96,7 @@ const remove = async (
 
 	if (!student) return notFound('Student not found');
 
-	await prisma.students.delete({
-		where: { id },
-	});
+	await prisma.students.delete({ where: { id } });
 
 	return success(student);
 };

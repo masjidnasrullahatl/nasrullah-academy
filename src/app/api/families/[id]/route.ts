@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, notFound, success } from '@app/api/utils/response';
+import {
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -23,24 +27,10 @@ const getDetail = async (
 			students: {
 				include: {
 					enrollments: {
-						include: {
-							class: {
-								include: {
-									teacher: true,
-								},
-							},
-							program: true,
-						},
+						include: { program: true, class: { include: { teacher: true } } },
 					},
 				},
-				orderBy: [
-					{
-						firstName: 'asc',
-					},
-					{
-						lastName: 'asc',
-					},
-				],
+				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
 		},
 	});
@@ -63,9 +53,7 @@ const update = async (
 
 		const existingFamily = await prisma.families.findUnique({
 			where: { id },
-			include: {
-				students: true,
-			},
+			include: { students: true },
 		});
 
 		if (!existingFamily) return notFound('Family not found');
@@ -139,9 +127,7 @@ const update = async (
 
 		const family = await prisma.families.findUnique({
 			where: { id },
-			include: {
-				students: true,
-			},
+			include: { students: true },
 		});
 
 		return success(family);
@@ -168,9 +154,7 @@ const remove = async (
 
 	if (!family) return notFound('Family not found');
 
-	await prisma.families.delete({
-		where: { id },
-	});
+	await prisma.families.delete({ where: { id } });
 
 	return success(family);
 };

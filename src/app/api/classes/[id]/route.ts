@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
-
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
+import {
+	badRequest,
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -22,15 +26,16 @@ const update = async (
 		const prisma = createClient();
 
 		const existing = await prisma.classes.findUnique({ where: { id } });
-		if (!existing) {
-			return NextResponse.json({ error: 'Class not found' }, { status: 404 });
-		}
 
-		if (
-			(existing.name !== data.name ||
-				existing.programId !== data.programId ||
-				existing.schoolYear !== data.schoolYear) &&
-			(await prisma.classes.findUnique({
+		if (!existing) return notFound('Class not found');
+
+		const changedUniqueFields =
+			existing.name !== data.name ||
+			existing.programId !== data.programId ||
+			existing.schoolYear !== data.schoolYear;
+
+		if (changedUniqueFields) {
+			const duplicateClass = await prisma.classes.findUnique({
 				where: {
 					name_programId_schoolYear: {
 						name: data.name,
@@ -38,12 +43,13 @@ const update = async (
 						schoolYear: data.schoolYear,
 					},
 				},
-			}))
-		) {
-			return NextResponse.json(
-				{ error: 'Class already exists for this program and school year', data: null },
-				{ status: 409 },
-			);
+			});
+
+			if (duplicateClass) {
+				return badRequest(
+					'Class already exists for this program and school year',
+				);
+			}
 		}
 
 		const classItem = await prisma.classes.update({
@@ -63,29 +69,18 @@ const update = async (
 				teacher: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },
-					include: {
-						student: {
-							include: {
-								family: true,
-							},
-						},
-					},
+					include: { student: { include: { family: true } } },
 				},
 			},
 		});
 
-		return NextResponse.json({ data: classItem, error: null });
+		return success(classItem);
 	} catch (error) {
 		console.log('Update class error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
-		return NextResponse.json(
-			{ error: 'Internal server error', data: null },
-			{ status: 500 },
-		);
+		return internalServerError();
 	}
 };
 
@@ -99,34 +94,21 @@ const remove = async (
 	const classItem = await prisma.classes.findUnique({
 		where: { id },
 		include: {
-			_count: {
-				select: {
-					enrollments: {
-						where: { status: 'ACTIVE' },
-					},
-				},
-			},
+			_count: { select: { enrollments: { where: { status: 'ACTIVE' } } } },
 		},
 	});
 
-	if (!classItem) {
-		return NextResponse.json({ error: 'Class not found' }, { status: 404 });
-	}
+	if (!classItem) return notFound('Class not found');
 
 	if (classItem._count.enrollments > 0) {
-		return NextResponse.json(
-			{
-				error:
-					'Cannot delete class with active enrollments. Move or withdraw students first.',
-				data: null,
-			},
-			{ status: 400 },
+		return badRequest(
+			'Cannot delete class with active enrollments. Move or withdraw students first.',
 		);
 	}
 
 	await prisma.classes.delete({ where: { id } });
 
-	return NextResponse.json({ data: classItem, error: null });
+	return success(classItem);
 };
 
 export const PUT = withAuth(update);

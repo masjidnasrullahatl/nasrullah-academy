@@ -51,9 +51,7 @@ const getPaging = async (request: AuthRequest) => {
 	if (programId) enrollmentFilter.programId = programId;
 
 	if (classId || programId) {
-		where.enrollments = {
-			some: enrollmentFilter,
-		};
+		where.enrollments = { some: enrollmentFilter };
 	}
 
 	const total = await prisma.students.count({ where });
@@ -61,18 +59,10 @@ const getPaging = async (request: AuthRequest) => {
 	const students = await prisma.students.findMany({
 		skip,
 		take: limit,
-		orderBy: [
-			{ firstName: 'asc' },
-			{ lastName: 'asc' },
-		],
+		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 		include: {
 			family: true,
-			enrollments: {
-				include: {
-					class: true,
-					program: true,
-				},
-			},
+			enrollments: { include: { class: true, program: true } },
 		},
 		where,
 	});
@@ -103,12 +93,7 @@ const create = async (request: AuthRequest) => {
 			},
 			include: {
 				family: true,
-				enrollments: {
-					include: {
-						class: true,
-						program: true,
-					},
-				},
+				enrollments: { include: { class: true, program: true } },
 			},
 		});
 
