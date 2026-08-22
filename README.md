@@ -1,14 +1,13 @@
 # Masjid Nasrullah School Portal
 
-Masjid Nasrullah School Portal is a staff dashboard that replaces manual school spreadsheets for classes, families, students, monthly tuition tracking, payroll, and summary analytics.
+Masjid Nasrullah School Portal is a staff dashboard that replaces manual school spreadsheets for classes, families, students, monthly tuition tracking, and summary analytics.
 
 ## Overview
 
 - Authentication for staff users (Supabase-managed accounts)
 - Dashboard with summary cards, charts, and monthly financial table
-- School management: Classes, Families, Students, Teachers, Programs
-- Finance management: Monthly Payments and Teacher Payroll
-- Excel export for monthly payments (`.xlsx`)
+- School management: Classes, Families, Students, Teachers
+- Finance management: Monthly Payments
 
 ## Screenshots
 
@@ -16,7 +15,6 @@ Masjid Nasrullah School Portal is a staff dashboard that replaces manual school 
 - Classes — _add screenshot_
 - Families — _add screenshot_
 - Monthly Payments — _add screenshot_
-- Payroll — _add screenshot_
 
 ## Prerequisites
 
@@ -43,8 +41,8 @@ Create `.env` from `.env.example`:
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Supabase publishable/anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
-| `DATABASE_POOLED_URL` | Yes | PostgreSQL pooler connection string (for runtime) |
-| `DATABASE_URL` | Yes | Direct PostgreSQL connection string (for migrations) |
+| `DATABASE_POOLED_URL` | Yes | PostgreSQL pooler connection string (runtime queries, transaction pooler `6543`) |
+| `DATABASE_URL` | Yes | PostgreSQL direct URL for Prisma migrations (`5432` session pooler or direct) |
 
 ## Database
 
@@ -79,30 +77,29 @@ npx prisma migrate reset --force
 ## Feature tour
 
 - **Dashboard**
-  - 5 summary stat cards
-  - income/expense/profit trends
+  - summary stat cards
+  - income and unpaid-balance trends
   - gender and payment-status distribution
   - monthly summary table + top unpaid families
 - **Classes**
-  - class cards with teacher and enrolled students
+  - class list with teacher and enrolled students
   - assign/remove students
-  - change class teacher and metadata
+  - assign teacher and edit class metadata
 - **Families**
   - family profile with students and invoice history
   - create/edit family with multiple students
 - **Students**
   - searchable student directory with family/class/program links
 - **Teachers**
-  - teacher contacts, hourly rate, class assignments
-- **Programs**
-  - Hifz and Weekend program setup and status management
+  - teacher contacts and class assignments
+  - teachers are only used for class assignment
 - **Monthly Payments**
   - generate month invoices
   - edit paid values, status, and method
-  - export filtered data to Excel
-- **Payroll**
-  - payroll periods by month
-  - per-teacher weekday/weekend hours and computed pay
+  - view details by invoice row
+- **Account**
+  - profile update
+  - change password
 
 ## Deployment (Vercel)
 
@@ -121,6 +118,8 @@ yarn build
 ```bash
 npx prisma migrate deploy
 ```
+
+> ⚠️ `DATABASE_URL` is used as Prisma's `directUrl` and **must be the session pooler (port 5432)** or a direct connection — never the transaction pooler (port 6543). With port 6543, `prisma migrate` hangs and eventually fails with `Error: P1017: Server has closed the connection.` `DATABASE_POOLED_URL` stays on port 6543.
 
 ### Supabase Authentication URL configuration
 
@@ -154,6 +153,12 @@ yarn build
 
 ## Known limitations (by design)
 
-- No Excel import feature
-- Single role model (all authenticated users are staff)
-- Tuition amounts are entered manually by staff
+These are deliberate product decisions agreed with the client, not missing work:
+
+- **No spreadsheet import.** The source spreadsheets are inconsistent; data starts fresh.
+- **Single role.** Every authenticated user is staff with full access. Staff accounts are created in the Supabase Dashboard; there is no public sign-up.
+- **Tuition amounts are entered manually.** There is no price list and no multi-child discount engine. Staff type each fee; the server only derives Total Due, Total Paid and Balance.
+- **No teacher compensation module.** Teachers exist only to be assigned to classes.
+- **Dashboard has no Expense / Profit / Profit Margin**, because the app holds no expense data.
+- **No spreadsheet export.**
+- **Programs (Hifz, Weekend) are fixed** and seeded; there is no UI to manage them.
