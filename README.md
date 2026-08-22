@@ -130,6 +130,27 @@ In Supabase Dashboard → **Authentication** → **URL Configuration**:
   - `https://your-app.vercel.app/auth/password-reset/confirm`
   - and local/dev URL if needed (for example `http://localhost:3000/auth/password-reset/confirm`)
 
+## Database security (RLS)
+
+All application tables have Row Level Security **enabled with no policies**, and the `anon` /
+`authenticated` roles have no privileges on the `public` schema. This is intentional:
+
+- The browser never queries the database directly. All data access goes through `/api/*`
+  routes guarded by `withAuth`, which validate the Supabase JWT server-side.
+- Prisma connects as the `postgres` role (table owner), which bypasses RLS, so the app is
+  unaffected.
+- Without this, the public anon key shipped in the browser bundle would allow anyone to read
+  and delete every record via Supabase's auto-generated REST API.
+
+**When adding a new table**, you must enable RLS on it in the same migration:
+
+```sql
+ALTER TABLE "public"."<new_table>" ENABLE ROW LEVEL SECURITY;
+```
+
+Do **not** add permissive policies such as `USING (true)` or `TO authenticated` — they would
+re-open public access.
+
 ## QA / release checks
 
 Before release, run:
