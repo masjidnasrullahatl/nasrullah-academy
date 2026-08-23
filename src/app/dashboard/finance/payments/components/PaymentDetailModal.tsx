@@ -1,4 +1,4 @@
-import { Badge, Button, Divider, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Badge, Button, Divider, Group, Paper, Stack, Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
 import dayjs from 'dayjs';
@@ -46,7 +46,6 @@ const MoneyItem = ({
 export const PaymentDetailModal = ({ invoice }: PaymentDetailModalProps) => {
 	const paymentStatusLabel = PAYMENT_STATUS_LABELS[invoice.paymentStatus] || invoice.paymentStatus;
 	const payMethodLabel = PAY_METHOD_LABELS[invoice.payMethod] || invoice.payMethod;
-	const sessionLabel = invoice.session ? CLASS_SESSION_LABELS[invoice.session] : 'N/A';
 	const balanceColor = invoice.balance > 0 ? 'red.7' : 'green.7';
 
 	const handleOpenEdit = () => {
@@ -59,63 +58,91 @@ export const PaymentDetailModal = ({ invoice }: PaymentDetailModalProps) => {
 
 	return (
 		<Stack>
-			<Group wrap="wrap">
-				<Badge variant="light">{sessionLabel}</Badge>
+			<Group gap="xs" wrap="wrap">
 				<Badge color={PAYMENT_STATUS_COLORS[invoice.paymentStatus]} variant="light">
 					{paymentStatusLabel}
 				</Badge>
-				<Badge variant="light">{payMethodLabel}</Badge>
+
+				{invoice.studentCount > 0 && (
+					<Badge variant="light" color="dark">
+						{invoice.studentCount} student{invoice.studentCount > 1 ? 's' : ''}
+					</Badge>
+				)}
+
+				{invoice.session && invoice.session !== 'NA' && (
+					<Badge variant="light" color="cyan">
+						{CLASS_SESSION_LABELS[invoice.session]}
+					</Badge>
+				)}
+
+				{invoice.payMethod !== 'NA' && (
+					<Badge variant="light" color="indigo">
+						{payMethodLabel}
+					</Badge>
+				)}
 			</Group>
 
-			<Stack gap="xs">
+			<Paper withBorder radius="md" p="md">
 				<Text fw={700}>Charges</Text>
-				<SimpleGrid cols={{ base: 1, sm: 2 }}>
+				<Stack gap={6}>
 					<MoneyItem label="Registration Fee" amount={invoice.registrationFee} />
 					<MoneyItem label="Tuition Fee" amount={invoice.tuitionFee} />
 					<MoneyItem label="Book Fee" amount={invoice.bookFee} />
-				</SimpleGrid>
-				<Divider />
+				</Stack>
+				<Divider my="sm" />
 				<MoneyItem label="Total Due" amount={invoice.totalDue} alwaysShowAmount />
-			</Stack>
+			</Paper>
 
-			<Stack gap="xs">
+			<Paper withBorder radius="md" p="md">
 				<Text fw={700}>Payments</Text>
-				<SimpleGrid cols={{ base: 1, sm: 2 }}>
+				<Stack gap={6}>
 					<MoneyItem label="Paid Registration" amount={invoice.paidRegistrationFee} />
 					<MoneyItem label="Paid Tuition" amount={invoice.paidTuitionFee} />
 					<MoneyItem label="Paid Books" amount={invoice.paidBookFee} />
 					<MoneyItem label="Extra Paid" amount={invoice.extraPaid} />
-				</SimpleGrid>
-				<Divider />
+				</Stack>
+				<Divider my="sm" />
 				<MoneyItem label="Total Paid" amount={invoice.totalPaid} alwaysShowAmount />
-			</Stack>
+			</Paper>
 
-			<Group justify="space-between" wrap="nowrap">
-				<Text fw={700}>Balance</Text>
-				<Text fw={700} c={balanceColor}>
-					{formatMoney(invoice.balance)}
-				</Text>
-			</Group>
+			<Paper withBorder radius="md" p="md" bg={invoice.balance > 0 ? 'red.0' : 'green.0'}>
+				<Group justify="space-between" wrap="nowrap">
+					<Text fw={700}>Balance</Text>
+					<Text fw={700} fz="xl" c={balanceColor}>
+						{formatMoney(invoice.balance)}
+					</Text>
+				</Group>
+			</Paper>
 
-			<Group justify="space-between" wrap="nowrap">
-				<Text c="dimmed" size="sm">
-					Paid At
-				</Text>
-				<Text>{invoice.paidAt ? dayjs(invoice.paidAt).format('MM/DD/YYYY') : '—'}</Text>
-			</Group>
+			{(invoice.paidAt || invoice.notes) && (
+				<Stack gap={6}>
+					{invoice.paidAt && (
+						<Group justify="space-between" wrap="nowrap">
+							<Text c="dimmed" size="sm">
+								Paid At
+							</Text>
+							<Text>{dayjs(invoice.paidAt).format('MM/DD/YYYY')}</Text>
+						</Group>
+					)}
 
-			<Stack gap={6}>
-				<Text c="dimmed" size="sm">
-					Notes
-				</Text>
-				{invoice.notes ? <Text style={{ whiteSpace: 'pre-wrap' }}>{invoice.notes}</Text> : <Text c="dimmed">No notes</Text>}
-			</Stack>
+					{invoice.notes && (
+						<Group align="flex-start" justify="space-between" wrap="nowrap">
+							<Text c="dimmed" size="sm">
+								Notes
+							</Text>
+							<Text ta="right" style={{ whiteSpace: 'pre-wrap' }}>
+								{invoice.notes}
+							</Text>
+						</Group>
+					)}
+				</Stack>
+			)}
 
 			<ModalFooter>
-				<Button onClick={handleOpenEdit}>Edit</Button>
 				<Button variant="default" onClick={() => modals.closeAll()}>
 					Close
 				</Button>
+				<Button onClick={handleOpenEdit}>Edit</Button>
 			</ModalFooter>
 		</Stack>
 	);

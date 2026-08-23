@@ -4,6 +4,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { ReactNode, useEffect, useState } from 'react';
 
+import { LoadingOverlay } from '@mantine/core';
+
 import { PATH_AUTH, PATH_DASHBOARD } from '@configs/routes';
 
 import { createClient } from '@helpers/supabase/client';
@@ -11,10 +13,7 @@ import { createClient } from '@helpers/supabase/client';
 // Pages that don't require authentication
 const RESET_PASSWORD_PAGE = '/auth/password-reset/confirm';
 
-const PUBLIC_PAGES = [
-	PATH_AUTH.signin,
-	PATH_AUTH.passwordReset,
-];
+const PUBLIC_PAGES = [PATH_AUTH.signin, PATH_AUTH.passwordReset];
 
 interface AuthProviderProps {
 	children: ReactNode;
@@ -98,21 +97,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	}, [router, isPublicPage, isResetPasswordPage, isSigninPage]);
 
 	// Show loading while checking authentication
-	if (isLoading) {
-		return (
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					height: '100vh',
-					fontSize: '1.2rem',
-				}}
-			>
-				Loading...
-			</div>
-		);
-	}
+	if (isLoading) <LoadingOverlay />;
 
 	// For public pages, always render children
 	if (isPublicPage) {

@@ -24,8 +24,8 @@ export const DataTable = () => {
 	const currentDate = new Date();
 	const [page, setPage] = useState(1);
 	const [filter, setFilter] = useState<{
-		year: number;
-		month: number;
+		year?: number;
+		month?: number;
 		paymentStatus?: string;
 		payMethod?: string;
 		familyId?: string;
@@ -71,8 +71,8 @@ export const DataTable = () => {
 			size: 'xl',
 			children: (
 				<PaymentFormModal
-					defaultYear={filter.year}
-					defaultMonth={filter.month}
+					defaultYear={filter.year ?? currentDate.getFullYear()}
+					defaultMonth={filter.month ?? currentDate.getMonth() + 1}
 				/>
 			),
 		});
@@ -93,7 +93,6 @@ export const DataTable = () => {
 	return (
 		<>
 			<TableFilter
-				currentDate={currentDate}
 				filter={filter}
 				onChangeFilter={handleChangeFilter}
 			/>

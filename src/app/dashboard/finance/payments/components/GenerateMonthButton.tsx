@@ -13,24 +13,33 @@ import { MONTH_OPTIONS } from '@configs/enums';
 import { useGenerateInvoices } from '@hooks/react-query/invoices/useGenerateInvoices';
 
 type GenerateMonthButtonProps = {
-	year: number;
-	month: number;
+	year?: number;
+	month?: number;
 };
 
 export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) => {
 	const [copyFromPreviousMonth, setCopyFromPreviousMonth] = useState(false);
 	const { mutateAsync: generateInvoices, isPending } = useGenerateInvoices();
 
-	const monthLabel = MONTH_OPTIONS.find((item) => Number(item.value) === month)?.label || month;
+	const monthLabel = month
+		? MONTH_OPTIONS.find((item) => Number(item.value) === month)?.label || month
+		: '-';
 
 	const handleGenerate = () => {
+		if (!year || !month) {
+			return;
+		}
+
+		const targetYear = year;
+		const targetMonth = month;
+
 		modals.open({
 			title: 'Generate month invoices',
 			size: 'md',
 			children: (
 				<Stack>
 					<Text size="sm">
-						Target: <b>{monthLabel}</b> <b>{year}</b>
+						Target: <b>{monthLabel}</b> <b>{targetYear}</b>
 					</Text>
 					<Text size="sm" c="dimmed">
 						Existing invoice rows are not overwritten.
@@ -53,8 +62,8 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 							loading={isPending}
 							onClick={async () => {
 								const result = await generateInvoices({
-									year,
-									month,
+									year: targetYear,
+									month: targetMonth,
 									copyFromPreviousMonth,
 								});
 
@@ -76,8 +85,19 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 	};
 
 	return (
-		<Tooltip label="Generate invoices for selected month">
-			<Button onClick={handleGenerate} leftSection={<IconSparkles size={16} />} loading={isPending}>
+		<Tooltip
+			label={
+				year && month
+					? 'Generate invoices for selected month'
+					: 'Select a year and month first'
+			}
+		>
+			<Button
+				onClick={handleGenerate}
+				leftSection={<IconSparkles size={16} />}
+				loading={isPending}
+				disabled={!year || !month}
+			>
 				Generate month
 			</Button>
 		</Tooltip>

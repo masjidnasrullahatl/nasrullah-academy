@@ -6,7 +6,8 @@ import { useGetDashboardYears } from '@hooks/react-query/dashboard/useGetDashboa
 
 type DashboardFiltersProps = {
 	year: number;
-	onChangeYear: any;
+	// eslint-disable-next-line no-unused-vars
+	onChangeYear: (value: number) => void;
 };
 
 export const DashboardFilters = ({
@@ -23,7 +24,6 @@ export const DashboardFilters = ({
 
 			<Group wrap="wrap">
 				<Select
-					clearable
 					label="Year"
 					placeholder="Select year"
 					leftSection={<IconCalendar size={16} />}

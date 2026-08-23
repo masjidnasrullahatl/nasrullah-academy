@@ -95,14 +95,22 @@ export const PaymentFormModal = ({
 	defaultMonth,
 }: PaymentFormModalProps) => {
 	const isEdit = Boolean(invoice?.id);
-	const [isPaymentStatusOverridden, setIsPaymentStatusOverridden] = useState(false);
+	const [validationError, setValidationError] = useState<string | null>(null);
+	const [isPaymentStatusOverridden, setIsPaymentStatusOverridden] =
+		useState(false);
 
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
 
-	const { mutateAsync: createInvoice, isPending: isCreating, error: createError } =
-		useCreateInvoice();
-	const { mutateAsync: updateInvoice, isPending: isUpdating, error: updateError } =
-		useUpdateInvoice();
+	const {
+		mutateAsync: createInvoice,
+		isPending: isCreating,
+		error: createError,
+	} = useCreateInvoice();
+	const {
+		mutateAsync: updateInvoice,
+		isPending: isUpdating,
+		error: updateError,
+	} = useUpdateInvoice();
 
 	const isPending = isCreating || isUpdating;
 	const submitError = (createError || updateError)?.message;
@@ -130,7 +138,10 @@ export const PaymentFormModal = ({
 	});
 
 	const totalDue = useMemo(
-		() => form.values.registrationFee + form.values.tuitionFee + form.values.bookFee,
+		() =>
+			form.values.registrationFee +
+			form.values.tuitionFee +
+			form.values.bookFee,
 		[form.values.bookFee, form.values.registrationFee, form.values.tuitionFee],
 	);
 	const totalPaid = useMemo(
@@ -153,7 +164,10 @@ export const PaymentFormModal = ({
 			return;
 		}
 
-		form.setFieldValue('paymentStatus', getSuggestedStatus(totalDue, totalPaid));
+		form.setFieldValue(
+			'paymentStatus',
+			getSuggestedStatus(totalDue, totalPaid),
+		);
 	};
 
 	const handleAmountChange = (field: keyof FormValue, value: number) => {
@@ -162,6 +176,8 @@ export const PaymentFormModal = ({
 	};
 
 	const handleSubmit = async (values: FormValue) => {
+		setValidationError(null);
+
 		if (isEdit && invoice) {
 			const payload: UpdateInvoicePayload = {
 				year: values.year,
@@ -218,13 +234,22 @@ export const PaymentFormModal = ({
 
 	return (
 		<Stack>
-			{submitError && (
+			{(validationError || submitError) && (
 				<Alert color="red" icon={<IconAlertCircle size={16} />}>
-					{submitError}
+					{validationError || submitError}
 				</Alert>
 			)}
 
-			<form onSubmit={form.onSubmit(handleSubmit)}>
+			<form
+				onSubmit={form.onSubmit(handleSubmit, (errors) => {
+					const first = Object.values(errors).find(Boolean);
+					setValidationError(
+						typeof first === 'string'
+							? first
+							: 'Please check the highlighted fields',
+					);
+				})}
+			>
 				<Stack>
 					<Grid>
 						{!isEdit && (
@@ -260,7 +285,9 @@ export const PaymentFormModal = ({
 								withAsterisk
 								data={MONTH_OPTIONS}
 								value={String(form.values.month)}
-								onChange={(value) => form.setFieldValue('month', Number(value || 1))}
+								onChange={(value) =>
+									form.setFieldValue('month', Number(value || 1))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -281,7 +308,10 @@ export const PaymentFormModal = ({
 						data={CLASS_SESSION_OPTIONS}
 						value={form.values.session || ''}
 						onChange={(value) =>
-							form.setFieldValue('session', (value || null) as FormValue['session'])
+							form.setFieldValue(
+								'session',
+								(value || null) as FormValue['session'],
+							)
 						}
 					/>
 
@@ -309,7 +339,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.tuitionFee}
-								onChange={(value) => handleAmountChange('tuitionFee', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('tuitionFee', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -321,7 +353,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.bookFee}
-								onChange={(value) => handleAmountChange('bookFee', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('bookFee', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -347,7 +381,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.paidTuitionFee}
-								onChange={(value) => handleAmountChange('paidTuitionFee', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('paidTuitionFee', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -359,7 +395,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.paidBookFee}
-								onChange={(value) => handleAmountChange('paidBookFee', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('paidBookFee', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -371,7 +409,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.extraPaid}
-								onChange={(value) => handleAmountChange('extraPaid', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('extraPaid', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -380,6 +420,7 @@ export const PaymentFormModal = ({
 								placeholder="0.00"
 								value={formatDecimal(totalDue)}
 								readOnly
+								disabled
 								leftSection="$"
 							/>
 						</Grid.Col>
@@ -389,6 +430,7 @@ export const PaymentFormModal = ({
 								placeholder="0.00"
 								value={formatDecimal(totalPaid)}
 								readOnly
+								disabled
 								leftSection="$"
 							/>
 						</Grid.Col>
@@ -420,7 +462,10 @@ export const PaymentFormModal = ({
 								value={form.values.paymentStatus}
 								onChange={(value) => {
 									setIsPaymentStatusOverridden(true);
-									form.setFieldValue('paymentStatus', (value || 'UNPAID') as FormValue['paymentStatus']);
+									form.setFieldValue(
+										'paymentStatus',
+										(value || 'UNPAID') as FormValue['paymentStatus'],
+									);
 								}}
 							/>
 						</Grid.Col>
@@ -429,6 +474,7 @@ export const PaymentFormModal = ({
 								label="Paid At"
 								placeholder="Select payment date"
 								value={form.values.paidAt}
+								error={form.errors.paidAt}
 								onChange={(value) =>
 									form.setFieldValue(
 										'paidAt',

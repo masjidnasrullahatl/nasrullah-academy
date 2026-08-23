@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Group, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
@@ -20,8 +19,8 @@ import {
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 
 type FilterValue = {
-	year: number;
-	month: number;
+	year?: number;
+	month?: number;
 	familyId?: string;
 	payMethod?: string;
 	paymentStatus?: string;
@@ -29,20 +28,11 @@ type FilterValue = {
 
 type Props = {
 	filter: FilterValue;
-	currentDate: Date;
-	onChangeFilter: (
-		key:
-			| 'year'
-			| 'month'
-			| 'familyId'
-			| 'payMethod'
-			| 'paymentStatus'
-			| 'keyword',
-		value: string | number,
-	) => void;
+	// eslint-disable-next-line no-unused-vars
+	onChangeFilter: (key: 'year' | 'month' | 'familyId' | 'payMethod' | 'paymentStatus' | 'keyword', value: string | number) => void;
 };
 
-export const TableFilter = ({ filter, currentDate, onChangeFilter }: Props) => {
+export const TableFilter = ({ filter, onChangeFilter }: Props) => {
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
 
 	const debounceChangeKeyword = useDebouncedCallback((value: string) => {
@@ -68,13 +58,12 @@ export const TableFilter = ({ filter, currentDate, onChangeFilter }: Props) => {
 						leftSection={<IconCalendar size={16} />}
 						clearable
 						data={Array.from({ length: 8 }).map((_, index) => {
+							const currentDate = new Date();
 							const year = currentDate.getFullYear() - 2 + index;
 							return { value: String(year), label: String(year) };
 						})}
-						value={String(filter.year)}
-						onChange={(value) =>
-							onChangeFilter('year', Number(value || currentDate.getFullYear()))
-						}
+						value={filter.year ? String(filter.year) : null}
+						onChange={(value) => onChangeFilter('year', value ? Number(value) : '')}
 					/>
 
 					<Select
@@ -82,13 +71,8 @@ export const TableFilter = ({ filter, currentDate, onChangeFilter }: Props) => {
 						leftSection={<IconCalendarMonth size={16} />}
 						clearable
 						data={MONTH_OPTIONS}
-						value={String(filter.month)}
-						onChange={(value) =>
-							onChangeFilter(
-								'month',
-								Number(value || currentDate.getMonth() + 1),
-							)
-						}
+						value={filter.month ? String(filter.month) : null}
+						onChange={(value) => onChangeFilter('month', value ? Number(value) : '')}
 					/>
 					<Select
 						placeholder="All families"
