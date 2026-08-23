@@ -7,14 +7,22 @@ export const TableHeader = () => {
 		<Table.Thead>
 			<Table.Tr>
 				<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+
 				<Table.Th>Family</Table.Th>
+
 				<Table.Th ta="center">#Kids</Table.Th>
+
 				<Table.Th ta="right">Total Due</Table.Th>
+
 				<Table.Th ta="right">Total Paid</Table.Th>
+
 				<Table.Th ta="right">Balance</Table.Th>
+
 				<Table.Th>Method</Table.Th>
+
 				<Table.Th>Status</Table.Th>
-				<Table.Th ta="center" className={stickyStyles.stickyRight}>
+
+				<Table.Th w={1} ta="center" className={stickyStyles.stickyRight}>
 					Actions
 				</Table.Th>
 			</Table.Tr>

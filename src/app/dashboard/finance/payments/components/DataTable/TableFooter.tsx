@@ -18,41 +18,62 @@ type Props = {
 	setPage: (page: number) => void;
 };
 
-export const TableFooter = ({ total, page, pageSize, summary, setPage }: Props) => {
+export const TableFooter = ({
+	total,
+	page,
+	pageSize,
+	summary,
+	setPage,
+}: Props) => {
 	const hasPagination = total > pageSize;
 
 	return (
 		<Table.Tfoot
 			style={{
-				borderTop: '2px solid var(--mantine-color-gray-3)',
+				borderTop: '1px solid var(--mantine-color-gray-3)',
 				backgroundColor: 'var(--mantine-color-gray-0)',
 			}}
 		>
 			<Table.Tr>
-				<Table.Td colSpan={2} fw={700} className={stickyStyles.stickyLeft}>
+				<Table.Td
+					colSpan={2}
+					fw={700}
+					className={stickyStyles.stickyLeft}
+					bg="gray.0"
+				>
 					Sum:
 				</Table.Td>
-				<Table.Td ta="center" fw={700}>
+
+				<Table.Td ta="center" fz="sm" fw={700} c="blue">
 					{summary.studentCount}
 				</Table.Td>
-				<Table.Td ta="right" fw={700}>
+
+				<Table.Td ta="right" fz="sm" fw={700} c="red">
 					{formatMoney(summary.totalDue)}
 				</Table.Td>
-				<Table.Td ta="right" fw={700}>
+
+				<Table.Td ta="right" fz="sm" fw={700} c="green">
 					{formatMoney(summary.totalPaid)}
 				</Table.Td>
+
 				<Table.Td ta="right">
-					<Text c={summary.balance > 0 ? 'red.7' : 'green.7'} fw={700} span>
+					<Text
+						span
+						fz="sm"
+						fw={700}
+						c={summary.balance > 0 ? 'red.7' : 'green.7'}
+					>
 						{formatMoney(summary.balance)}
 					</Text>
 				</Table.Td>
+
 				<Table.Td colSpan={3} className={stickyStyles.stickyRight} />
 			</Table.Tr>
 
 			<Table.Tr>
 				<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
 					<Group justify="space-between">
-						<Text fw={700}>Total: {total}</Text>
+						<Text fz="sm">Total: {total}</Text>
 
 						{hasPagination && (
 							<Pagination

@@ -56,13 +56,15 @@ export default function FamilyDetailPage() {
 	const [invoiceMonth, setInvoiceMonth] = useState<number | undefined>();
 
 	const { data: family } = useGetFamilyDetail(familyId);
-	const { data: invoices, isLoading: isLoadingInvoices } = useGetPagingInvoices({
-		page: invoicePage,
-		limit: 10,
-		familyId,
-		year: invoiceYear,
-		month: invoiceMonth,
-	});
+	const { data: invoices, isLoading: isLoadingInvoices } = useGetPagingInvoices(
+		{
+			page: invoicePage,
+			limit: 10,
+			familyId,
+			year: invoiceYear,
+			month: invoiceMonth,
+		},
+	);
 	const { mutateAsync: deleteStudent, isPending: isDeletingStudent } =
 		useDeleteStudent();
 
@@ -72,7 +74,10 @@ export default function FamilyDetailPage() {
 				{ title: 'Dashboard', href: PATH_DASHBOARD.default },
 				{ title: 'Apps', href: PATH_APPS.root },
 				{ title: 'Families', href: PATH_APPS.families },
-				{ title: family?.name || 'Family detail', href: `${PATH_APPS.families}/${familyId}` },
+				{
+					title: family?.name || 'Family detail',
+					href: `${PATH_APPS.families}/${familyId}`,
+				},
 			].map((item, index) => (
 				<Anchor href={item.href} key={index}>
 					{item.title}
@@ -97,14 +102,17 @@ export default function FamilyDetailPage() {
 		modals.open({
 			title: 'Edit Student',
 			size: 'lg',
-			children: <StudentFormModal student={student} defaultFamilyId={familyId} />,
+			children: (
+				<StudentFormModal student={student} defaultFamilyId={familyId} />
+			),
 		});
 	};
 
 	const handleDeleteStudent = (student: any) => {
 		modals.openConfirmModal({
 			title: `Delete ${student.firstName} ${student.lastName}?`,
-			children: 'This removes the student record from this family and all related class enrollments.',
+			children:
+				'This removes the student record from this family and all related class enrollments.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -124,7 +132,10 @@ export default function FamilyDetailPage() {
 						title={family?.name || 'Family Detail'}
 						breadcrumbItems={items}
 						actionButton={
-							<Button leftSection={<IconEdit size={16} />} onClick={handleEditFamily}>
+							<Button
+								leftSection={<IconEdit size={16} />}
+								onClick={handleEditFamily}
+							>
 								Edit Family
 							</Button>
 						}
@@ -167,76 +178,80 @@ export default function FamilyDetailPage() {
 						</Text>
 						<Table.ScrollContainer minWidth={1100}>
 							<Table
-					striped="even"
-					highlightOnHover
-					withTableBorder
-					verticalSpacing="sm"
-					horizontalSpacing="md"
-				>
-							<Table.Thead>
-								<Table.Tr>
-									<Table.Th>Name</Table.Th>
-									<Table.Th>Gender</Table.Th>
-									<Table.Th>Date of birth</Table.Th>
-									<Table.Th>Age</Table.Th>
-									<Table.Th>Enrolled classes</Table.Th>
-									<Table.Th>Teacher</Table.Th>
-									<Table.Th>Status</Table.Th>
-									<Table.Th ta="center">Actions</Table.Th>
-								</Table.Tr>
-							</Table.Thead>
-							<Table.Tbody>
-								{family?.students?.map((student: any) => (
-									<Table.Tr key={student.id}>
-										<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
-										<Table.Td>{student.gender}</Table.Td>
-										<Table.Td>
-											{student.dateOfBirth
-												? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
-												: '-'}
-										</Table.Td>
-										<Table.Td>{calcAge(student.dateOfBirth)}</Table.Td>
-										<Table.Td>
-											<Group gap={4}>
-											{student.enrollments?.map((enrollment: any) => (
-												<Badge key={enrollment.id} variant="light">
-													{enrollment.class.name}
-												</Badge>
-											))}
-											</Group>
-										</Table.Td>
-										<Table.Td>
-											{student.enrollments
-												?.map((enrollment: any) => {
-													const teacher = enrollment.class.teacher;
-													return teacher
-														? `${teacher.firstName} ${teacher.lastName}`
-														: '-';
-												})
-												.join(', ')}
-										</Table.Td>
-										<Table.Td>
-											<Badge color={student.status === 'ACTIVE' ? 'green' : 'gray'}>
-												{student.status}
-											</Badge>
-										</Table.Td>
-										<Table.Td>
-											<Group gap="xs" justify="center">
-												<ActionIcon onClick={() => handleEditStudent(student)}>
-													<IconEdit size={16} />
-												</ActionIcon>
-												<ActionIcon
-													color="red"
-													onClick={() => handleDeleteStudent(student)}
-													disabled={isDeletingStudent}
-												>
-													<IconTrash size={16} />
-												</ActionIcon>
-											</Group>
-										</Table.Td>
+								striped="even"
+								highlightOnHover
+								withTableBorder
+								verticalSpacing="sm"
+								horizontalSpacing="md"
+							>
+								<Table.Thead>
+									<Table.Tr>
+										<Table.Th>Name</Table.Th>
+										<Table.Th>Gender</Table.Th>
+										<Table.Th>Date of birth</Table.Th>
+										<Table.Th>Age</Table.Th>
+										<Table.Th>Enrolled classes</Table.Th>
+										<Table.Th>Teacher</Table.Th>
+										<Table.Th>Status</Table.Th>
+										<Table.Th ta="center">Actions</Table.Th>
 									</Table.Tr>
-								))}
-							</Table.Tbody>
+								</Table.Thead>
+								<Table.Tbody>
+									{family?.students?.map((student: any) => (
+										<Table.Tr key={student.id}>
+											<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
+											<Table.Td>{student.gender}</Table.Td>
+											<Table.Td>
+												{student.dateOfBirth
+													? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
+													: '-'}
+											</Table.Td>
+											<Table.Td>{calcAge(student.dateOfBirth)}</Table.Td>
+											<Table.Td>
+												<Group gap={4}>
+													{student.enrollments?.map((enrollment: any) => (
+														<Badge key={enrollment.id} variant="light">
+															{enrollment.class.name}
+														</Badge>
+													))}
+												</Group>
+											</Table.Td>
+											<Table.Td>
+												{student.enrollments
+													?.map((enrollment: any) => {
+														const teacher = enrollment.class.teacher;
+														return teacher
+															? `${teacher.firstName} ${teacher.lastName}`
+															: '-';
+													})
+													.join(', ')}
+											</Table.Td>
+											<Table.Td>
+												<Badge
+													color={student.status === 'ACTIVE' ? 'green' : 'gray'}
+												>
+													{student.status}
+												</Badge>
+											</Table.Td>
+											<Table.Td>
+												<Group gap="xs" justify="center">
+													<ActionIcon
+														onClick={() => handleEditStudent(student)}
+													>
+														<IconEdit size={16} />
+													</ActionIcon>
+													<ActionIcon
+														color="red"
+														onClick={() => handleDeleteStudent(student)}
+														disabled={isDeletingStudent}
+													>
+														<IconTrash size={16} />
+													</ActionIcon>
+												</Group>
+											</Table.Td>
+										</Table.Tr>
+									))}
+								</Table.Tbody>
 							</Table>
 						</Table.ScrollContainer>
 					</Paper>
@@ -281,73 +296,75 @@ export default function FamilyDetailPage() {
 
 						<Table.ScrollContainer minWidth={1000}>
 							<Table
-					striped="even"
-					highlightOnHover
-					withTableBorder
-					verticalSpacing="sm"
-					horizontalSpacing="md"
-				>
-							<Table.Thead>
-								<Table.Tr>
-									<Table.Th>#</Table.Th>
-									<Table.Th>Month</Table.Th>
-									<Table.Th>Total Due</Table.Th>
-									<Table.Th>Total Paid</Table.Th>
-									<Table.Th>Balance</Table.Th>
-									<Table.Th>Status</Table.Th>
-									<Table.Th>Method</Table.Th>
-									<Table.Th>Paid At</Table.Th>
-								</Table.Tr>
-							</Table.Thead>
-							<Table.Tbody>
-								{isLoadingInvoices ? (
+								striped="even"
+								highlightOnHover
+								withTableBorder
+								verticalSpacing="sm"
+								horizontalSpacing="md"
+							>
+								<Table.Thead>
 									<Table.Tr>
-											<Table.Td colSpan={8}>Loading invoices...</Table.Td>
+										<Table.Th>#</Table.Th>
+										<Table.Th>Month</Table.Th>
+										<Table.Th>Total Due</Table.Th>
+										<Table.Th>Total Paid</Table.Th>
+										<Table.Th>Balance</Table.Th>
+										<Table.Th>Status</Table.Th>
+										<Table.Th>Method</Table.Th>
+										<Table.Th>Paid At</Table.Th>
 									</Table.Tr>
-								) : invoices?.data.length ? (
-									invoices.data.map((invoice, index) => (
-										<Table.Tr key={invoice.id}>
-											<Table.Td>{(invoicePage - 1) * 10 + index + 1}</Table.Td>
-											<Table.Td>
-												{MONTH_OPTIONS.find(
-													(month) => Number(month.value) === invoice.month,
-												)?.label || invoice.month}
-												/{invoice.year}
-											</Table.Td>
-											<Table.Td>{formatMoney(invoice.totalDue)}</Table.Td>
-											<Table.Td>{formatMoney(invoice.totalPaid)}</Table.Td>
-											<Table.Td>{formatMoney(invoice.balance)}</Table.Td>
-											<Table.Td>
-												<Badge
-													color={
-														invoice.paymentStatus === 'PAID'
-															? 'green'
-															: invoice.paymentStatus === 'PARTIAL'
-																? 'yellow'
-																: 'red'
-													}
-												>
-													{invoice.paymentStatus}
-												</Badge>
-											</Table.Td>
-											<Table.Td>{invoice.payMethod}</Table.Td>
-											<Table.Td>
-												{invoice.paidAt
-													? dayjs(invoice.paidAt).format('MM/DD/YYYY')
-													: '-'}
+								</Table.Thead>
+								<Table.Tbody>
+									{isLoadingInvoices ? (
+										<Table.Tr>
+											<Table.Td colSpan={8}>Loading invoices...</Table.Td>
+										</Table.Tr>
+									) : invoices?.data.length ? (
+										invoices.data.map((invoice, index) => (
+											<Table.Tr key={invoice.id}>
+												<Table.Td>
+													{(invoicePage - 1) * 10 + index + 1}
+												</Table.Td>
+												<Table.Td>
+													{MONTH_OPTIONS.find(
+														(month) => Number(month.value) === invoice.month,
+													)?.label || invoice.month}
+													/{invoice.year}
+												</Table.Td>
+												<Table.Td>{formatMoney(invoice.totalDue)}</Table.Td>
+												<Table.Td>{formatMoney(invoice.totalPaid)}</Table.Td>
+												<Table.Td>{formatMoney(invoice.balance)}</Table.Td>
+												<Table.Td>
+													<Badge
+														color={
+															invoice.paymentStatus === 'PAID'
+																? 'green'
+																: invoice.paymentStatus === 'PARTIAL'
+																	? 'yellow'
+																	: 'red'
+														}
+													>
+														{invoice.paymentStatus}
+													</Badge>
+												</Table.Td>
+												<Table.Td>{invoice.payMethod}</Table.Td>
+												<Table.Td>
+													{invoice.paidAt
+														? dayjs(invoice.paidAt).format('MM/DD/YYYY')
+														: '-'}
+												</Table.Td>
+											</Table.Tr>
+										))
+									) : (
+										<Table.Tr>
+											<Table.Td colSpan={8}>
+												<Text c="dimmed" size="sm" ta="center">
+													No invoices found for this family.
+												</Text>
 											</Table.Td>
 										</Table.Tr>
-									))
-								) : (
-									<Table.Tr>
-											<Table.Td colSpan={8}>
-											<Text c="dimmed" size="sm" ta="center">
-												No invoices found for this family.
-											</Text>
-										</Table.Td>
-									</Table.Tr>
-								)}
-							</Table.Tbody>
+									)}
+								</Table.Tbody>
 							</Table>
 						</Table.ScrollContainer>
 

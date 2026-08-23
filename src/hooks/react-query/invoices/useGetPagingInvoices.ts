@@ -1,4 +1,9 @@
-import { ClassSession, Families, PaymentStatus, PayMethod } from '@prisma/client';
+import {
+	ClassSession,
+	Families,
+	PaymentStatus,
+	PayMethod,
+} from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetInvoicesQueryParams } from '@app/api/invoices/types';
@@ -46,7 +51,7 @@ export type InvoiceRow = {
 	family: Families;
 };
 
-type InvoicesPagingResponse = ApiPagingResponse<InvoiceRow> & {
+export type InvoicesPagingResponse = ApiPagingResponse<InvoiceRow> & {
 	summary: InvoiceSummary;
 };
 
@@ -65,7 +70,9 @@ export const useGetPagingInvoices = (params: GetInvoicesQueryParams) => {
 				keyword: params.keyword || '',
 			});
 
-			const response = await fetchAuth(`/api/invoices?${queryParams.toString()}`);
+			const response = await fetchAuth(
+				`/api/invoices?${queryParams.toString()}`,
+			);
 			const data: InvoicesPagingResponse = await response.json();
 
 			return data;

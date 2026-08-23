@@ -40,7 +40,10 @@ export function MainLayout({ children }: Props) {
 				size={250}
 				styles={{ body: { height: '100%', padding: 0 } }}
 			>
-				<SidebarNav showCloseButton={true} onClose={() => setOpenedSidebar(false)} />
+				<SidebarNav
+					showCloseButton={true}
+					onClose={() => setOpenedSidebar(false)}
+				/>
 			</Drawer>
 
 			<Box
@@ -49,7 +52,12 @@ export function MainLayout({ children }: Props) {
 				mih="100vh"
 				pos="relative"
 			>
-				<Box className={layoutClasses.header} py="sm" px="lg" bg="white">
+				<Box
+					className={layoutClasses.header}
+					py={{ base: 'xs', md: 0 }}
+					px="lg"
+					bg="white"
+				>
 					<HeaderNav
 						showSidebarToggle={Boolean(isMobile)}
 						onToggleSidebar={() => setOpenedSidebar((prev) => !prev)}

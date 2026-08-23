@@ -1,19 +1,18 @@
 import { useState } from 'react';
 
-import { Alert, Button, Grid, Group, Paper, Table, Text } from '@mantine/core';
+import { Alert, Button, Group, Paper, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
 import { useGetPagingInvoices } from '@hooks/react-query/invoices/useGetPagingInvoices';
 
-import { formatMoney } from '@utils/money';
-
 import { GenerateMonthButton } from '../GenerateMonthButton';
 import { PaymentFormModal } from '../PaymentFormModal';
 
 import { EmptyBody } from './EmptyBody';
 import { LoadingBody } from './LoadingBody';
+import { StatCards } from './StatCards';
 import { TableFilter } from './TableFilter';
 import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
@@ -53,7 +52,13 @@ export const DataTable = () => {
 	});
 
 	const handleChangeFilter = (
-		key: 'year' | 'month' | 'familyId' | 'payMethod' | 'paymentStatus' | 'keyword',
+		key:
+			| 'year'
+			| 'month'
+			| 'familyId'
+			| 'payMethod'
+			| 'paymentStatus'
+			| 'keyword',
 		value: string | number,
 	) => {
 		setFilter((prev) => ({ ...prev, [key]: value || undefined }));
@@ -64,7 +69,12 @@ export const DataTable = () => {
 		modals.open({
 			title: 'Create Monthly Payment',
 			size: 'xl',
-			children: <PaymentFormModal defaultYear={filter.year} defaultMonth={filter.month} />,
+			children: (
+				<PaymentFormModal
+					defaultYear={filter.year}
+					defaultMonth={filter.month}
+				/>
+			),
 		});
 	};
 
@@ -82,48 +92,20 @@ export const DataTable = () => {
 
 	return (
 		<>
-			<Grid>
-				<Grid.Col span={{ base: 12, md: 3 }}>
-					<Paper p="md" withBorder>
-						<Text c="dimmed" size="sm">
-							Students
-						</Text>
-						<Text fw={700} size="lg">
-							{invoices?.summary.studentCount || 0}
-						</Text>
-					</Paper>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 3 }}>
-					<Paper p="md" withBorder>
-						<Text c="dimmed" size="sm">
-							Total Due
-						</Text>
-						<Text fw={700} size="lg">
-							{formatMoney(invoices?.summary.totalDue || 0)}
-						</Text>
-					</Paper>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 3 }}>
-					<Paper p="md" withBorder>
-						<Text c="dimmed" size="sm">
-							Total Paid
-						</Text>
-						<Text fw={700} size="lg">
-							{formatMoney(invoices?.summary.totalPaid || 0)}
-						</Text>
-					</Paper>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 3 }}>
-					<Paper p="md" withBorder>
-						<Text c="dimmed" size="sm">
-							Balance
-						</Text>
-						<Text fw={700} size="lg">
-							{formatMoney(invoices?.summary.balance || 0)}
-						</Text>
-					</Paper>
-				</Grid.Col>
-			</Grid>
+			<TableFilter
+				currentDate={currentDate}
+				filter={filter}
+				onChangeFilter={handleChangeFilter}
+			/>
+
+			<StatCards invoices={invoices} />
+
+			<Group justify="flex-end" wrap="wrap">
+				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+					Add payment row
+				</Button>
+				<GenerateMonthButton year={filter.year} month={filter.month} />
+			</Group>
 
 			<Paper p="md" withBorder>
 				{isError && (
@@ -132,24 +114,12 @@ export const DataTable = () => {
 					</Alert>
 				)}
 
-				<TableFilter
-					currentDate={currentDate}
-					filter={filter}
-					onChangeFilter={handleChangeFilter}
-				/>
-
-				<Group justify="flex-end" mb="sm" wrap="wrap">
-					<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-						Add payment row
-					</Button>
-					<GenerateMonthButton year={filter.year} month={filter.month} />
-				</Group>
-
 				<Table.ScrollContainer minWidth={1050}>
 					<Table
 						striped="even"
 						highlightOnHover
 						withTableBorder
+						withColumnBorders
 						verticalSpacing="sm"
 						horizontalSpacing="md"
 					>
