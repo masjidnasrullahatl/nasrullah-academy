@@ -18,15 +18,8 @@ import { TopUnpaidFamilies } from './components/TopUnpaidFamilies';
 export default function DashboardPage() {
 	const currentYear = new Date().getFullYear();
 	const [year, setYear] = useState(currentYear);
-	const [programId, setProgramId] = useState<string | undefined>();
 
-	const summaryParams = useMemo(
-		() => ({
-			year,
-			programId,
-		}),
-		[programId, year],
-	);
+	const summaryParams = useMemo(() => ({ year }), [year]);
 
 	const {
 		data: summary,
@@ -39,12 +32,7 @@ export default function DashboardPage() {
 			<Stack>
 				<title>Dashboard | Masjid Nasrullah School</title>
 
-				<DashboardFilters
-					year={year}
-					programId={programId}
-					onChangeYear={setYear}
-					onChangeProgramId={setProgramId}
-				/>
+				<DashboardFilters year={year} onChangeYear={setYear} />
 
 				{error && <Alert color="red">{error.message}</Alert>}
 
@@ -58,7 +46,10 @@ export default function DashboardPage() {
 							<GenderDonut genderSplit={summary.genderSplit} />
 							<PaymentStatusDonut paymentStatus={summary.paymentStatus} />
 						</SimpleGrid>
-						<MonthlySummaryTable monthly={summary.monthly} totals={summary.totals} />
+						<MonthlySummaryTable
+							monthly={summary.monthly}
+							totals={summary.totals}
+						/>
 						<TopUnpaidFamilies data={summary.topUnpaidFamilies} />
 					</>
 				)}

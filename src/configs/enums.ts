@@ -5,7 +5,6 @@ import type {
 	Gender,
 	PaymentStatus,
 	PayMethod,
-	ProgramCode,
 	RecordStatus,
 } from '@prisma/client';
 
@@ -13,16 +12,6 @@ type SelectOption = {
 	value: string;
 	label: string;
 };
-
-export const PROGRAM_CODE_LABELS: Record<ProgramCode, string> = {
-	HIFZ: 'Hifz',
-	WEEKEND: 'Weekend',
-};
-
-export const PROGRAM_CODE_OPTIONS: SelectOption[] = [
-	{ value: 'HIFZ', label: PROGRAM_CODE_LABELS.HIFZ },
-	{ value: 'WEEKEND', label: PROGRAM_CODE_LABELS.WEEKEND },
-];
 
 export const RECORD_STATUS_LABELS: Record<RecordStatus, string> = {
 	ACTIVE: 'Active',

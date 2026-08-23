@@ -1,3 +1,4 @@
+import { EnrollmentStatus } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
@@ -41,28 +42,29 @@ const assignStudents = async (
 			if (existing?.status === 'ACTIVE') continue;
 
 			if (existing) {
+				const payload = {
+					startDate: new Date(),
+					endDate: null,
+					status: EnrollmentStatus.ACTIVE,
+				};
+
 				await prisma.enrollments.update({
+					data: payload,
 					where: { id: existing.id },
-					data: {
-						status: 'ACTIVE',
-						startDate: new Date(),
-						endDate: null,
-						programId: classItem.programId,
-					},
 				});
+
 				createdCount += 1;
 				continue;
 			}
 
-			await prisma.enrollments.create({
-				data: {
-					studentId,
-					classId,
-					programId: classItem.programId,
-					status: 'ACTIVE',
-					startDate: new Date(),
-				},
-			});
+			const payload = {
+				classId,
+				studentId,
+				status: EnrollmentStatus.ACTIVE,
+				startDate: new Date(),
+			};
+
+			await prisma.enrollments.create({ data: payload });
 
 			createdCount += 1;
 		}
@@ -94,16 +96,23 @@ const removeStudent = async (
 		where: { studentId_classId: { studentId, classId } },
 	});
 
-	if (!enrollment || enrollment.status !== 'ACTIVE') {
-		return notFound('Active enrollment not found');
+	if (!enrollment) return notFound('Enrollment not found');
+
+	if (enrollment.status !== EnrollmentStatus.ACTIVE) {
+		return badRequest('Student is not active in this class');
 	}
 
-	const updated = await prisma.enrollments.update({
+	const payload = {
+		status: EnrollmentStatus.WITHDRAWN,
+		endDate: new Date(),
+	};
+
+	await prisma.enrollments.update({
 		where: { id: enrollment.id },
-		data: { status: 'WITHDRAWN', endDate: new Date() },
+		data: payload,
 	});
 
-	return success(updated);
+	return success({ id: enrollment.id });
 };
 
 const getAvailableStudents = async (
@@ -114,21 +123,19 @@ const getAvailableStudents = async (
 	const { searchParams } = new URL(request.url);
 
 	const keyword = searchParams.get('keyword') || '';
-	const programId = searchParams.get('programId') || '';
 
 	const prisma = createClient();
 
-	const activeEnrollments = await prisma.enrollments.findMany({
-		where: { classId, status: 'ACTIVE' },
-		select: { studentId: true },
+	const classItem = await prisma.classes.findUnique({
+		where: { id: classId },
 	});
 
-	const excludedIds = activeEnrollments.map((item) => item.studentId);
+	if (!classItem) return notFound('Class not found');
 
 	const students = await prisma.students.findMany({
 		where: {
 			status: 'ACTIVE',
-			...(excludedIds.length > 0 ? { id: { notIn: excludedIds } } : {}),
+			family: { status: 'ACTIVE' },
 			...(keyword
 				? {
 						OR: [
@@ -138,12 +145,11 @@ const getAvailableStudents = async (
 						],
 					}
 				: {}),
-			...(programId
-				? { enrollments: { some: { programId, status: 'ACTIVE' } } }
-				: {}),
+			enrollments: { none: { classId, status: EnrollmentStatus.ACTIVE } },
 		},
 		include: { family: true },
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+		take: 500,
 	});
 
 	return success(students);

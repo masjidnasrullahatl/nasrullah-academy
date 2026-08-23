@@ -8,11 +8,6 @@ datasource db {
   directUrl = env("DATABASE_URL")
 }
 
-enum ProgramCode {
-  HIFZ
-  WEEKEND
-}
-
 enum RecordStatus {
   ACTIVE
   INACTIVE
@@ -58,24 +53,6 @@ enum PaymentStatus {
   PARTIAL
   UNPAID
   NA
-}
-
-model Programs {
-  id String @id @default(uuid())
-
-  code        ProgramCode   @unique
-  name        String        @unique
-  description String?
-  status      ArchiveStatus @default(ACTIVE)
-
-  classes     Classes[]
-  enrollments Enrollments[]
-  invoices    MonthlyInvoices[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("programs")
 }
 
 model Families {
@@ -144,15 +121,8 @@ model Teachers {
 model Classes {
   id String @id @default(uuid())
 
-  name       String
-  session    ClassSession  @default(NA)
-  room       String?
-  schoolYear Int           @map("school_year")
-  capacity   Int?
-  status     ArchiveStatus @default(ACTIVE)
-
-  programId String   @map("program_id")
-  program   Programs @relation(fields: [programId], references: [id])
+  name   String        @unique
+  status ArchiveStatus @default(ACTIVE)
 
   teacherId String?   @map("teacher_id")
   teacher   Teachers? @relation(fields: [teacherId], references: [id])
@@ -162,7 +132,6 @@ model Classes {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([name, programId, schoolYear])
   @@map("classes")
 }
 
@@ -178,9 +147,6 @@ model Enrollments {
 
   classId String  @map("class_id")
   class   Classes @relation(fields: [classId], references: [id], onDelete: Cascade)
-
-  programId String   @map("program_id")
-  program   Programs @relation(fields: [programId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -215,13 +181,10 @@ model MonthlyInvoices {
   familyId String   @map("family_id")
   family   Families @relation(fields: [familyId], references: [id], onDelete: Cascade)
 
-  programId String   @map("program_id")
-  program   Programs @relation(fields: [programId], references: [id])
-
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([familyId, programId, year, month])
-  @@index([year, month, programId])
+  @@unique([familyId, year, month])
+  @@index([year, month])
   @@map("monthly_invoices")
 }

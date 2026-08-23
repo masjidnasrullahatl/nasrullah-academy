@@ -19,10 +19,7 @@ const getPaging = async (request: AuthRequest) => {
 	const page = Number(searchParams.get('page') || 1);
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
-	const programId = searchParams.get('programId') || '';
 	const teacherId = searchParams.get('teacherId') || '';
-	const schoolYear = Number(searchParams.get('schoolYear') || 0);
-	const session = searchParams.get('session') || '';
 	const status = searchParams.get('status') || '';
 
 	const prisma = createClient();
@@ -31,10 +28,7 @@ const getPaging = async (request: AuthRequest) => {
 	const where: Prisma.ClassesWhereInput = {};
 
 	if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
-	if (programId) where.programId = programId;
 	if (teacherId) where.teacherId = teacherId;
-	if (schoolYear) where.schoolYear = schoolYear;
-	if (session) where.session = session as any;
 	if (status) where.status = status as any;
 
 	const total = await prisma.classes.count({ where });
@@ -42,9 +36,8 @@ const getPaging = async (request: AuthRequest) => {
 	const classes = await prisma.classes.findMany({
 		skip,
 		take: limit,
-		orderBy: [{ programId: 'asc' }, { name: 'asc' }],
+		orderBy: { name: 'asc' },
 		include: {
-			program: true,
 			teacher: true,
 			enrollments: {
 				where: { status: 'ACTIVE' },
@@ -79,34 +72,18 @@ const create = async (request: AuthRequest) => {
 		const prisma = createClient();
 
 		const existing = await prisma.classes.findUnique({
-			where: {
-				name_programId_schoolYear: {
-					name: data.name,
-					programId: data.programId,
-					schoolYear: data.schoolYear,
-				},
-			},
+			where: { name: data.name },
 		});
 
-		if (existing) {
-			return badRequest(
-				'Class already exists for this program and school year',
-			);
-		}
+		if (existing) return badRequest('Class already exists');
 
 		const classItem = await prisma.classes.create({
 			data: {
 				name: data.name,
-				programId: data.programId,
 				teacherId: data.teacherId || null,
-				session: data.session,
-				room: data.room || null,
-				schoolYear: data.schoolYear,
-				capacity: data.capacity || null,
 				status: data.status,
 			},
 			include: {
-				program: true,
 				teacher: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },

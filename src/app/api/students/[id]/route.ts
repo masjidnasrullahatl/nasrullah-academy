@@ -26,7 +26,7 @@ const getDetail = async (
 		include: {
 			family: true,
 			enrollments: {
-				include: { class: { include: { teacher: true } }, program: true },
+				include: { class: { include: { teacher: true } } },
 			},
 		},
 	});
@@ -67,7 +67,7 @@ const update = async (
 			include: {
 				family: true,
 				enrollments: {
-					include: { class: { include: { teacher: true } }, program: true },
+					include: { class: { include: { teacher: true } } },
 				},
 			},
 		});

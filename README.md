@@ -46,11 +46,10 @@ Create `.env` from `.env.example`:
 
 ## Database
 
-Run migrations and seed:
+Run migrations:
 
 ```bash
 yarn db:migrate
-yarn db:seed
 ```
 
 Open Prisma Studio:
@@ -84,12 +83,12 @@ npx prisma migrate reset --force
 - **Classes**
   - class list with teacher and enrolled students
   - assign/remove students
-  - assign teacher and edit class metadata
+  - assign teacher and edit class name + status
 - **Families**
   - family profile with students and invoice history
   - create/edit family with multiple students
 - **Students**
-  - searchable student directory with family/class/program links
+  - searchable student directory with family/class links
 - **Teachers**
   - teacher contacts and class assignments
   - teachers are only used for class assignment
@@ -169,7 +168,6 @@ yarn build
 - `yarn lint` — Run ESLint
 - `yarn stylelint` — Run Stylelint
 - `yarn db:migrate` — Prisma migrate dev
-- `yarn db:seed` — Seed database
 - `yarn db:studio` — Open Prisma Studio
 
 ## Known limitations (by design)
@@ -182,4 +180,9 @@ These are deliberate product decisions agreed with the client, not missing work:
 - **No teacher compensation module.** Teachers exist only to be assigned to classes.
 - **Dashboard has no Expense / Profit / Profit Margin**, because the app holds no expense data.
 - **No spreadsheet export.**
-- **Programs (Hifz, Weekend) are fixed** and seeded; there is no UI to manage them.
+- **No program split in reporting.** Revenue and summaries are tracked per month across all active classes.
+
+## Data entry policy
+
+- The app no longer provides seed data.
+- Staff enters real data directly from the UI (Families, Students, Classes, Payments).

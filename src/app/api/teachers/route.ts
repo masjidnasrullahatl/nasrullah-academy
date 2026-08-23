@@ -45,7 +45,7 @@ const getPaging = async (request: AuthRequest) => {
 		take: limit,
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 		include: {
-			classes: { include: { program: true } },
+			classes: true,
 			_count: { select: { classes: true } },
 		},
 		where,

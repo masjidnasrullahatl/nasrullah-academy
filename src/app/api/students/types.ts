@@ -7,7 +7,6 @@ export type GetStudentsQueryParams = PagingQueryParams & {
 	keyword?: string;
 	familyId?: string;
 	classId?: string;
-	programId?: string;
 	gender?: Gender;
 	status?: RecordStatus;
 };

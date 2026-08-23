@@ -26,7 +26,7 @@ export default function ClassesPage() {
 	const handleCreateClass = () => {
 		modals.open({
 			title: 'Create Class',
-			size: 'lg',
+			size: 'md',
 			children: <ClassFormModal />,
 		});
 	};
@@ -34,13 +34,17 @@ export default function ClassesPage() {
 	return (
 		<>
 			<title>Classes | Masjid Nasrullah School</title>
+
 			<Container fluid>
 				<Stack>
 					<PageHeader
 						title="Classes"
 						breadcrumbItems={items}
 						actionButton={
-							<Button leftSection={<IconPlus size={16} />} onClick={handleCreateClass}>
+							<Button
+								leftSection={<IconPlus size={16} />}
+								onClick={handleCreateClass}
+							>
 								Create class
 							</Button>
 						}

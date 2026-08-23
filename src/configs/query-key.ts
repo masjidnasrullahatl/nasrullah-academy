@@ -7,7 +7,6 @@ export const QUERY_KEYS = {
 		GET_PAGING: 'classes.get-paging',
 		GET_AVAILABLE_STUDENTS: 'classes.get-available-students',
 	},
-	PROGRAMS: { GET_PAGING: 'programs.get-paging' },
 	INVOICES: { GET_PAGING: 'invoices.get-paging', GET_DETAIL: 'invoices.get-detail' },
 	DASHBOARD: { SUMMARY: 'dashboard.summary', YEARS: 'dashboard.years' },
 };

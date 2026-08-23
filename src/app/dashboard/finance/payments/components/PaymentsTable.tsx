@@ -26,7 +26,6 @@ import { notifications } from '@mantine/notifications';
 import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
-	IconBook,
 	IconCalendar,
 	IconCalendarMonth,
 	IconCheck,
@@ -58,7 +57,6 @@ import {
 	useGetPagingInvoices,
 } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useUpdateInvoice } from '@hooks/react-query/invoices/useUpdateInvoice';
-import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 import { formatMoney } from '@utils/money';
 
@@ -74,7 +72,6 @@ export const PaymentsTable = () => {
 	const [filter, setFilter] = useState<{
 		year: number;
 		month: number;
-		programId?: string;
 		paymentStatus?: string;
 		payMethod?: string;
 		familyId?: string;
@@ -84,7 +81,6 @@ export const PaymentsTable = () => {
 		month: currentDate.getMonth() + 1,
 	});
 
-	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
 	const {
 		data: invoices,
@@ -96,7 +92,6 @@ export const PaymentsTable = () => {
 		limit: PAGE_SIZE,
 		year: filter.year,
 		month: filter.month,
-		programId: filter.programId,
 		paymentStatus: filter.paymentStatus as InvoiceRow['paymentStatus'],
 		payMethod: filter.payMethod as InvoiceRow['payMethod'],
 		familyId: filter.familyId,
@@ -105,8 +100,6 @@ export const PaymentsTable = () => {
 
 	const { mutateAsync: deleteInvoice, isPending: isDeleting } = useDeleteInvoice();
 	const { mutateAsync: updateInvoice, isPending: isUpdating } = useUpdateInvoice();
-
-	const selectedProgram = programs?.data.find((program) => program.id === filter.programId);
 
 	const handleChangeFilter = (key: keyof typeof filter, value?: string | number) => {
 		setFilter((prev) => ({ ...prev, [key]: value }));
@@ -121,13 +114,7 @@ export const PaymentsTable = () => {
 		modals.open({
 			title: 'Create Monthly Payment',
 			size: 'xl',
-			children: (
-				<PaymentFormModal
-					defaultYear={filter.year}
-					defaultMonth={filter.month}
-					defaultProgramId={filter.programId}
-				/>
-			),
+			children: <PaymentFormModal defaultYear={filter.year} defaultMonth={filter.month} />,
 		});
 	};
 
@@ -151,7 +138,7 @@ export const PaymentsTable = () => {
 	const handleDelete = (invoice: InvoiceRow) => {
 		modals.openConfirmModal({
 			title: `Delete payment for ${invoice.family.name}?`,
-			children: `This deletes the ${invoice.month}/${invoice.year} invoice row for ${invoice.program.name}.`,
+			children: `This deletes the ${invoice.month}/${invoice.year} invoice row.`,
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -188,65 +175,48 @@ export const PaymentsTable = () => {
 		});
 
 		notifications.show({
-			title: 'Marked as paid',
-			message: 'Invoice paid fields were filled from fee values',
+			title: 'Payment updated',
+			message: 'Marked invoice as paid',
 			color: 'green',
 		});
 	};
 
 	const loadingRows = Array.from({ length: 8 }).map((_, index) => (
 		<Table.Tr key={index}>
-			{Array.from({ length: 10 }).map((_, columnIndex) => (
+			{Array.from({ length: 9 }).map((_, columnIndex) => (
 				<Table.Td
 					key={columnIndex}
 					className={
 						columnIndex === 0
 							? stickyStyles.stickyLeft
-							: columnIndex === 9
+							: columnIndex === 8
 								? stickyStyles.stickyRight
 								: undefined
 					}
 				>
-					<Skeleton h={28} />
+					<Skeleton h={30} w="100%" />
 				</Table.Td>
 			))}
 		</Table.Tr>
 	));
 
 	const rows = invoices?.data.map((invoice, index) => {
-		const methodLabel = PAY_METHOD_LABELS[invoice.payMethod] || invoice.payMethod;
+		const payMethodLabel = PAY_METHOD_LABELS[invoice.payMethod] || invoice.payMethod;
 		const statusLabel = PAYMENT_STATUS_LABELS[invoice.paymentStatus] || invoice.paymentStatus;
-		const balanceColor = invoice.balance > 0 ? 'red.7' : 'green.7';
 
 		return (
-			<Table.Tr
-				key={invoice.id}
-				style={{ cursor: 'pointer' }}
-				onClick={() => openDetail(invoice)}
-			>
+			<Table.Tr key={invoice.id}>
 				<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * PAGE_SIZE + index + 1}</Table.Td>
-				<Table.Td>
-					<Stack gap={2}>
-						<Text fw={500}>{invoice.family.name}</Text>
-						<Text fz="xs" c="dimmed">
-							{invoice.family.primaryPhone || '-'}
-						</Text>
-					</Stack>
-				</Table.Td>
-				<Table.Td>
-					<Badge variant="light">{invoice.program.name}</Badge>
-				</Table.Td>
+				<Table.Td>{invoice.family.name}</Table.Td>
 				<Table.Td ta="center">{invoice.studentCount}</Table.Td>
 				<Table.Td ta="right">{formatMoney(invoice.totalDue)}</Table.Td>
 				<Table.Td ta="right">{formatMoney(invoice.totalPaid)}</Table.Td>
 				<Table.Td ta="right">
-					<Text c={balanceColor} fw={700} span>
+					<Text c={invoice.balance > 0 ? 'red.7' : 'green.7'} fw={700} span>
 						{formatMoney(invoice.balance)}
 					</Text>
 				</Table.Td>
-				<Table.Td>
-					<Badge variant="light">{methodLabel}</Badge>
-				</Table.Td>
+				<Table.Td>{payMethodLabel}</Table.Td>
 				<Table.Td>
 					<Badge color={PAYMENT_STATUS_COLORS[invoice.paymentStatus]} variant="light">
 						{statusLabel}
@@ -256,7 +226,7 @@ export const PaymentsTable = () => {
 					<Group
 						gap={4}
 						justify="center"
-						wrap="nowrap"
+						w="nowrap"
 						onClick={(event) => event.stopPropagation()}
 					>
 						<Tooltip label="View details">
@@ -350,7 +320,7 @@ export const PaymentsTable = () => {
 					</Alert>
 				)}
 
-				<SimpleGrid cols={{ base: 1, sm: 2, md: 4, lg: 7 }} spacing="xs" mb="md">
+				<SimpleGrid cols={{ base: 1, sm: 2, md: 4, lg: 6 }} spacing="xs" mb="md">
 					<Select
 						placeholder="Year"
 						leftSection={<IconCalendar size={16} />}
@@ -373,15 +343,6 @@ export const PaymentsTable = () => {
 						onChange={(value) =>
 							handleChangeFilter('month', Number(value || currentDate.getMonth() + 1))
 						}
-					/>
-					<Select
-						placeholder="All programs"
-						leftSection={<IconBook size={16} />}
-						clearable
-						searchable
-						data={programs?.data.map((program) => ({ value: program.id, label: program.name }))}
-						value={filter.programId || null}
-						onChange={(value) => handleChangeFilter('programId', value || undefined)}
 					/>
 					<Select
 						placeholder="All families"
@@ -419,15 +380,10 @@ export const PaymentsTable = () => {
 					<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
 						Add payment row
 					</Button>
-					<GenerateMonthButton
-						year={filter.year}
-						month={filter.month}
-						programId={filter.programId}
-						programLabel={selectedProgram?.name}
-					/>
+					<GenerateMonthButton year={filter.year} month={filter.month} />
 				</Group>
 
-				<Table.ScrollContainer minWidth={1100}>
+				<Table.ScrollContainer minWidth={1050}>
 					<Table
 						striped="even"
 						highlightOnHover
@@ -436,20 +392,19 @@ export const PaymentsTable = () => {
 						horizontalSpacing="md"
 					>
 						<Table.Thead>
-						<Table.Tr>
-							<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+							<Table.Tr>
+								<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
 								<Table.Th>Family</Table.Th>
-								<Table.Th>Program</Table.Th>
 								<Table.Th ta="center">#Kids</Table.Th>
 								<Table.Th ta="right">Total Due</Table.Th>
 								<Table.Th ta="right">Total Paid</Table.Th>
 								<Table.Th ta="right">Balance</Table.Th>
 								<Table.Th>Method</Table.Th>
 								<Table.Th>Status</Table.Th>
-							<Table.Th ta="center" className={stickyStyles.stickyRight}>
-								Actions
-							</Table.Th>
-						</Table.Tr>
+								<Table.Th ta="center" className={stickyStyles.stickyRight}>
+									Actions
+								</Table.Th>
+							</Table.Tr>
 						</Table.Thead>
 						<Table.Tbody>
 							{isLoading ? (
@@ -457,41 +412,41 @@ export const PaymentsTable = () => {
 							) : hasData ? (
 								rows
 							) : (
+								<Table.Tr>
+									<Table.Td className={stickyStyles.stickyLeft} />
+									<Table.Td colSpan={7}>
+										<Center h={200}>
+											<Stack align="center">
+												<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
+												<Text fw={600}>No payments found</Text>
+											</Stack>
+										</Center>
+									</Table.Td>
+									<Table.Td className={stickyStyles.stickyRight} />
+								</Table.Tr>
+							)}
+						</Table.Tbody>
+						<Table.Tfoot
+							style={{
+								borderTop: '2px solid var(--mantine-color-gray-3)',
+								backgroundColor: 'var(--mantine-color-gray-0)',
+							}}
+						>
 							<Table.Tr>
-								<Table.Td className={stickyStyles.stickyLeft} />
-								<Table.Td colSpan={8}>
-									<Center h={200}>
-										<Stack align="center">
-											<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
-											<Text fw={600}>No payments found</Text>
-										</Stack>
-									</Center>
+								<Table.Td colSpan={2} fw={700} className={stickyStyles.stickyLeft}>
+									Sum:
 								</Table.Td>
-								<Table.Td className={stickyStyles.stickyRight} />
+								<Table.Td ta="center" fw={700}>{invoices?.summary.studentCount || 0}</Table.Td>
+								<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
+								<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
+								<Table.Td ta="right">
+									<Text c={(invoices?.summary.balance || 0) > 0 ? 'red.7' : 'green.7'} fw={700} span>
+										{formatMoney(invoices?.summary.balance || 0)}
+									</Text>
+								</Table.Td>
+								<Table.Td colSpan={3} className={stickyStyles.stickyRight} />
 							</Table.Tr>
-						)}
-					</Table.Tbody>
-					<Table.Tfoot
-						style={{
-							borderTop: '2px solid var(--mantine-color-gray-3)',
-							backgroundColor: 'var(--mantine-color-gray-0)',
-						}}
-					>
-						<Table.Tr>
-							<Table.Td colSpan={3} fw={700} className={stickyStyles.stickyLeft}>
-								Sum:
-							</Table.Td>
-							<Table.Td ta="center" fw={700}>{invoices?.summary.studentCount || 0}</Table.Td>
-							<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalDue || 0)}</Table.Td>
-							<Table.Td ta="right" fw={700}>{formatMoney(invoices?.summary.totalPaid || 0)}</Table.Td>
-							<Table.Td ta="right">
-								<Text c={(invoices?.summary.balance || 0) > 0 ? 'red.7' : 'green.7'} fw={700} span>
-									{formatMoney(invoices?.summary.balance || 0)}
-								</Text>
-							</Table.Td>
-							<Table.Td colSpan={3} className={stickyStyles.stickyRight} />
-						</Table.Tr>
-					</Table.Tfoot>
+						</Table.Tfoot>
 					</Table>
 				</Table.ScrollContainer>
 

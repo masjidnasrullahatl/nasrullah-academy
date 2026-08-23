@@ -28,13 +28,17 @@ import {
 
 import { ModalFooter } from '@components/ModalFooter';
 
-import { CLASS_SESSION_OPTIONS, MONTH_OPTIONS, PAY_METHOD_OPTIONS,PAYMENT_STATUS_OPTIONS } from '@configs/enums';
+import {
+	CLASS_SESSION_OPTIONS,
+	MONTH_OPTIONS,
+	PAY_METHOD_OPTIONS,
+	PAYMENT_STATUS_OPTIONS,
+} from '@configs/enums';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 import { useCreateInvoice } from '@hooks/react-query/invoices/useCreateInvoice';
 import { InvoiceRow } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useUpdateInvoice } from '@hooks/react-query/invoices/useUpdateInvoice';
-import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 import { formatDecimal } from '@utils/number';
 
@@ -42,12 +46,10 @@ type PaymentFormModalProps = {
 	invoice?: InvoiceRow;
 	defaultYear?: number;
 	defaultMonth?: number;
-	defaultProgramId?: string;
 };
 
 type FormValue = {
 	familyId: string;
-	programId: string;
 	year: number;
 	month: number;
 	studentCount: number;
@@ -59,7 +61,16 @@ type FormValue = {
 	paidTuitionFee: number;
 	paidBookFee: number;
 	extraPaid: number;
-	payMethod: 'KEELA' | 'ZELLE' | 'CASH' | 'CASHAPP' | 'SQUARE' | 'CHECK' | 'FREE' | 'OTHER' | 'NA';
+	payMethod:
+		| 'KEELA'
+		| 'ZELLE'
+		| 'CASH'
+		| 'CASHAPP'
+		| 'SQUARE'
+		| 'CHECK'
+		| 'FREE'
+		| 'OTHER'
+		| 'NA';
 	paymentStatus: 'PAID' | 'PARTIAL' | 'UNPAID' | 'NA';
 	paidAt: Date | null;
 	notes: string;
@@ -82,13 +93,11 @@ export const PaymentFormModal = ({
 	invoice,
 	defaultYear,
 	defaultMonth,
-	defaultProgramId,
 }: PaymentFormModalProps) => {
 	const isEdit = Boolean(invoice?.id);
 	const [isPaymentStatusOverridden, setIsPaymentStatusOverridden] = useState(false);
 
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
-	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const { mutateAsync: createInvoice, isPending: isCreating, error: createError } =
 		useCreateInvoice();
@@ -101,7 +110,6 @@ export const PaymentFormModal = ({
 	const form = useForm<FormValue>({
 		initialValues: {
 			familyId: invoice?.familyId || '',
-			programId: invoice?.programId || defaultProgramId || '',
 			year: invoice?.year || defaultYear || new Date().getFullYear(),
 			month: invoice?.month || defaultMonth || new Date().getMonth() + 1,
 			studentCount: invoice?.studentCount || 0,
@@ -172,11 +180,11 @@ export const PaymentFormModal = ({
 				paidAt: values.paidAt ? dayjs(values.paidAt).toISOString() : null,
 				notes: values.notes || null,
 			};
+
 			await updateInvoice({ id: invoice.id, data: payload });
 		} else {
 			const payload: CreateInvoicePayload = {
 				familyId: values.familyId,
-				programId: values.programId,
 				year: values.year,
 				month: values.month,
 				studentCount: values.studentCount,
@@ -193,12 +201,15 @@ export const PaymentFormModal = ({
 				paidAt: values.paidAt ? dayjs(values.paidAt).toISOString() : null,
 				notes: values.notes || null,
 			};
+
 			await createInvoice(payload);
 		}
 
 		notifications.show({
 			title: isEdit ? 'Payment updated' : 'Payment created',
-			message: isEdit ? 'Invoice updated successfully' : 'Invoice created successfully',
+			message: isEdit
+				? 'Monthly payment updated successfully'
+				: 'Monthly payment created successfully',
 			color: 'green',
 		});
 
@@ -216,34 +227,21 @@ export const PaymentFormModal = ({
 			<form onSubmit={form.onSubmit(handleSubmit)}>
 				<Stack>
 					<Grid>
-						<Grid.Col span={{ base: 12, md: 6 }}>
-							<Select
-								label="Family"
-								placeholder="Select family"
-								withAsterisk
-								disabled={isEdit}
-								searchable
-								data={families?.data.map((family) => ({
-									value: family.id,
-									label: family.name,
-								}))}
-								{...form.getInputProps('familyId')}
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, md: 6 }}>
-							<Select
-								label="Program"
-								placeholder="Select program"
-								withAsterisk
-								disabled={isEdit}
-								searchable
-								data={programs?.data.map((program) => ({
-									value: program.id,
-									label: program.name,
-								}))}
-								{...form.getInputProps('programId')}
-							/>
-						</Grid.Col>
+						{!isEdit && (
+							<Grid.Col span={{ base: 12, md: 4 }}>
+								<Select
+									label="Family"
+									placeholder="Select family"
+									withAsterisk
+									searchable
+									data={families?.data.map((family) => ({
+										value: family.id,
+										label: family.name,
+									}))}
+									{...form.getInputProps('familyId')}
+								/>
+							</Grid.Col>
+						)}
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Year"
@@ -282,7 +280,9 @@ export const PaymentFormModal = ({
 						placeholder="Select session"
 						data={CLASS_SESSION_OPTIONS}
 						value={form.values.session || ''}
-						onChange={(value) => form.setFieldValue('session', (value || null) as FormValue['session'])}
+						onChange={(value) =>
+							form.setFieldValue('session', (value || null) as FormValue['session'])
+						}
 					/>
 
 					<Grid>
@@ -295,7 +295,9 @@ export const PaymentFormModal = ({
 								fixedDecimalScale
 								min={0}
 								value={form.values.registrationFee}
-								onChange={(value) => handleAmountChange('registrationFee', Number(value || 0))}
+								onChange={(value) =>
+									handleAmountChange('registrationFee', Number(value || 0))
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
@@ -424,22 +426,24 @@ export const PaymentFormModal = ({
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<DateInput
-								label="Paid Date"
-								placeholder="MM/DD/YYYY"
+								label="Paid At"
+								placeholder="Select payment date"
 								value={form.values.paidAt}
 								onChange={(value) =>
-									form.setFieldValue('paidAt', value ? new Date(value) : null)
+									form.setFieldValue(
+										'paidAt',
+										value ? new Date(String(value)) : null,
+									)
 								}
-								valueFormat="MM/DD/YYYY"
-								clearable
 							/>
 						</Grid.Col>
 					</Grid>
 
 					<Textarea
 						label="Notes"
-						placeholder="Scholarship, payment arrangement, ..."
-						minRows={2}
+						placeholder="Optional note"
+						autosize
+						minRows={3}
 						{...form.getInputProps('notes')}
 					/>
 
@@ -448,7 +452,7 @@ export const PaymentFormModal = ({
 							Cancel
 						</Button>
 						<Button type="submit" loading={isPending}>
-							{isEdit ? 'Update Payment' : 'Create Payment'}
+							{isEdit ? 'Update payment' : 'Create payment'}
 						</Button>
 					</ModalFooter>
 				</Stack>

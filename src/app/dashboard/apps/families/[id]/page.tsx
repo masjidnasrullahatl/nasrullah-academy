@@ -198,11 +198,11 @@ export default function FamilyDetailPage() {
 										<Table.Td>{calcAge(student.dateOfBirth)}</Table.Td>
 										<Table.Td>
 											<Group gap={4}>
-												{student.enrollments?.map((enrollment: any) => (
-													<Badge key={enrollment.id} variant="light">
-														{enrollment.class.name} ({enrollment.program.code})
-													</Badge>
-												))}
+											{student.enrollments?.map((enrollment: any) => (
+												<Badge key={enrollment.id} variant="light">
+													{enrollment.class.name}
+												</Badge>
+											))}
 											</Group>
 										</Table.Td>
 										<Table.Td>
@@ -291,7 +291,6 @@ export default function FamilyDetailPage() {
 								<Table.Tr>
 									<Table.Th>#</Table.Th>
 									<Table.Th>Month</Table.Th>
-									<Table.Th>Program</Table.Th>
 									<Table.Th>Total Due</Table.Th>
 									<Table.Th>Total Paid</Table.Th>
 									<Table.Th>Balance</Table.Th>
@@ -303,7 +302,7 @@ export default function FamilyDetailPage() {
 							<Table.Tbody>
 								{isLoadingInvoices ? (
 									<Table.Tr>
-										<Table.Td colSpan={9}>Loading invoices...</Table.Td>
+											<Table.Td colSpan={8}>Loading invoices...</Table.Td>
 									</Table.Tr>
 								) : invoices?.data.length ? (
 									invoices.data.map((invoice, index) => (
@@ -315,7 +314,6 @@ export default function FamilyDetailPage() {
 												)?.label || invoice.month}
 												/{invoice.year}
 											</Table.Td>
-											<Table.Td>{invoice.program.name}</Table.Td>
 											<Table.Td>{formatMoney(invoice.totalDue)}</Table.Td>
 											<Table.Td>{formatMoney(invoice.totalPaid)}</Table.Td>
 											<Table.Td>{formatMoney(invoice.balance)}</Table.Td>
@@ -342,7 +340,7 @@ export default function FamilyDetailPage() {
 									))
 								) : (
 									<Table.Tr>
-										<Table.Td colSpan={9}>
+											<Table.Td colSpan={8}>
 											<Text c="dimmed" size="sm" ta="center">
 												No invoices found for this family.
 											</Text>

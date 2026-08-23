@@ -21,7 +21,6 @@ const getPaging = async (request: AuthRequest) => {
 	const keyword = searchParams.get('keyword') || '';
 	const familyId = searchParams.get('familyId') || '';
 	const classId = searchParams.get('classId') || '';
-	const programId = searchParams.get('programId') || '';
 	const gender = searchParams.get('gender') || '';
 	const status = searchParams.get('status') || '';
 
@@ -48,9 +47,7 @@ const getPaging = async (request: AuthRequest) => {
 
 	if (classId) enrollmentFilter.classId = classId;
 
-	if (programId) enrollmentFilter.programId = programId;
-
-	if (classId || programId) {
+	if (classId) {
 		where.enrollments = { some: enrollmentFilter };
 	}
 
@@ -62,7 +59,7 @@ const getPaging = async (request: AuthRequest) => {
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 		include: {
 			family: true,
-			enrollments: { include: { class: true, program: true } },
+			enrollments: { include: { class: true } },
 		},
 		where,
 	});
@@ -93,7 +90,7 @@ const create = async (request: AuthRequest) => {
 			},
 			include: {
 				family: true,
-				enrollments: { include: { class: true, program: true } },
+				enrollments: { include: { class: true } },
 			},
 		});
 

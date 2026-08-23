@@ -1,4 +1,4 @@
-import { Families, Programs, Students } from '@prisma/client';
+import { Families, Students } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetStudentsQueryParams } from '@app/api/students/types';
@@ -16,7 +16,6 @@ type StudentWithRelations = Students & {
 			id: string;
 			name: string;
 		};
-		program: Programs;
 	}>;
 };
 
@@ -30,7 +29,6 @@ export const useGetPagingStudents = (params: GetStudentsQueryParams) => {
 				keyword: params.keyword || '',
 				familyId: params.familyId || '',
 				classId: params.classId || '',
-				programId: params.programId || '',
 				gender: params.gender || '',
 				status: params.status || '',
 			});

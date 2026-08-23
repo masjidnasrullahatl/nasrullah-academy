@@ -56,9 +56,7 @@ export const ClassStudentsModal = ({ classId }: ClassStudentsModalProps) => {
 		<Stack>
 			<Group justify="space-between" wrap="wrap">
 				<Group>
-					<Badge variant="light">
-						Students {classItem.studentCount}/{classItem.capacity || '-'}
-					</Badge>
+					<Badge variant="light">Students {classItem.studentCount}</Badge>
 					<Badge color="blue" variant="light">
 						Boys {classItem.boysCount}
 					</Badge>

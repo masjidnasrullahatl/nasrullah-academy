@@ -8,7 +8,6 @@ import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
 type Params = {
 	keyword?: string;
-	programId?: string;
 };
 
 export const useGetAvailableStudents = (classId?: string, params?: Params) => {
@@ -18,7 +17,6 @@ export const useGetAvailableStudents = (classId?: string, params?: Params) => {
 		queryFn: async () => {
 			const queryParams = new URLSearchParams({
 				keyword: params?.keyword || '',
-				programId: params?.programId || '',
 			});
 
 			const response = await fetchAuth(

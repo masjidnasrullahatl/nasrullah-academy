@@ -22,11 +22,8 @@ import { modals } from '@mantine/modals';
 import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
-	IconBook,
-	IconCalendar,
 	IconChalkboard,
 	IconCircleDot,
-	IconClock,
 	IconMoodEmpty,
 	IconSearch,
 	IconUsers,
@@ -36,12 +33,12 @@ import {
 	ARCHIVE_STATUS_COLORS,
 	ARCHIVE_STATUS_LABELS,
 	ARCHIVE_STATUS_OPTIONS,
-	CLASS_SESSION_LABELS,
-	CLASS_SESSION_OPTIONS,
 } from '@configs/enums';
 
-import { ClassRow, useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClasses';
-import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
+import {
+	ClassRow,
+	useGetPagingClasses,
+} from '@hooks/react-query/classes/useGetPagingClasses';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
 import { AssignTeacherModal } from './AssignTeacherModal';
@@ -49,18 +46,14 @@ import { ClassActionsMenu } from './ClassActionsMenu';
 import { ClassStudentsModal } from './ClassStudentsModal';
 
 export const ClassesTable = () => {
-	const currentYear = new Date().getFullYear();
 	const limit = 20;
 
 	const [page, setPage] = useState(1);
 	const [filter, setFilter] = useState<{
 		keyword?: string;
-		programId?: string;
 		teacherId?: string;
-		schoolYear?: number;
-		session?: 'AM' | 'PM' | 'AM_PM' | 'NA';
 		status?: 'ACTIVE' | 'ARCHIVED';
-	}>({ schoolYear: currentYear });
+	}>({});
 
 	const {
 		data: classes,
@@ -71,19 +64,15 @@ export const ClassesTable = () => {
 		page,
 		limit,
 		keyword: filter.keyword,
-		programId: filter.programId,
 		teacherId: filter.teacherId,
-		schoolYear: filter.schoolYear,
-		session: filter.session,
 		status: filter.status,
 	});
 
-	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { data: teachers } = useGetPagingTeachers({ page: 1, limit: 200 });
 
 	const handleChangeFilter = (
-		key: 'keyword' | 'programId' | 'teacherId' | 'schoolYear' | 'session' | 'status',
-		value: string | number | undefined,
+		key: 'keyword' | 'teacherId' | 'status',
+		value: string | undefined,
 	) => {
 		setFilter((prev) => ({ ...prev, [key]: value }));
 		setPage(1);
@@ -130,19 +119,18 @@ export const ClassesTable = () => {
 
 	const rows = classes?.data.map((classItem, index) => (
 		<Table.Tr key={classItem.id}>
-			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * limit + index + 1}</Table.Td>
+			<Table.Td className={stickyStyles.stickyLeft}>
+				{(page - 1) * limit + index + 1}
+			</Table.Td>
 			<Table.Td>{classItem.name}</Table.Td>
-			<Table.Td>{classItem.program.name}</Table.Td>
 			<Table.Td>
 				{classItem.teacher
 					? `${classItem.teacher.firstName} ${classItem.teacher.lastName}`
 					: '-'}
 			</Table.Td>
-			<Table.Td>{CLASS_SESSION_LABELS[classItem.session]}</Table.Td>
-			<Table.Td>{classItem.room || '-'}</Table.Td>
-			<Table.Td>
-				{classItem.studentCount}/{classItem.capacity || '-'}
-			</Table.Td>
+			<Table.Td ta="center">{classItem.studentCount}</Table.Td>
+			<Table.Td ta="center">{classItem.boysCount}</Table.Td>
+			<Table.Td ta="center">{classItem.girlsCount}</Table.Td>
 			<Table.Td>
 				<Badge color={ARCHIVE_STATUS_COLORS[classItem.status]}>
 					{ARCHIVE_STATUS_LABELS[classItem.status]}
@@ -177,36 +165,14 @@ export const ClassesTable = () => {
 				</Alert>
 			)}
 
-			<Group mb="md" wrap="wrap">
+			<Group mb="md" wrap="nowrap">
 				<Input
 					leftSection={<IconSearch size={16} />}
 					placeholder="Search class name"
 					style={{ flex: 1 }}
 					onChange={(event) => debounceChangeKeyword(event.target.value)}
 				/>
-				<Select
-					placeholder="School year"
-					leftSection={<IconCalendar size={16} />}
-					value={filter.schoolYear?.toString() || ''}
-					data={Array.from({ length: 8 }).map((_, index) => {
-						const year = currentYear - 2 + index;
-						return { value: year.toString(), label: year.toString() };
-					})}
-					onChange={(value) =>
-						handleChangeFilter('schoolYear', value ? Number(value) : undefined)
-					}
-				/>
-				<Select
-					placeholder="Program"
-					leftSection={<IconBook size={16} />}
-					clearable
-					searchable
-					data={programs?.data.map((program) => ({
-						value: program.id,
-						label: program.name,
-					}))}
-					onChange={(value) => handleChangeFilter('programId', value || undefined)}
-				/>
+
 				<Select
 					placeholder="Teacher"
 					leftSection={<IconChalkboard size={16} />}
@@ -216,14 +182,9 @@ export const ClassesTable = () => {
 						value: teacher.id,
 						label: `${teacher.firstName} ${teacher.lastName}`,
 					}))}
-					onChange={(value) => handleChangeFilter('teacherId', value || undefined)}
-				/>
-				<Select
-					placeholder="Session"
-					leftSection={<IconClock size={16} />}
-					clearable
-					data={CLASS_SESSION_OPTIONS}
-					onChange={(value) => handleChangeFilter('session', value || undefined)}
+					onChange={(value) =>
+						handleChangeFilter('teacherId', value || undefined)
+					}
 				/>
 				<Select
 					placeholder="Status"
@@ -234,7 +195,7 @@ export const ClassesTable = () => {
 				/>
 			</Group>
 
-			<Table.ScrollContainer minWidth={1100}>
+			<Table.ScrollContainer minWidth={1000}>
 				<Table
 					striped="even"
 					highlightOnHover
@@ -243,19 +204,18 @@ export const ClassesTable = () => {
 					horizontalSpacing="md"
 				>
 					<Table.Thead>
-					<Table.Tr>
-						<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+						<Table.Tr>
+							<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
 							<Table.Th>Class</Table.Th>
-							<Table.Th>Program</Table.Th>
 							<Table.Th>Teacher</Table.Th>
-							<Table.Th>Session</Table.Th>
-							<Table.Th>Room</Table.Th>
-							<Table.Th>Students</Table.Th>
+							<Table.Th ta="center">Students</Table.Th>
+							<Table.Th ta="center">Boys</Table.Th>
+							<Table.Th ta="center">Girls</Table.Th>
 							<Table.Th>Status</Table.Th>
-						<Table.Th ta="center" className={stickyStyles.stickyRight}>
-							Actions
-						</Table.Th>
-					</Table.Tr>
+							<Table.Th ta="center" className={stickyStyles.stickyRight}>
+								Actions
+							</Table.Th>
+						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
 						{isLoading ? (
@@ -265,10 +225,13 @@ export const ClassesTable = () => {
 						) : (
 							<Table.Tr>
 								<Table.Td className={stickyStyles.stickyLeft} />
-								<Table.Td colSpan={7}>
+								<Table.Td colSpan={6}>
 									<Center h={220}>
 										<Stack align="center">
-											<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
+											<IconMoodEmpty
+												size={40}
+												color="var(--theme-primary-color)"
+											/>
 											<Text fw={600}>No classes found</Text>
 										</Stack>
 									</Center>

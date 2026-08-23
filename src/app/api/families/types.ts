@@ -6,7 +6,6 @@ import { PagingQueryParams } from '@app/api/types/common';
 export type GetFamiliesQueryParams = PagingQueryParams & {
 	keyword?: string;
 	status?: RecordStatus;
-	programId?: string;
 };
 
 export const StudentInputSchema = z.object({

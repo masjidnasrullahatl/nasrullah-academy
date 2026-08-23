@@ -54,12 +54,7 @@ export const AssignTeacherModal = ({ classId }: AssignTeacherModalProps) => {
 			id: classItem.id,
 			data: {
 				name: classItem.name,
-				programId: classItem.programId,
 				teacherId,
-				session: classItem.session,
-				room: classItem.room,
-				schoolYear: classItem.schoolYear,
-				capacity: classItem.capacity,
 				status: classItem.status,
 			},
 		});

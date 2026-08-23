@@ -15,7 +15,7 @@ import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconAlertTriangle, IconSearch } from '@tabler/icons-react';
+import { IconSearch } from '@tabler/icons-react';
 
 import { ModalFooter } from '@components/ModalFooter';
 
@@ -62,10 +62,6 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 		);
 	};
 
-	const capacity = classItem.capacity || 0;
-	const willExceedCapacity =
-		capacity > 0 && classItem.studentCount + checkedIds.length > capacity;
-
 	const handleSubmit = async () => {
 		await assignStudents({
 			classId: classItem.id,
@@ -94,12 +90,6 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 				checked={allVisibleChecked}
 				onChange={handleToggleSelectAllVisible}
 			/>
-
-			{willExceedCapacity && (
-				<Alert color="yellow" icon={<IconAlertTriangle size={16} />}>
-					Selection exceeds class capacity. You can still proceed.
-				</Alert>
-			)}
 
 			{error && <Alert color="red">{error.message}</Alert>}
 

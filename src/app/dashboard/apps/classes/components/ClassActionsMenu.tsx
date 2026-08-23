@@ -31,12 +31,7 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 			id: classItem.id,
 			data: {
 				name: classItem.name,
-				programId: classItem.programId,
 				teacherId: classItem.teacherId,
-				session: classItem.session,
-				room: classItem.room,
-				schoolYear: classItem.schoolYear,
-				capacity: classItem.capacity,
 				status: classItem.status === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE',
 			},
 		});

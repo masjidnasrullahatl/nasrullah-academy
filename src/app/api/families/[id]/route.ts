@@ -24,12 +24,12 @@ const getDetail = async (
 	const family = await prisma.families.findUnique({
 		where: { id },
 		include: {
-			students: {
-				include: {
-					enrollments: {
-						include: { program: true, class: { include: { teacher: true } } },
-					},
+		students: {
+			include: {
+				enrollments: {
+					include: { class: { include: { teacher: true } } },
 				},
+			},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
 		},

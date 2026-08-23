@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-import { Alert, Button, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core';
+import { Button, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconAlertCircle, IconSparkles } from '@tabler/icons-react';
+import { IconSparkles } from '@tabler/icons-react';
 
 import { ModalFooter } from '@components/ModalFooter';
 
@@ -15,16 +15,9 @@ import { useGenerateInvoices } from '@hooks/react-query/invoices/useGenerateInvo
 type GenerateMonthButtonProps = {
 	year: number;
 	month: number;
-	programId?: string;
-	programLabel?: string;
 };
 
-export const GenerateMonthButton = ({
-	year,
-	month,
-	programId,
-	programLabel,
-}: GenerateMonthButtonProps) => {
+export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) => {
 	const [copyFromPreviousMonth, setCopyFromPreviousMonth] = useState(false);
 	const { mutateAsync: generateInvoices, isPending } = useGenerateInvoices();
 
@@ -36,15 +29,8 @@ export const GenerateMonthButton = ({
 			size: 'md',
 			children: (
 				<Stack>
-					{!programId && (
-						<Alert color="yellow" icon={<IconAlertCircle size={16} />}>
-							Please select a program before generating invoices.
-						</Alert>
-					)}
-
 					<Text size="sm">
-						Target: <b>{monthLabel}</b> <b>{year}</b> · Program:{' '}
-						<b>{programLabel || 'Not selected'}</b>
+						Target: <b>{monthLabel}</b> <b>{year}</b>
 					</Text>
 					<Text size="sm" c="dimmed">
 						Existing invoice rows are not overwritten.
@@ -53,7 +39,9 @@ export const GenerateMonthButton = ({
 						<Checkbox
 							label="Copy fee amounts from previous month"
 							checked={copyFromPreviousMonth}
-							onChange={(event) => setCopyFromPreviousMonth(event.currentTarget.checked)}
+							onChange={(event) =>
+								setCopyFromPreviousMonth(event.currentTarget.checked)
+							}
 						/>
 					</Group>
 
@@ -63,16 +51,10 @@ export const GenerateMonthButton = ({
 						</Button>
 						<Button
 							loading={isPending}
-							disabled={!programId}
 							onClick={async () => {
-								if (!programId) {
-									return;
-								}
-
 								const result = await generateInvoices({
 									year,
 									month,
-									programId,
 									copyFromPreviousMonth,
 								});
 
@@ -94,13 +76,8 @@ export const GenerateMonthButton = ({
 	};
 
 	return (
-		<Tooltip label={!programId ? 'Select a program first' : 'Generate invoices for selected month'}>
-			<Button
-				onClick={handleGenerate}
-				leftSection={<IconSparkles size={16} />}
-				disabled={!programId}
-				loading={isPending}
-			>
+		<Tooltip label="Generate invoices for selected month">
+			<Button onClick={handleGenerate} leftSection={<IconSparkles size={16} />} loading={isPending}>
 				Generate month
 			</Button>
 		</Tooltip>

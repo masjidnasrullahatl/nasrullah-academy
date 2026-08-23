@@ -93,13 +93,13 @@ export const StudentsTable = () => {
 
 	const loadingRows = Array.from({ length: 10 }).map((_, index) => (
 		<Table.Tr key={index}>
-			{Array.from({ length: 9 }).map((_, columnIndex) => (
+			{Array.from({ length: 8 }).map((_, columnIndex) => (
 				<Table.Td
 					key={columnIndex}
 					className={
 						columnIndex === 0
 							? stickyStyles.stickyLeft
-							: columnIndex === 8
+							: columnIndex === 7
 								? stickyStyles.stickyRight
 								: undefined
 					}
@@ -113,7 +113,7 @@ export const StudentsTable = () => {
 	const emptyRows = (
 		<Table.Tr>
 			<Table.Td className={stickyStyles.stickyLeft} />
-			<Table.Td colSpan={7}>
+			<Table.Td colSpan={6}>
 				<Center h={260}>
 					<Stack justify="center" align="center">
 						<IconMoodEmpty size={40} color="var(--theme-primary-color)" />
@@ -139,15 +139,6 @@ export const StudentsTable = () => {
 					{student.enrollments.map((enrollment) => (
 						<Badge key={enrollment.id} variant="light">
 							{enrollment.class.name}
-						</Badge>
-					))}
-				</Group>
-			</Table.Td>
-			<Table.Td>
-				<Group gap={4}>
-					{student.enrollments.map((enrollment) => (
-						<Badge key={enrollment.id} color="blue" variant="light">
-							{enrollment.program.name}
 						</Badge>
 					))}
 				</Group>
@@ -234,7 +225,6 @@ export const StudentsTable = () => {
 							<Table.Th>Gender</Table.Th>
 							<Table.Th>Date of Birth</Table.Th>
 							<Table.Th>Class(es)</Table.Th>
-							<Table.Th>Program(s)</Table.Th>
 							<Table.Th ta="center">Status</Table.Th>
 							<Table.Th ta="center" className={stickyStyles.stickyRight}>
 								Actions
@@ -249,7 +239,7 @@ export const StudentsTable = () => {
 						}}
 					>
 						<Table.Tr>
-							<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
+							<Table.Td colSpan={7} fw={700} className={stickyStyles.stickyLeft}>
 								<Group justify="space-between">
 									<Text fw={700}>Total: {students?.total || 0}</Text>
 									{hasPagination && (

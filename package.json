@@ -9,7 +9,6 @@
 		"lint": "eslint . --ext .ts,.tsx",
 		"stylelint": "stylelint \"**/*.scss\"",
 		"db:migrate": "prisma migrate dev",
-		"db:seed": "prisma db seed",
 		"db:studio": "prisma studio"
 	},
 	"dependencies": {
@@ -64,10 +63,6 @@
 		"stylelint-config-recommended-less": "3.0.1",
 		"stylelint-config-standard": "39.0.0",
 		"stylelint-scss": "6.12.1",
-		"tsx": "4.20.5",
 		"typescript": "5.9.2"
-	},
-	"prisma": {
-		"seed": "tsx prisma/seed.ts"
 	}
 }

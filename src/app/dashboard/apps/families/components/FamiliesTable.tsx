@@ -23,7 +23,6 @@ import { useDebouncedCallback } from '@mantine/hooks';
 import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconAlertCircle,
-	IconBook,
 	IconCircleDot,
 	IconMoodEmpty,
 	IconSearch,
@@ -33,7 +32,6 @@ import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 import { PATH_APPS } from '@configs/routes';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
-import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 import { FamilyActionsColumn } from './FamilyActionsColumn';
 
@@ -42,7 +40,6 @@ export const FamiliesTable = () => {
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		status?: string;
-		programId?: string;
 	}>({});
 
 	const {
@@ -55,16 +52,10 @@ export const FamiliesTable = () => {
 		limit: 10,
 		keyword: filter.keyword,
 		status: filter.status as any,
-		programId: filter.programId,
-	});
-
-	const { data: programs } = useGetPagingPrograms({
-		page: 1,
-		limit: 100,
 	});
 
 	const handleChangeFilter = (
-		key: 'keyword' | 'status' | 'programId',
+		key: 'keyword' | 'status',
 		value: string,
 	) => {
 		setFilter({ ...filter, [key]: value });
@@ -189,17 +180,6 @@ export const FamiliesTable = () => {
 					clearable
 				/>
 
-				<Select
-					placeholder="Filter by program"
-					leftSection={<IconBook size={16} />}
-					data={programs?.data.map((program) => ({
-						value: program.id,
-						label: program.name,
-					}))}
-					onChange={(value) => handleChangeFilter('programId', value || '')}
-					clearable
-					searchable
-				/>
 			</Group>
 
 			<Table.ScrollContainer minWidth={1200}>

@@ -29,43 +29,22 @@ const update = async (
 
 		if (!existing) return notFound('Class not found');
 
-		const changedUniqueFields =
-			existing.name !== data.name ||
-			existing.programId !== data.programId ||
-			existing.schoolYear !== data.schoolYear;
-
-		if (changedUniqueFields) {
+		if (existing.name !== data.name) {
 			const duplicateClass = await prisma.classes.findUnique({
-				where: {
-					name_programId_schoolYear: {
-						name: data.name,
-						programId: data.programId,
-						schoolYear: data.schoolYear,
-					},
-				},
+				where: { name: data.name },
 			});
 
-			if (duplicateClass) {
-				return badRequest(
-					'Class already exists for this program and school year',
-				);
-			}
+			if (duplicateClass) return badRequest('Class already exists');
 		}
 
 		const classItem = await prisma.classes.update({
 			where: { id },
 			data: {
 				name: data.name,
-				programId: data.programId,
 				teacherId: data.teacherId || null,
-				session: data.session,
-				room: data.room || null,
-				schoolYear: data.schoolYear,
-				capacity: data.capacity || null,
 				status: data.status,
 			},
 			include: {
-				program: true,
 				teacher: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },
@@ -101,9 +80,7 @@ const remove = async (
 	if (!classItem) return notFound('Class not found');
 
 	if (classItem._count.enrollments > 0) {
-		return badRequest(
-			'Cannot delete class with active enrollments. Move or withdraw students first.',
-		);
+		return badRequest('Cannot delete class with active enrollments');
 	}
 
 	await prisma.classes.delete({ where: { id } });

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { AssignStudentsPayload } from '@app/api/classes/types';
+import { AssignStudentsPayload } from '@app/api/classes/[id]/students/types';
 
 import { QUERY_KEYS } from '@configs/query-key';
 

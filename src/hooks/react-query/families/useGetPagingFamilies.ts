@@ -24,7 +24,6 @@ export const useGetPagingFamilies = (params: GetFamiliesQueryParams) => {
 				limit: params.limit.toString(),
 				keyword: params.keyword || '',
 				status: params.status || '',
-				programId: params.programId || '',
 			});
 
 			const response = await fetchAuth(`/api/families?${queryParams}`);

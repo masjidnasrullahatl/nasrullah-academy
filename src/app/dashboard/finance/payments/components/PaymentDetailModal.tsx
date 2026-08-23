@@ -60,7 +60,6 @@ export const PaymentDetailModal = ({ invoice }: PaymentDetailModalProps) => {
 	return (
 		<Stack>
 			<Group wrap="wrap">
-				<Badge variant="light">{invoice.program.name}</Badge>
 				<Badge variant="light">{sessionLabel}</Badge>
 				<Badge color={PAYMENT_STATUS_COLORS[invoice.paymentStatus]} variant="light">
 					{paymentStatusLabel}

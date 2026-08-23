@@ -23,7 +23,7 @@ const getDetail = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true, program: true },
+		include: { family: true },
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -39,10 +39,12 @@ const update = async (
 		const { id } = await params;
 		const body = await request.json();
 		const data = UpdateInvoiceSchema.parse(body);
-
 		const prisma = createClient();
 
-		const existing = await prisma.monthlyInvoices.findUnique({ where: { id } });
+		const existing = await prisma.monthlyInvoices.findUnique({
+			where: { id },
+			include: { family: true },
+		});
 
 		if (!existing) return notFound('Invoice not found');
 
@@ -70,7 +72,7 @@ const update = async (
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: { family: true, program: true },
+			include: { family: true },
 		});
 
 		return success(mapInvoice(invoice));
@@ -92,7 +94,7 @@ const remove = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true, program: true },
+		include: { family: true },
 	});
 
 	if (!invoice) return notFound('Invoice not found');

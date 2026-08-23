@@ -31,7 +31,7 @@ const generateInvoices = async (request: AuthRequest) => {
 					some: {
 						status: 'ACTIVE',
 						enrollments: {
-							some: { status: 'ACTIVE', programId: data.programId },
+							some: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
 						},
 					},
 				},
@@ -41,7 +41,7 @@ const generateInvoices = async (request: AuthRequest) => {
 					where: { status: 'ACTIVE' },
 					include: {
 						enrollments: {
-							where: { status: 'ACTIVE', programId: data.programId },
+							where: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
 							select: { id: true },
 						},
 					},
@@ -56,7 +56,6 @@ const generateInvoices = async (request: AuthRequest) => {
 
 		const existingInvoices = await prisma.monthlyInvoices.findMany({
 			where: {
-				programId: data.programId,
 				year: data.year,
 				month: data.month,
 				familyId: { in: familyIds },
@@ -82,7 +81,6 @@ const generateInvoices = async (request: AuthRequest) => {
 			const previousMonth = getPreviousMonth(data.year, data.month);
 			const previousInvoices = await prisma.monthlyInvoices.findMany({
 				where: {
-					programId: data.programId,
 					year: previousMonth.year,
 					month: previousMonth.month,
 					familyId: { in: familyIds },
@@ -126,7 +124,6 @@ const generateInvoices = async (request: AuthRequest) => {
 			await prisma.monthlyInvoices.create({
 				data: {
 					familyId: family.id,
-					programId: data.programId,
 					year: data.year,
 					month: data.month,
 					studentCount,

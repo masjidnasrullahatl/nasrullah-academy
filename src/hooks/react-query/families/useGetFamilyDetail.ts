@@ -2,7 +2,6 @@ import {
 	Classes,
 	Enrollments,
 	Families,
-	Programs,
 	Students,
 	Teachers,
 } from '@prisma/client';
@@ -16,7 +15,6 @@ import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
 export type FamilyStudentEnrollment = Enrollments & {
 	class: Classes & { teacher: Teachers | null };
-	program: Programs;
 };
 
 export type FamilyStudent = Students & {

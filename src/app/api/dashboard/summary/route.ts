@@ -1,4 +1,4 @@
-import { PaymentStatus, PayMethod, Prisma, ProgramCode } from '@prisma/client';
+import { PaymentStatus, PayMethod, Prisma } from '@prisma/client';
 
 import { AuthRequest } from '@app/api/types/common';
 import { success } from '@app/api/utils/response';
@@ -27,34 +27,20 @@ const toNumber = (value: Prisma.Decimal | number | null | undefined) =>
 const getSummary = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
 	const year = Number(searchParams.get('year') || new Date().getFullYear());
-	const programId = searchParams.get('programId') || '';
 
 	const prisma = createClient();
 
-	let programCode: ProgramCode | undefined;
-	if (programId) {
-		const program = await prisma.programs.findUnique({
-			where: { id: programId },
-			select: { code: true },
-		});
-		programCode = program?.code;
-	}
-
 	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
 		year,
-		...(programId ? { programId } : {}),
 	};
 
 	const enrollmentWhere: Prisma.EnrollmentsWhereInput = {
 		status: 'ACTIVE',
-		...(programId ? { programId } : {}),
-		class: { schoolYear: year, status: 'ACTIVE' },
+		class: { status: 'ACTIVE' },
 	};
 
 	const classWhere: Prisma.ClassesWhereInput = {
-		schoolYear: year,
 		status: 'ACTIVE',
-		...(programId ? { programId } : {}),
 	};
 
 	const [
@@ -264,7 +250,6 @@ const getSummary = async (request: AuthRequest) => {
 		paymentStatus,
 		payMethodSplit: payMethod,
 		topUnpaidFamilies,
-		programCode: programCode || null,
 	});
 };
 

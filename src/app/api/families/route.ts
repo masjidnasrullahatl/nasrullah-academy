@@ -20,7 +20,6 @@ const getPaging = async (request: AuthRequest) => {
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
 	const status = searchParams.get('status') || '';
-	const programId = searchParams.get('programId') || '';
 
 	const prisma = createClient();
 
@@ -39,10 +38,6 @@ const getPaging = async (request: AuthRequest) => {
 			{ secondaryPhone: { contains: keyword, mode: 'insensitive' } },
 			{ email: { contains: keyword, mode: 'insensitive' } },
 		];
-	}
-
-	if (programId) {
-		where.students = { some: { enrollments: { some: { programId } } } };
 	}
 
 	const total = await prisma.families.count({ where });

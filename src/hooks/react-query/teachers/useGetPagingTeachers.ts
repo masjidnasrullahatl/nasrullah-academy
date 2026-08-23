@@ -1,4 +1,4 @@
-import { Classes, Programs, Teachers } from '@prisma/client';
+import { Classes, Teachers } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetTeachersQueryParams } from '@app/api/teachers/types';
@@ -9,7 +9,7 @@ import { QUERY_KEYS } from '@configs/query-key';
 import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
 type TeacherRow = Teachers & {
-	classes: Array<Classes & { program: Programs }>;
+	classes: Classes[];
 	_count: { classes: number };
 };
 
