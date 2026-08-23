@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import {
 	Alert,
@@ -45,7 +45,7 @@ const schema = z
 
 type ResetPasswordPayload = z.infer<typeof schema>;
 
-export default function ConfirmPage() {
+function ConfirmPageContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -170,5 +170,19 @@ export default function ConfirmPage() {
 				</form>
 			</Surface>
 		</>
+	);
+}
+
+export default function ConfirmPage() {
+	return (
+		<Suspense
+			fallback={
+				<Flex mt="lg" w="100vw" justify="center" align="center">
+					<Loader />
+				</Flex>
+			}
+		>
+			<ConfirmPageContent />
+		</Suspense>
 	);
 }
