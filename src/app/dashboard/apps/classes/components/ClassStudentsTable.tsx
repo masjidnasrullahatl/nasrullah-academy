@@ -1,13 +1,6 @@
 import { Dispatch } from 'react';
 
-import {
-	ActionIcon,
-	Badge,
-	Group,
-	Table,
-	Text,
-	Tooltip,
-} from '@mantine/core';
+import { ActionIcon, Badge, Group, Table, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
 import { IconTrash } from '@tabler/icons-react';
@@ -31,19 +24,22 @@ export const ClassStudentsTable = ({
 	return (
 		<Table.ScrollContainer minWidth={500} maxHeight={280}>
 			<Table
-					striped="even"
-					highlightOnHover
-					withTableBorder
-					verticalSpacing="sm"
-					horizontalSpacing="md"
-				>
+				striped="even"
+				highlightOnHover
+				withTableBorder
+				withColumnBorders
+				verticalSpacing="sm"
+				horizontalSpacing="md"
+			>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>#</Table.Th>
 						<Table.Th>Student</Table.Th>
 						<Table.Th>Family</Table.Th>
 						<Table.Th>Gender</Table.Th>
-						<Table.Th ta="center">Actions</Table.Th>
+						<Table.Th w={1} ta="center">
+							Actions
+						</Table.Th>
 					</Table.Tr>
 				</Table.Thead>
 				<Table.Tbody>
@@ -56,42 +52,48 @@ export const ClassStudentsTable = ({
 							</Table.Td>
 						</Table.Tr>
 					) : (
-						classItem.enrollments.map((enrollment: ClassStudentRow, index: number) => (
-							<Table.Tr key={enrollment.id}>
-								<Table.Td>{index + 1}</Table.Td>
-								<Table.Td>{`${enrollment.student.firstName} ${enrollment.student.lastName}`}</Table.Td>
-								<Table.Td>{enrollment.student.family?.name || '-'}</Table.Td>
-								<Table.Td>
-									<Badge
-										color={enrollment.student.gender === 'BOY' ? 'blue' : 'pink'}
-										variant="light"
-									>
-										{enrollment.student.gender}
-									</Badge>
-								</Table.Td>
-								<Table.Td ta="center">
-									<Group justify="center" gap="xs">
-										<Tooltip label="Remove student">
-											<ActionIcon
-												color="red"
-												disabled={isRemovingStudent}
-												onClick={() => {
-													modals.openConfirmModal({
-														title: `Remove ${enrollment.student.firstName} ${enrollment.student.lastName} from ${classItem.name}?`,
-														children: 'This sets the enrollment status to withdrawn for this class.',
-														labels: { confirm: 'Remove', cancel: 'Cancel' },
-														confirmProps: { color: 'red' },
-														onConfirm: () => onRemoveStudent(enrollment.student.id),
-													});
-												}}
-											>
-												<IconTrash size={14} />
-											</ActionIcon>
-										</Tooltip>
-									</Group>
-								</Table.Td>
-							</Table.Tr>
-						))
+						classItem.enrollments.map(
+							(enrollment: ClassStudentRow, index: number) => (
+								<Table.Tr key={enrollment.id}>
+									<Table.Td>{index + 1}</Table.Td>
+									<Table.Td>{`${enrollment.student.firstName} ${enrollment.student.lastName}`}</Table.Td>
+									<Table.Td>{enrollment.student.family?.name || '-'}</Table.Td>
+									<Table.Td>
+										<Badge
+											color={
+												enrollment.student.gender === 'BOY' ? 'blue' : 'pink'
+											}
+											variant="light"
+										>
+											{enrollment.student.gender}
+										</Badge>
+									</Table.Td>
+									<Table.Td ta="center">
+										<Group justify="center" gap="xs">
+											<Tooltip label="Remove student">
+												<ActionIcon
+													color="red"
+													disabled={isRemovingStudent}
+													onClick={() => {
+														modals.openConfirmModal({
+															title: `Remove ${enrollment.student.firstName} ${enrollment.student.lastName} from ${classItem.name}?`,
+															children:
+																'This sets the enrollment status to withdrawn for this class.',
+															labels: { confirm: 'Remove', cancel: 'Cancel' },
+															confirmProps: { color: 'red' },
+															onConfirm: () =>
+																onRemoveStudent(enrollment.student.id),
+														});
+													}}
+												>
+													<IconTrash size={14} />
+												</ActionIcon>
+											</Tooltip>
+										</Group>
+									</Table.Td>
+								</Table.Tr>
+							),
+						)
 					)}
 				</Table.Tbody>
 			</Table>

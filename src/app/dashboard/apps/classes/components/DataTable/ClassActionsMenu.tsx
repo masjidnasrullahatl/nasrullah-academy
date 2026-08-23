@@ -2,13 +2,18 @@ import { ActionIcon, Menu } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconDotsVertical, IconEdit, IconTrash } from '@tabler/icons-react';
+import {
+	IconBox,
+	IconDotsVertical,
+	IconEdit,
+	IconTrash,
+} from '@tabler/icons-react';
 
 import { useDeleteClass } from '@hooks/react-query/classes/useDeleteClass';
 import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
 
-import { ClassFormModal } from './ClassFormModal';
+import { ClassFormModal } from '../ClassFormModal';
 
 type ClassActionsMenuProps = {
 	classItem: ClassRow;
@@ -20,8 +25,8 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 
 	const handleEdit = () => {
 		modals.open({
+			size: 'md',
 			title: 'Edit Class',
-			size: 'lg',
 			children: <ClassFormModal classItem={classItem} />,
 		});
 	};
@@ -37,7 +42,8 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 		});
 
 		notifications.show({
-			title: classItem.status === 'ACTIVE' ? 'Class archived' : 'Class activated',
+			title:
+				classItem.status === 'ACTIVE' ? 'Class archived' : 'Class activated',
 			message:
 				classItem.status === 'ACTIVE'
 					? 'Class status changed to ARCHIVED'
@@ -74,9 +80,15 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 				<Menu.Item leftSection={<IconEdit size={14} />} onClick={handleEdit}>
 					Edit
 				</Menu.Item>
-				<Menu.Item onClick={handleArchive} disabled={isUpdating}>
+
+				<Menu.Item
+					leftSection={<IconBox size={14} />}
+					onClick={handleArchive}
+					disabled={isUpdating}
+				>
 					{classItem.status === 'ACTIVE' ? 'Archive' : 'Activate'}
 				</Menu.Item>
+
 				<Menu.Item
 					leftSection={<IconTrash size={14} />}
 					color="red"

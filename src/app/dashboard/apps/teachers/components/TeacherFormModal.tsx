@@ -1,11 +1,4 @@
-import {
-	Alert,
-	Button,
-	Group,
-	Select,
-	Stack,
-	TextInput,
-} from '@mantine/core';
+import { Alert, Button, Group, Select, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
@@ -41,10 +34,16 @@ type FormValue = {
 export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 	const isEdit = Boolean(teacher?.id);
 
-	const { mutateAsync: createTeacher, isPending: isCreating, error: createError } =
-		useCreateTeacher();
-	const { mutateAsync: updateTeacher, isPending: isUpdating, error: updateError } =
-		useUpdateTeacher();
+	const {
+		mutateAsync: createTeacher,
+		isPending: isCreating,
+		error: createError,
+	} = useCreateTeacher();
+	const {
+		mutateAsync: updateTeacher,
+		isPending: isUpdating,
+		error: updateError,
+	} = useUpdateTeacher();
 
 	const isPending = isCreating || isUpdating;
 	const submitError = (createError || updateError)?.message;
@@ -83,7 +82,9 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 
 		notifications.show({
 			title: isEdit ? 'Teacher updated' : 'Teacher created',
-			message: isEdit ? 'Teacher updated successfully' : 'Teacher created successfully',
+			message: isEdit
+				? 'Teacher updated successfully'
+				: 'Teacher created successfully',
 			color: 'green',
 		});
 
@@ -114,16 +115,22 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 							{...form.getInputProps('lastName')}
 						/>
 					</Group>
-					<TextInput
-						label="Phone number"
-						placeholder="404-838-3879"
-						{...form.getInputProps('phoneNumber')}
-					/>
-					<TextInput
-						label="Email"
-						placeholder="teacher@example.com"
-						{...form.getInputProps('email')}
-					/>
+
+					<Group>
+						<TextInput
+							flex={1}
+							label="Phone number"
+							placeholder="404-838-3879"
+							{...form.getInputProps('phoneNumber')}
+						/>
+						<TextInput
+							flex={1}
+							label="Email"
+							placeholder="teacher@example.com"
+							{...form.getInputProps('email')}
+						/>
+					</Group>
+
 					<Select
 						label="Status"
 						placeholder="Select status"

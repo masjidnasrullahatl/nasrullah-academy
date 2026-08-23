@@ -23,10 +23,11 @@ export const TableFooter = ({ total, page, setPage, pageSize }: Props) => {
 			<Table.Tr>
 				<Table.Td colSpan={7} fw={700} className={stickyStyles.stickyLeft}>
 					<Group justify="space-between">
-						<Text fw={700}>Total: {total}</Text>
+						<Text fz="sm">Total: {total}</Text>
 
 						{hasPagination && (
 							<Pagination
+								fw={500}
 								total={Math.ceil(total / pageSize)}
 								value={page}
 								onChange={setPage}
@@ -34,6 +35,7 @@ export const TableFooter = ({ total, page, setPage, pageSize }: Props) => {
 						)}
 					</Group>
 				</Table.Td>
+
 				<Table.Td className={stickyStyles.stickyRight} />
 			</Table.Tr>
 		</Table.Tfoot>

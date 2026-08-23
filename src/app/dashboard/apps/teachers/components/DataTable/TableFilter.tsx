@@ -16,7 +16,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 	}, 500);
 
 	return (
-		<Group mb="md" justify="end" w="100%" wrap="wrap">
+		<Group justify="end" w="100%" wrap="wrap">
 			<Input
 				flex={1}
 				leftSection={<IconSearch size={16} />}

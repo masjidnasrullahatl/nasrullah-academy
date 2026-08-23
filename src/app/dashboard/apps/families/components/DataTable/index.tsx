@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-import { Alert, Button, Group, Paper, Table } from '@mantine/core';
+import { Alert, Box, Button, Group, Paper, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 
@@ -18,7 +18,9 @@ import { TableRow } from './TableRow';
 
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
-	const [filter, setFilter] = useState<{ keyword?: string; status?: string }>({});
+	const [filter, setFilter] = useState<{ keyword?: string; status?: string }>(
+		{},
+	);
 
 	const {
 		data: families,
@@ -59,17 +61,22 @@ export const DataTable = () => {
 				</Alert>
 			)}
 
-			<TableFilter onChangeFilter={handleChangeFilter} />
+			<Group mb="md">
+				<Box flex={1}>
+					<TableFilter onChangeFilter={handleChangeFilter} />
+				</Box>
 
-			<Group justify="flex-end" mb="sm">
-				<Button onClick={handleCreate}>New Family</Button>
+				<Button onClick={handleCreate} leftSection={<IconPlus size={16} />}>
+					New Family
+				</Button>
 			</Group>
 
-			<Table.ScrollContainer minWidth={1200}>
+			<Table.ScrollContainer minWidth={800}>
 				<Table
 					striped="even"
 					highlightOnHover
 					withTableBorder
+					withColumnBorders
 					verticalSpacing="sm"
 					horizontalSpacing="md"
 				>
@@ -79,7 +86,11 @@ export const DataTable = () => {
 						{isLoading ? <LoadingBody /> : hasData ? rows : <EmptyBody />}
 					</Table.Tbody>
 
-					<TableFooter page={page} setPage={setPage} total={families?.total || 0} />
+					<TableFooter
+						page={page}
+						setPage={setPage}
+						total={families?.total || 0}
+					/>
 				</Table>
 			</Table.ScrollContainer>
 		</Paper>

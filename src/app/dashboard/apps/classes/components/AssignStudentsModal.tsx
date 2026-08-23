@@ -7,6 +7,7 @@ import {
 	Checkbox,
 	Group,
 	Input,
+	Paper,
 	ScrollArea,
 	Stack,
 	Text,
@@ -27,11 +28,17 @@ type AssignStudentsModalProps = {
 	classItem: ClassRow;
 };
 
-export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => {
+export const AssignStudentsModal = ({
+	classItem,
+}: AssignStudentsModalProps) => {
 	const [keyword, setKeyword] = useState('');
 	const [checkedIds, setCheckedIds] = useState<string[]>([]);
 
-	const { mutateAsync: assignStudents, isPending, error } = useAssignStudentsToClass();
+	const {
+		mutateAsync: assignStudents,
+		isPending,
+		error,
+	} = useAssignStudentsToClass();
 
 	const { data: students } = useGetAvailableStudents(classItem.id, {
 		keyword,
@@ -41,9 +48,13 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 		setKeyword(value);
 	}, 500);
 
-	const visibleIds = useMemo(() => students?.map((student) => student.id) || [], [students]);
+	const visibleIds = useMemo(
+		() => students?.map((student) => student.id) || [],
+		[students],
+	);
 	const allVisibleChecked =
-		visibleIds.length > 0 && visibleIds.every((studentId) => checkedIds.includes(studentId));
+		visibleIds.length > 0 &&
+		visibleIds.every((studentId) => checkedIds.includes(studentId));
 
 	const handleToggleSelectAllVisible = () => {
 		if (allVisibleChecked) {
@@ -86,33 +97,46 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 			/>
 
 			<Checkbox
-				label="Select all visible"
+				label="Select all"
 				checked={allVisibleChecked}
 				onChange={handleToggleSelectAllVisible}
 			/>
 
+			<Text c="dimmed" size="sm">
+				Selected: {checkedIds.length}
+			</Text>
+
 			{error && <Alert color="red">{error.message}</Alert>}
 
-			<ScrollArea h={320}>
+			<ScrollArea.Autosize mah={320}>
 				<Stack gap="xs">
 					{students?.length ? (
 						students.map((student) => (
-							<Checkbox
-								key={student.id}
-								checked={checkedIds.includes(student.id)}
-								onChange={() => handleToggleStudent(student.id)}
-								label={
-									<Group gap="xs">
-										<Text>{`${student.firstName} ${student.lastName}`}</Text>
-										<Text c="dimmed" size="xs">
-											{student.family?.name || '-'}
-										</Text>
-										<Badge variant="light" color={student.gender === 'BOY' ? 'blue' : 'pink'}>
-											{student.gender}
-										</Badge>
-									</Group>
-								}
-							/>
+							<Paper key={student.id} withBorder p="sm" radius="md">
+								<Checkbox
+									checked={checkedIds.includes(student.id)}
+									onChange={() => handleToggleStudent(student.id)}
+									label={
+										<Group gap="xs" justify="space-between" wrap="nowrap">
+											<Group gap="xs" wrap="nowrap">
+												<Text
+													fw={500}
+													size="sm"
+												>{`${student.firstName} ${student.lastName}`}</Text>
+												<Text c="dimmed" size="sm">
+													{student.family?.name || '-'}
+												</Text>
+											</Group>
+											<Badge
+												variant="light"
+												color={student.gender === 'BOY' ? 'blue' : 'pink'}
+											>
+												{student.gender}
+											</Badge>
+										</Group>
+									}
+								/>
+							</Paper>
 						))
 					) : (
 						<Text c="dimmed" size="sm" ta="center" py="md">
@@ -120,13 +144,17 @@ export const AssignStudentsModal = ({ classItem }: AssignStudentsModalProps) => 
 						</Text>
 					)}
 				</Stack>
-			</ScrollArea>
+			</ScrollArea.Autosize>
 
 			<ModalFooter>
 				<Button variant="default" onClick={() => modals.closeAll()}>
 					Cancel
 				</Button>
-				<Button onClick={handleSubmit} loading={isPending} disabled={checkedIds.length === 0}>
+				<Button
+					onClick={handleSubmit}
+					loading={isPending}
+					disabled={checkedIds.length === 0}
+				>
 					Assign students
 				</Button>
 			</ModalFooter>

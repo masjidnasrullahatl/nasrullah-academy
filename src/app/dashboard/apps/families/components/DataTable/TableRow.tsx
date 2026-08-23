@@ -1,6 +1,15 @@
 import Link from 'next/link';
 
-import { ActionIcon, Anchor, Badge, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
+import {
+	ActionIcon,
+	Anchor,
+	Badge,
+	Group,
+	Stack,
+	Table,
+	Text,
+	Tooltip,
+} from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -19,20 +28,9 @@ type Props = {
 	index: number;
 };
 
-const getCountCell = (value: number, color: 'dark' | 'blue' | 'red') => {
-	if (value === 0) {
-		return <Text c="dimmed">0</Text>;
-	}
-
-	return (
-		<Badge variant="light" color={color}>
-			{value}
-		</Badge>
-	);
-};
-
 export const TableRow = ({ family, page, index }: Props) => {
-	const { mutateAsync: deleteFamily, isPending: isDeleting } = useDeleteFamily();
+	const { mutateAsync: deleteFamily, isPending: isDeleting } =
+		useDeleteFamily();
 
 	const handleEdit = (item: any) => {
 		modals.open({
@@ -63,12 +61,16 @@ export const TableRow = ({ family, page, index }: Props) => {
 
 	return (
 		<Table.Tr key={family.id}>
-			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * 10 + index + 1}</Table.Td>
+			<Table.Td ta="center" w={50} className={stickyStyles.stickyLeft}>
+				{(page - 1) * 10 + index + 1}
+			</Table.Td>
+
 			<Table.Td>
 				<Anchor component={Link} href={`${PATH_APPS.families}/${family.id}`}>
 					{family.name}
 				</Anchor>
 			</Table.Td>
+
 			<Table.Td>
 				<Stack gap={0}>
 					<Text size="sm">{family.primaryPhone}</Text>
@@ -79,23 +81,25 @@ export const TableRow = ({ family, page, index }: Props) => {
 					)}
 				</Stack>
 			</Table.Td>
-			<Table.Td ta="center">
-				<Tooltip
-					label={family.students
-						.map((student: any) => `${student.firstName} ${student.lastName}`)
-						.join(', ')}
-					disabled={!family.students.length}
-				>
-					{getCountCell(family.studentCount, 'dark')}
-				</Tooltip>
+
+			<Table.Td w={100} ta="center" c="green" fw={700}>
+				{family.studentCount}
 			</Table.Td>
-			<Table.Td ta="center">{getCountCell(family.boysCount, 'blue')}</Table.Td>
-			<Table.Td ta="center">{getCountCell(family.girlsCount, 'red')}</Table.Td>
-			<Table.Td ta="center">
+
+			<Table.Td w={100} ta="center" c="blue" fw={700}>
+				{family.boysCount}
+			</Table.Td>
+
+			<Table.Td w={100} ta="center" c="red" fw={700}>
+				{family.girlsCount}
+			</Table.Td>
+
+			<Table.Td w={120} ta="center">
 				<Badge color={family.status === 'ACTIVE' ? 'green' : 'gray'}>
 					{family.status}
 				</Badge>
 			</Table.Td>
+
 			<Table.Td className={stickyStyles.stickyRight}>
 				<Group gap="xs" justify="center" wrap="nowrap">
 					<Tooltip label="Edit">
@@ -103,6 +107,7 @@ export const TableRow = ({ family, page, index }: Props) => {
 							<IconEdit size={16} />
 						</ActionIcon>
 					</Tooltip>
+
 					<Tooltip label="Delete">
 						<ActionIcon
 							disabled={isDeleting}

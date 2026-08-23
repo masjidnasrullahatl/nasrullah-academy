@@ -70,6 +70,20 @@ const emptyStudent = (): StudentFormValue => ({
 	notes: '',
 });
 
+const toIsoDate = (value: Date | string | null | undefined) => {
+	if (!value) {
+		return null;
+	}
+
+	const parsedDate = value instanceof Date ? value : new Date(value);
+
+	if (Number.isNaN(parsedDate.getTime())) {
+		return null;
+	}
+
+	return parsedDate.toISOString().split('T')[0];
+};
+
 export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 	const { mutateAsync: createFamily, isPending: isCreating, error: createError } =
 		useCreateFamily();
@@ -125,9 +139,7 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 				firstName: student.firstName,
 				lastName: student.lastName,
 				gender: student.gender,
-				dateOfBirth: student.dateOfBirth
-					? student.dateOfBirth.toISOString().split('T')[0]
-					: null,
+				dateOfBirth: toIsoDate(student.dateOfBirth),
 				status: student.status,
 				notes: student.notes || null,
 			})),

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-import { Alert, Button, Group, Paper, Table } from '@mantine/core';
+import { Alert, Box, Button, Group, Paper, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
@@ -61,10 +61,14 @@ export const DataTable = () => {
 				</Alert>
 			)}
 
-			<TableFilter onChangeFilter={handleChangeFilter} />
+			<Group mb="md">
+				<Box flex={1}>
+					<TableFilter onChangeFilter={handleChangeFilter} />
+				</Box>
 
-			<Group justify="flex-end" mb="sm">
-				<Button onClick={handleCreate}>Create Teacher</Button>
+				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+					Create Teacher
+				</Button>
 			</Group>
 
 			<Table.ScrollContainer minWidth={1000}>
@@ -72,6 +76,7 @@ export const DataTable = () => {
 					striped="even"
 					highlightOnHover
 					withTableBorder
+					withColumnBorders
 					verticalSpacing="sm"
 					horizontalSpacing="md"
 				>

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useMemo } from 'react';
 
 import { Group, Input, Select } from '@mantine/core';
@@ -17,8 +18,10 @@ import { useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClas
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 
 type Props = {
-	// eslint-disable-next-line no-unused-vars
-	onChangeFilter: (key: 'keyword' | 'familyId' | 'classId' | 'gender' | 'status', value: string) => void;
+	onChangeFilter: (
+		key: 'keyword' | 'familyId' | 'classId' | 'gender' | 'status',
+		value: string,
+	) => void;
 };
 
 export const TableFilter = ({ onChangeFilter }: Props) => {
@@ -45,7 +48,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 	}, 500);
 
 	return (
-		<Group mb="md" justify="end" w="100%" wrap="wrap">
+		<Group justify="end" w="100%" wrap="wrap">
 			<Input
 				flex={1}
 				leftSection={<IconSearch size={16} />}
@@ -80,6 +83,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 				data={GENDER_OPTIONS}
 				onChange={(value) => onChangeFilter('gender', value || '')}
 				clearable
+				w={120}
 			/>
 
 			<Select
@@ -88,6 +92,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 				data={RECORD_STATUS_OPTIONS}
 				onChange={(value) => onChangeFilter('status', value || '')}
 				clearable
+				w={120}
 			/>
 		</Group>
 	);

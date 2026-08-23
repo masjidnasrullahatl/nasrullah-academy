@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Badge, Button, Group, Stack } from '@mantine/core';
+import { Button, Center, Group, Loader, Stack, Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -15,7 +15,7 @@ type ClassStudentsModalProps = {
 };
 
 export const ClassStudentsModal = ({ classId }: ClassStudentsModalProps) => {
-	const { data: classes } = useGetPagingClasses({
+	const { data: classes, isLoading } = useGetPagingClasses({
 		page: 1,
 		limit: 500,
 	});
@@ -27,11 +27,9 @@ export const ClassStudentsModal = ({ classId }: ClassStudentsModalProps) => {
 		[classId, classes?.data],
 	);
 
-	if (!classItem) {
-		return null;
-	}
-
 	const handleRemoveStudent = async (studentId: string) => {
+		if (!classItem) return;
+
 		await removeStudent({
 			classId: classItem.id,
 			studentId,
@@ -45,24 +43,52 @@ export const ClassStudentsModal = ({ classId }: ClassStudentsModalProps) => {
 	};
 
 	const openAssignStudents = () => {
+		if (!classItem) return;
+
 		modals.open({
 			title: `Assign students to ${classItem.name}`,
-			size: 'lg',
+			size: 'md',
 			children: <AssignStudentsModal classItem={classItem} />,
 		});
 	};
+
+	if (isLoading) {
+		return (
+			<Center mih={200}>
+				<Stack gap="md" justify="center" align="center">
+					<Loader size={24} />
+					<Text>Loading...</Text>
+				</Stack>
+			</Center>
+		);
+	}
+
+	if (!classItem) return;
 
 	return (
 		<Stack>
 			<Group justify="space-between" wrap="wrap">
 				<Group>
-					<Badge variant="light">Students {classItem.studentCount}</Badge>
-					<Badge color="blue" variant="light">
-						Boys {classItem.boysCount}
-					</Badge>
-					<Badge color="pink" variant="light">
-						Girls {classItem.girlsCount}
-					</Badge>
+					<Text fz="sm">
+						Students:{' '}
+						<Text span c="green" fz="sm" fw={600}>
+							{classItem.studentCount}
+						</Text>
+					</Text>
+
+					<Text fz="sm">
+						Boys:{' '}
+						<Text span c="blue" fz="sm" fw={600}>
+							{classItem.boysCount}
+						</Text>
+					</Text>
+
+					<Text fz="sm">
+						Girls:{' '}
+						<Text span c="pink" fz="sm" fw={600}>
+							{classItem.girlsCount}
+						</Text>
+					</Text>
 				</Group>
 				<Button onClick={openAssignStudents}>Assign students</Button>
 			</Group>

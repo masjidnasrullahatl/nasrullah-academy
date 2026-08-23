@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-import { Alert, Button, Group, Paper, Table } from '@mantine/core';
+import { Alert, Box, Button, Group, Paper, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
 import { useGetPagingStudents } from '@hooks/react-query/students/useGetPagingStudents';
 
@@ -71,17 +71,24 @@ export const DataTable = () => {
 				</Alert>
 			)}
 
-			<TableFilter onChangeFilter={handleChangeFilter} />
+			<Group mb="md" wrap="nowrap">
+				<Box flex={1}>
+					<TableFilter onChangeFilter={handleChangeFilter} />
+				</Box>
 
-			<Group justify="flex-end" mb="sm">
-				<Button onClick={handleCreate}>New Student</Button>
+				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+					New Student
+				</Button>
 			</Group>
 
-			<Table.ScrollContainer minWidth={1300}>
+			<Group justify="flex-end" mb="sm"></Group>
+
+			<Table.ScrollContainer minWidth={1000}>
 				<Table
 					striped="even"
 					highlightOnHover
 					withTableBorder
+					withColumnBorders
 					verticalSpacing="sm"
 					horizontalSpacing="md"
 				>
@@ -91,7 +98,11 @@ export const DataTable = () => {
 						{isLoading ? <LoadingBody /> : hasData ? rows : <EmptyBody />}
 					</Table.Tbody>
 
-					<TableFooter page={page} setPage={setPage} total={students?.total || 0} />
+					<TableFooter
+						page={page}
+						setPage={setPage}
+						total={students?.total || 0}
+					/>
 				</Table>
 			</Table.ScrollContainer>
 		</Paper>

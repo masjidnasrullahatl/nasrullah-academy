@@ -59,7 +59,7 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 
 	return (
 		<Table.Tr key={teacher.id}>
-			<Table.Td className={stickyStyles.stickyLeft}>
+			<Table.Td ta="center" className={stickyStyles.stickyLeft}>
 				{(page - 1) * 10 + index + 1}
 			</Table.Td>
 
@@ -79,7 +79,7 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 				</Group>
 			</Table.Td>
 
-			<Table.Td ta="center">
+			<Table.Td w={120} ta="center">
 				<Badge color={teacher.status === 'ACTIVE' ? 'green' : 'gray'}>
 					{teacher.status}
 				</Badge>
@@ -92,6 +92,7 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 							<IconEdit size={16} />
 						</ActionIcon>
 					</Tooltip>
+
 					<Tooltip label="Delete">
 						<ActionIcon
 							disabled={isDeleting}

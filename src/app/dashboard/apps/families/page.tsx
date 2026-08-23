@@ -22,6 +22,7 @@ export default function FamiliesPage() {
 	return (
 		<>
 			<title>Families | Masjid Nasrullah School</title>
+
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Families" breadcrumbItems={items} />

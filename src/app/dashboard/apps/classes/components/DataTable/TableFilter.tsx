@@ -1,19 +1,18 @@
+/* eslint-disable no-unused-vars */
 import { Group, Input, Select } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import {
-	IconChalkboard,
-	IconCircleDot,
-	IconSearch,
-} from '@tabler/icons-react';
+import { IconChalkboard, IconCircleDot, IconSearch } from '@tabler/icons-react';
 
 import { ARCHIVE_STATUS_OPTIONS } from '@configs/enums';
 
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
 type Props = {
-	// eslint-disable-next-line no-unused-vars
-	onChangeFilter: (key: 'keyword' | 'teacherId' | 'status', value: string) => void;
+	onChangeFilter: (
+		key: 'keyword' | 'teacherId' | 'status',
+		value: string,
+	) => void;
 };
 
 export const TableFilter = ({ onChangeFilter }: Props) => {
@@ -24,7 +23,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 	}, 500);
 
 	return (
-		<Group mb="md" wrap="nowrap">
+		<Group wrap="nowrap">
 			<Input
 				leftSection={<IconSearch size={16} />}
 				placeholder="Search class name"

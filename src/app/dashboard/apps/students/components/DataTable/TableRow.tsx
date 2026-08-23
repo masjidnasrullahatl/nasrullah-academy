@@ -17,7 +17,8 @@ type Props = {
 };
 
 export const TableRow = ({ student, page, index }: Props) => {
-	const { mutateAsync: deleteStudent, isPending: isDeleting } = useDeleteStudent();
+	const { mutateAsync: deleteStudent, isPending: isDeleting } =
+		useDeleteStudent();
 
 	const handleEdit = (item: any) => {
 		modals.open({
@@ -30,7 +31,8 @@ export const TableRow = ({ student, page, index }: Props) => {
 	const handleDelete = (item: any) => {
 		modals.openConfirmModal({
 			title: `Delete ${item.firstName} ${item.lastName}?`,
-			children: 'This permanently deletes this student and related enrollments.',
+			children:
+				'This permanently deletes this student and related enrollments.',
 			labels: { confirm: 'Delete', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
@@ -46,13 +48,22 @@ export const TableRow = ({ student, page, index }: Props) => {
 
 	return (
 		<Table.Tr key={student.id}>
-			<Table.Td className={stickyStyles.stickyLeft}>{(page - 1) * 10 + index + 1}</Table.Td>
-			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
-			<Table.Td>{student.family?.name}</Table.Td>
-			<Table.Td>{student.gender}</Table.Td>
-			<Table.Td>
-				{student.dateOfBirth ? dayjs(student.dateOfBirth).format('MM/DD/YYYY') : '-'}
+			<Table.Td ta="center" w={60} className={stickyStyles.stickyLeft}>
+				{(page - 1) * 10 + index + 1}
 			</Table.Td>
+
+			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
+
+			<Table.Td>{student.family?.name}</Table.Td>
+
+			<Table.Td w={60}>{student.gender}</Table.Td>
+
+			<Table.Td w={130}>
+				{student.dateOfBirth
+					? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
+					: '-'}
+			</Table.Td>
+
 			<Table.Td>
 				<Group gap={4}>
 					{student.enrollments.map((enrollment: any) => (
@@ -62,9 +73,13 @@ export const TableRow = ({ student, page, index }: Props) => {
 					))}
 				</Group>
 			</Table.Td>
-			<Table.Td ta="center">
-				<Badge color={student.status === 'ACTIVE' ? 'green' : 'gray'}>{student.status}</Badge>
+
+			<Table.Td w={100} ta="center">
+				<Badge color={student.status === 'ACTIVE' ? 'green' : 'gray'}>
+					{student.status}
+				</Badge>
 			</Table.Td>
+
 			<Table.Td className={stickyStyles.stickyRight}>
 				<Group gap="xs" justify="center" wrap="nowrap">
 					<Tooltip label="Edit">
