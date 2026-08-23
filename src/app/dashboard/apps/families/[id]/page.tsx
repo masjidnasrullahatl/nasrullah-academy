@@ -35,8 +35,8 @@ import { useDeleteStudent } from '@hooks/react-query/students/useDeleteStudent';
 
 import { formatMoney } from '@utils/money';
 
-import { StudentForm } from '../../students/components/StudentForm';
-import { FamilyForm } from '../components/FamilyForm';
+import { StudentFormModal } from '../../students/components/StudentFormModal';
+import { FamilyFormModal } from '../components/FamilyFormModal';
 
 const calcAge = (dateOfBirth?: string | null) => {
 	if (!dateOfBirth) {
@@ -89,7 +89,7 @@ export default function FamilyDetailPage() {
 		modals.open({
 			title: 'Edit Family',
 			size: 'xl',
-			children: <FamilyForm family={family} />,
+			children: <FamilyFormModal family={family} />,
 		});
 	};
 
@@ -97,7 +97,7 @@ export default function FamilyDetailPage() {
 		modals.open({
 			title: 'Edit Student',
 			size: 'lg',
-			children: <StudentForm student={student} defaultFamilyId={familyId} />,
+			children: <StudentFormModal student={student} defaultFamilyId={familyId} />,
 		});
 	};
 

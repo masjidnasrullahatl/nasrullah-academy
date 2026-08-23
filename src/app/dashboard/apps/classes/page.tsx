@@ -1,16 +1,12 @@
 'use client';
 
-import { Anchor, Button, Container, Stack } from '@mantine/core';
-import { modals } from '@mantine/modals';
-
-import { IconPlus } from '@tabler/icons-react';
+import { Anchor, Container, Stack } from '@mantine/core';
 
 import PageHeader from '@components/PageHeader';
 
 import { PATH_APPS, PATH_DASHBOARD } from '@configs/routes';
 
-import { ClassesTable } from './components/ClassesTable';
-import { ClassFormModal } from './components/ClassFormModal';
+import { DataTable } from './components/DataTable';
 
 const items = [
 	{ title: 'Dashboard', href: PATH_DASHBOARD.default },
@@ -23,33 +19,14 @@ const items = [
 ));
 
 export default function ClassesPage() {
-	const handleCreateClass = () => {
-		modals.open({
-			title: 'Create Class',
-			size: 'md',
-			children: <ClassFormModal />,
-		});
-	};
-
 	return (
 		<>
 			<title>Classes | Masjid Nasrullah School</title>
 
 			<Container fluid>
 				<Stack>
-					<PageHeader
-						title="Classes"
-						breadcrumbItems={items}
-						actionButton={
-							<Button
-								leftSection={<IconPlus size={16} />}
-								onClick={handleCreateClass}
-							>
-								Create class
-							</Button>
-						}
-					/>
-					<ClassesTable />
+					<PageHeader title="Classes" breadcrumbItems={items} />
+					<DataTable />
 				</Stack>
 			</Container>
 		</>

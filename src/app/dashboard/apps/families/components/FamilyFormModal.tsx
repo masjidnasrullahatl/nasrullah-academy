@@ -34,7 +34,7 @@ import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 import { useCreateFamily } from '@hooks/react-query/families/useCreateFamily';
 import { useUpdateFamily } from '@hooks/react-query/families/useUpdateFamily';
 
-type FamilyFormProps = {
+type FamilyFormModalProps = {
 	family?: any;
 };
 
@@ -70,7 +70,7 @@ const emptyStudent = (): StudentFormValue => ({
 	notes: '',
 });
 
-export const FamilyForm = ({ family }: FamilyFormProps) => {
+export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 	const { mutateAsync: createFamily, isPending: isCreating, error: createError } =
 		useCreateFamily();
 	const { mutateAsync: updateFamily, isPending: isUpdating, error: updateError } =

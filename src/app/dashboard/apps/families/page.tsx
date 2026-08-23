@@ -1,13 +1,12 @@
 'use client';
 
-import { Anchor, Box, Container, Stack } from '@mantine/core';
+import { Anchor, Container, Stack } from '@mantine/core';
 
 import PageHeader from '@components/PageHeader';
 
 import { PATH_APPS, PATH_DASHBOARD } from '@configs/routes';
 
-import { CreateFamilyButton } from './components/CreateFamilyButton';
-import { FamiliesTable } from './components/FamiliesTable';
+import { DataTable } from './components/DataTable';
 
 const items = [
 	{ title: 'Dashboard', href: PATH_DASHBOARD.default },
@@ -26,10 +25,7 @@ export default function FamiliesPage() {
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Families" breadcrumbItems={items} />
-					<Box ml="auto">
-						<CreateFamilyButton />
-					</Box>
-					<FamiliesTable />
+					<DataTable />
 				</Stack>
 			</Container>
 		</>

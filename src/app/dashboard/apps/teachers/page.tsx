@@ -6,7 +6,7 @@ import PageHeader from '@components/PageHeader';
 
 import { PATH_APPS, PATH_DASHBOARD } from '@configs/routes';
 
-import { TeachersTable } from './components/TeachersTable';
+import { DataTable } from './components/DataTable';
 
 const items = [
 	{ title: 'Dashboard', href: PATH_DASHBOARD.default },
@@ -22,10 +22,11 @@ export default function TeachersPage() {
 	return (
 		<>
 			<title>Teachers | Masjid Nasrullah School</title>
+
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Teachers" breadcrumbItems={items} />
-					<TeachersTable />
+					<DataTable />
 				</Stack>
 			</Container>
 		</>

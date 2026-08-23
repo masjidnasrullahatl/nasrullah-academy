@@ -6,7 +6,7 @@ import PageHeader from '@components/PageHeader';
 
 import { PATH_DASHBOARD, PATH_FINANCE } from '@configs/routes';
 
-import { PaymentsTable } from './components/PaymentsTable';
+import { DataTable } from './components/DataTable';
 
 const items = [
 	{ title: 'Dashboard', href: PATH_DASHBOARD.default },
@@ -25,7 +25,7 @@ export default function PaymentsPage() {
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Monthly Payments" breadcrumbItems={items} />
-					<PaymentsTable />
+					<DataTable />
 				</Stack>
 			</Container>
 		</>

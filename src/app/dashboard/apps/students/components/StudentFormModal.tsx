@@ -20,7 +20,7 @@ import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFa
 import { useCreateStudent } from '@hooks/react-query/students/useCreateStudent';
 import { useUpdateStudent } from '@hooks/react-query/students/useUpdateStudent';
 
-type StudentFormProps = {
+type StudentFormModalProps = {
 	student?: any;
 	defaultFamilyId?: string;
 };
@@ -35,7 +35,10 @@ type StudentFormValue = {
 	notes: string;
 };
 
-export const StudentForm = ({ student, defaultFamilyId }: StudentFormProps) => {
+export const StudentFormModal = ({
+	student,
+	defaultFamilyId,
+}: StudentFormModalProps) => {
 	const { data: families } = useGetPagingFamilies({
 		page: 1,
 		limit: 1000,
