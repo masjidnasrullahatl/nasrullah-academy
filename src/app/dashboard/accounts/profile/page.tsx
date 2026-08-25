@@ -85,7 +85,7 @@ export default function ProfilePage() {
 	return (
 		<Container fluid>
 			<Stack gap="lg">
-				<title>Profile | Masjid Nasrullah School</title>
+				<title>Profile | Nasrullah Academy</title>
 				<PageHeader title="Profile" breadcrumbItems={items} />
 				<Grid>
 					<Grid.Col span={{ base: 12, md: 6, lg: 5 }}>

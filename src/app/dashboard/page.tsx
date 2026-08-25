@@ -30,7 +30,7 @@ export default function DashboardPage() {
 	return (
 		<Container fluid>
 			<Stack>
-				<title>Dashboard | Masjid Nasrullah School</title>
+				<title>Dashboard | Nasrullah Academy</title>
 
 				<DashboardFilters year={year} onChangeYear={setYear} />
 

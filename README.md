@@ -1,6 +1,6 @@
-# Masjid Nasrullah School Portal
+# Nasrullah Academy Portal
 
-Masjid Nasrullah School Portal is a staff dashboard that replaces manual school spreadsheets for classes, families, students, monthly tuition tracking, and summary analytics.
+Nasrullah Academy Portal is a staff dashboard that replaces manual school spreadsheets for classes, families, students, monthly tuition tracking, and summary analytics.
 
 ## Overview
 
@@ -35,14 +35,14 @@ Open `http://localhost:3000`.
 
 Create `.env` from `.env.example`:
 
-| Key | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_APP_URL` | Yes | App base URL (`http://localhost:3000` in local) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Supabase publishable/anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
-| `DATABASE_POOLED_URL` | Yes | PostgreSQL pooler connection string (runtime queries, transaction pooler `6543`) |
-| `DATABASE_URL` | Yes | PostgreSQL direct URL for Prisma migrations (`5432` session pooler or direct) |
+| Key                                    | Required | Description                                                                      |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                  | Yes      | App base URL (`http://localhost:3000` in local)                                  |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Yes      | Supabase project URL                                                             |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes      | Supabase publishable/anon key                                                    |
+| `SUPABASE_SERVICE_ROLE_KEY`            | Yes      | Supabase service role key                                                        |
+| `DATABASE_POOLED_URL`                  | Yes      | PostgreSQL pooler connection string (runtime queries, transaction pooler `6543`) |
+| `DATABASE_URL`                         | Yes      | PostgreSQL direct URL for Prisma migrations (`5432` session pooler or direct)    |
 
 ## Database
 

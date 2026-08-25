@@ -37,10 +37,10 @@ export default function Error({
 	return (
 		<>
 			<>
-				<title>Server Error | Masjid Nasrullah School</title>
+				<title>Server Error | Nasrullah Academy</title>
 				<meta
 					name="description"
-					content="Masjid Nasrullah School management portal"
+					content="Nasrullah Academy management portal"
 				/>
 			</>
 			<Center

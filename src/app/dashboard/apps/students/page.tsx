@@ -21,7 +21,7 @@ const items = [
 export default function StudentsPage() {
 	return (
 		<>
-			<title>Students | Masjid Nasrullah School</title>
+			<title>Students | Nasrullah Academy</title>
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Students" breadcrumbItems={items} />

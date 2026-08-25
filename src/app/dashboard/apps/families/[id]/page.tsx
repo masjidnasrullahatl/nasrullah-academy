@@ -125,7 +125,7 @@ export default function FamilyDetailPage() {
 
 	return (
 		<>
-			<title>Family Detail | Masjid Nasrullah School</title>
+			<title>Family Detail | Nasrullah Academy</title>
 			<Container fluid>
 				<Stack>
 					<PageHeader

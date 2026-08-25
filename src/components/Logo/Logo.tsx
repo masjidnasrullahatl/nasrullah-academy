@@ -20,7 +20,7 @@ const Logo = ({ href, showText = true, className }: LogoProps) => {
 
 				{showText && (
 					<Text fw={700} c="dark.8" truncate>
-						Masjid Nasrullah Portal
+						Nasrullah Academy
 					</Text>
 				)}
 			</Group>

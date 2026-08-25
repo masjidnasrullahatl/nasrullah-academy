@@ -21,7 +21,7 @@ const items = [
 export default function ClassesPage() {
 	return (
 		<>
-			<title>Classes | Masjid Nasrullah School</title>
+			<title>Classes | Nasrullah Academy</title>
 
 			<Container fluid>
 				<Stack>

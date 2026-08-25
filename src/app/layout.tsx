@@ -57,7 +57,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<head>
-				<title>Masjid Nasrullah School - Portal</title>
+				<title>Nasrullah Academy</title>
 				<link
 					rel="apple-touch-icon"
 					sizes="180x180"
@@ -82,7 +82,7 @@ export default function RootLayout({
 				/>
 				<meta
 					name="description"
-					content="Masjid Nasrullah School management portal"
+					content="Nasrullah Academy management portal"
 				/>
 
 				<ColorSchemeScript defaultColorScheme="light" />

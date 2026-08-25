@@ -21,7 +21,7 @@ const items = [
 export default function PaymentsPage() {
 	return (
 		<>
-			<title>Monthly Payments | Masjid Nasrullah School</title>
+			<title>Monthly Payments | Nasrullah Academy</title>
 			<Container fluid>
 				<Stack>
 					<PageHeader title="Monthly Payments" breadcrumbItems={items} />
