@@ -23,6 +23,9 @@ export const useCreateStudent = () => {
 			queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.FAMILIES.GET_PAGING],
 			});
+			queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.FAMILIES.GET_DETAIL],
+			});
 		},
 	});
 };
