@@ -9,7 +9,8 @@
 		"lint": "eslint . --ext .ts,.tsx",
 		"stylelint": "stylelint \"**/*.scss\"",
 		"db:migrate": "prisma migrate dev",
-		"db:studio": "prisma studio"
+		"db:studio": "prisma studio",
+		"deploy:vercel": "scripts/deploy-vercel.sh"
 	},
 	"dependencies": {
 		"@mantine/charts": "8.2.7",
