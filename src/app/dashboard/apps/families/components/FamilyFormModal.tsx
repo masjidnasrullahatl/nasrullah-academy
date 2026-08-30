@@ -85,10 +85,16 @@ const toIsoDate = (value: Date | string | null | undefined) => {
 };
 
 export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
-	const { mutateAsync: createFamily, isPending: isCreating, error: createError } =
-		useCreateFamily();
-	const { mutateAsync: updateFamily, isPending: isUpdating, error: updateError } =
-		useUpdateFamily();
+	const {
+		mutateAsync: createFamily,
+		isPending: isCreating,
+		error: createError,
+	} = useCreateFamily();
+	const {
+		mutateAsync: updateFamily,
+		isPending: isUpdating,
+		error: updateError,
+	} = useUpdateFamily();
 
 	const isEdit = Boolean(family?.id);
 	const isPending = isCreating || isUpdating;
@@ -110,7 +116,9 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 					firstName: student.firstName,
 					lastName: student.lastName,
 					gender: student.gender,
-					dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth) : null,
+					dateOfBirth: student.dateOfBirth
+						? new Date(student.dateOfBirth)
+						: null,
 					status: student.status,
 					notes: student.notes || '',
 				})) || [],
@@ -119,11 +127,14 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 	});
 
 	const submitError = useMemo(
-		() => (createError || updateError ? (createError || updateError)?.message : ''),
+		() =>
+			createError || updateError ? (createError || updateError)?.message : '',
 		[createError, updateError],
 	);
 
 	const handleSubmit = async (values: FamilyFormValue) => {
+		console.log('values', values);
+
 		const payload: CreateFamilyPayload = {
 			name: values.name,
 			fatherName: values.fatherName || null,
@@ -268,7 +279,8 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 
 					{form.values.students.length === 0 ? (
 						<Text c="dimmed" size="sm">
-							No students yet. Click Add student to include children in this family.
+							No students yet. Click Add student to include children in this
+							family.
 						</Text>
 					) : (
 						<Stack>
@@ -349,6 +361,7 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 						<Button variant="default" onClick={() => modals.closeAll()}>
 							Cancel
 						</Button>
+
 						<Button type="submit" loading={isPending}>
 							{isEdit ? 'Update Family' : 'Create Family'}
 						</Button>
