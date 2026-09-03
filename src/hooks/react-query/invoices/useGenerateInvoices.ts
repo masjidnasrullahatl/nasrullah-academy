@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { GenerateInvoicesPayload } from '@app/api/invoices/generate/types';
+import { GenerateInvoicesPayload } from '@app/api/invoices/types';
 import { ApiResponse } from '@app/api/types/common';
 
 import { QUERY_KEYS } from '@configs/query-key';

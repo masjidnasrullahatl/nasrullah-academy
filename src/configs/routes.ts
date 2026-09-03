@@ -7,6 +7,7 @@ const ROOTS_AUTH = '/auth';
 
 const ROOT_APPS = path(ROOTS_DASHBOARD, '/apps');
 const ROOT_FINANCE = path(ROOTS_DASHBOARD, '/finance');
+const ROOT_SETTINGS = path(ROOTS_DASHBOARD, '/settings');
 const ROOTS_ACCOUNTS = path(ROOTS_DASHBOARD, '/accounts');
 
 export const PATH_DASHBOARD = {
@@ -25,6 +26,11 @@ export const PATH_APPS = {
 export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
+};
+
+export const PATH_SETTINGS = {
+	root: ROOT_SETTINGS,
+	programs: path(ROOT_SETTINGS, '/programs'),
 };
 
 export const PATH_ACCOUNTS = {

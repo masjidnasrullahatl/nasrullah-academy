@@ -19,6 +19,7 @@ import { ARCHIVE_STATUS_OPTIONS } from '@configs/enums';
 import { useCreateClass } from '@hooks/react-query/classes/useCreateClass';
 import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
 type ClassFormModalProps = {
@@ -27,6 +28,7 @@ type ClassFormModalProps = {
 
 type FormValue = {
 	name: string;
+	programId: string;
 	teacherId: string;
 	status: 'ACTIVE' | 'ARCHIVED';
 };
@@ -35,6 +37,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 	const isEdit = Boolean(classItem?.id);
 
 	const { data: teachers } = useGetPagingTeachers({ page: 1, limit: 200 });
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const {
 		mutateAsync: createClass,
@@ -54,6 +57,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 	const form = useForm<FormValue>({
 		initialValues: {
 			name: classItem?.name || '',
+			programId: classItem?.programId || '',
 			teacherId: classItem?.teacherId || '',
 			status: classItem?.status || 'ACTIVE',
 		},
@@ -63,6 +67,7 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 	const handleSubmit = async (values: FormValue) => {
 		const payload: CreateClassPayload | UpdateClassPayload = {
 			name: values.name,
+			programId: values.programId,
 			teacherId: values.teacherId || null,
 			status: values.status,
 		};
@@ -105,6 +110,18 @@ export const ClassFormModal = ({ classItem }: ClassFormModalProps) => {
 					/>
 
 					<Group wrap="nowrap">
+						<Select
+							label="Program"
+							withAsterisk
+							searchable
+							placeholder="Select program"
+							data={programs?.data.map((program) => ({
+								value: program.id,
+								label: program.name,
+							}))}
+							{...form.getInputProps('programId')}
+						/>
+
 						<Select
 							label="Teacher"
 							clearable

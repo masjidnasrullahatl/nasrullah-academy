@@ -18,8 +18,12 @@ import { TopUnpaidFamilies } from './components/TopUnpaidFamilies';
 export default function DashboardPage() {
 	const currentYear = new Date().getFullYear();
 	const [year, setYear] = useState(currentYear);
+	const [programId, setProgramId] = useState<string | undefined>();
 
-	const summaryParams = useMemo(() => ({ year }), [year]);
+	const summaryParams = useMemo(
+		() => ({ year, programId }),
+		[year, programId],
+	);
 
 	const {
 		data: summary,
@@ -32,7 +36,12 @@ export default function DashboardPage() {
 			<Stack>
 				<title>Dashboard | Nasrullah Academy</title>
 
-				<DashboardFilters year={year} onChangeYear={setYear} />
+				<DashboardFilters
+					year={year}
+					programId={programId}
+					onChangeYear={setYear}
+					onChangeProgram={setProgramId}
+				/>
 
 				{error && <Alert color="red">{error.message}</Alert>}
 

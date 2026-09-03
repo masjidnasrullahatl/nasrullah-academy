@@ -23,7 +23,10 @@ const getDetail = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true },
+		include: {
+			family: true,
+			program: { select: { id: true, name: true } },
+		},
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -43,7 +46,10 @@ const update = async (
 
 		const existing = await prisma.monthlyInvoices.findUnique({
 			where: { id },
-			include: { family: true },
+			include: {
+				family: true,
+				program: { select: { id: true, name: true } },
+			},
 		});
 
 		if (!existing) return notFound('Invoice not found');
@@ -53,10 +59,10 @@ const update = async (
 		const invoice = await prisma.monthlyInvoices.update({
 			where: { id },
 			data: {
+				programId: data.programId,
 				year: data.year,
 				month: data.month,
 				studentCount: data.studentCount,
-				session: data.session || null,
 				registrationFee: data.registrationFee,
 				tuitionFee: data.tuitionFee,
 				bookFee: data.bookFee,
@@ -72,7 +78,10 @@ const update = async (
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: { family: true },
+			include: {
+				family: true,
+				program: { select: { id: true, name: true } },
+			},
 		});
 
 		return success(mapInvoice(invoice));
@@ -94,7 +103,10 @@ const remove = async (
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true },
+		include: {
+			family: true,
+			program: { select: { id: true, name: true } },
+		},
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -105,5 +117,5 @@ const remove = async (
 };
 
 export const GET = withAuth(getDetail);
-export const PUT = withAuth(update);
+export const PATCH = withAuth(update);
 export const DELETE = withAuth(remove);

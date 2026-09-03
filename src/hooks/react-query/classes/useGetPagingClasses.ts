@@ -2,6 +2,7 @@ import {
 	Classes,
 	Enrollments,
 	Families,
+	Programs,
 	Students,
 	Teachers,
 } from '@prisma/client';
@@ -20,6 +21,7 @@ export type ClassStudentRow = Enrollments & {
 
 export type ClassRow = Classes & {
 	teacher: Teachers | null;
+	program: Programs;
 	enrollments: ClassStudentRow[];
 	studentCount: number;
 	boysCount: number;
@@ -35,6 +37,7 @@ export const useGetPagingClasses = (params: GetClassesQueryParams) => {
 				limit: params.limit.toString(),
 				keyword: params.keyword || '',
 				teacherId: params.teacherId || '',
+				programId: params.programId || '',
 				status: params.status || '',
 			});
 

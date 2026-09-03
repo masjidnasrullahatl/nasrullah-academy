@@ -1,24 +1,38 @@
 import { useState } from 'react';
 
-import { Button, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core';
+import {
+	Button,
+	Checkbox,
+	Group,
+	Select,
+	Stack,
+	Text,
+	Tooltip,
+} from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconSparkles } from '@tabler/icons-react';
+import { IconCategory, IconSparkles } from '@tabler/icons-react';
 
 import { ModalFooter } from '@components/ModalFooter';
 
 import { MONTH_OPTIONS } from '@configs/enums';
 
 import { useGenerateInvoices } from '@hooks/react-query/invoices/useGenerateInvoices';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 type GenerateMonthButtonProps = {
 	year?: number;
 	month?: number;
 };
 
-export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) => {
+export const GenerateMonthButton = ({
+	year,
+	month,
+}: GenerateMonthButtonProps) => {
 	const [copyFromPreviousMonth, setCopyFromPreviousMonth] = useState(false);
+	const [programId, setProgramId] = useState<string | null>(null);
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { mutateAsync: generateInvoices, isPending } = useGenerateInvoices();
 
 	const monthLabel = month
@@ -26,12 +40,12 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 		: '-';
 
 	const handleGenerate = () => {
-		if (!year || !month) {
-			return;
-		}
+		if (!year || !month || !programId) return;
 
 		const targetYear = year;
 		const targetMonth = month;
+		const targetProgram =
+			programs?.data.find((item) => item.id === programId)?.name || '-';
 
 		modals.open({
 			title: 'Generate month invoices',
@@ -40,6 +54,9 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 				<Stack>
 					<Text size="sm">
 						Target: <b>{monthLabel}</b> <b>{targetYear}</b>
+					</Text>
+					<Text size="sm">
+						Program: <b>{targetProgram}</b>
 					</Text>
 					<Text size="sm" c="dimmed">
 						Existing invoice rows are not overwritten.
@@ -64,6 +81,7 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 								const result = await generateInvoices({
 									year: targetYear,
 									month: targetMonth,
+									programId,
 									copyFromPreviousMonth,
 								});
 
@@ -85,21 +103,37 @@ export const GenerateMonthButton = ({ year, month }: GenerateMonthButtonProps) =
 	};
 
 	return (
-		<Tooltip
-			label={
-				year && month
-					? 'Generate invoices for selected month'
-					: 'Select a year and month first'
-			}
-		>
-			<Button
-				onClick={handleGenerate}
-				leftSection={<IconSparkles size={16} />}
-				loading={isPending}
-				disabled={!year || !month}
+		<Group>
+			<Select
+				placeholder="Select program"
+				leftSection={<IconCategory size={16} />}
+				clearable
+				searchable
+				w={220}
+				data={programs?.data.map((program) => ({
+					value: program.id,
+					label: program.name,
+				}))}
+				value={programId}
+				onChange={setProgramId}
+			/>
+
+			<Tooltip
+				label={
+					year && month && programId
+						? 'Generate invoices for selected month'
+						: 'Select year, month, and program first'
+				}
 			>
-				Generate month
-			</Button>
-		</Tooltip>
+				<Button
+					onClick={handleGenerate}
+					leftSection={<IconSparkles size={16} />}
+					loading={isPending}
+					disabled={!year || !month || !programId}
+				>
+					Generate month
+				</Button>
+			</Tooltip>
+		</Group>
 	);
 };

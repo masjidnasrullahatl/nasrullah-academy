@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-vars */
 import { Group, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
 import {
 	IconCalendar,
 	IconCalendarMonth,
+	IconCategory,
 	IconCircleDot,
 	IconCreditCard,
 	IconSearch,
@@ -17,10 +19,12 @@ import {
 } from '@configs/enums';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 type FilterValue = {
 	year?: number;
 	month?: number;
+	programId?: string;
 	familyId?: string;
 	payMethod?: string;
 	paymentStatus?: string;
@@ -28,12 +32,22 @@ type FilterValue = {
 
 type Props = {
 	filter: FilterValue;
-	// eslint-disable-next-line no-unused-vars
-	onChangeFilter: (key: 'year' | 'month' | 'familyId' | 'payMethod' | 'paymentStatus' | 'keyword', value: string | number) => void;
+	onChangeFilter: (
+		key:
+			| 'year'
+			| 'month'
+			| 'programId'
+			| 'familyId'
+			| 'payMethod'
+			| 'paymentStatus'
+			| 'keyword',
+		value: string | number,
+	) => void;
 };
 
 export const TableFilter = ({ filter, onChangeFilter }: Props) => {
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const debounceChangeKeyword = useDebouncedCallback((value: string) => {
 		onChangeFilter('keyword', value || '');
@@ -51,7 +65,7 @@ export const TableFilter = ({ filter, onChangeFilter }: Props) => {
 				<SimpleGrid
 					mb="md"
 					spacing="xs"
-					cols={{ base: 1, sm: 2, md: 4, lg: 5 }}
+					cols={{ base: 1, sm: 2, md: 4, lg: 6 }}
 				>
 					<Select
 						placeholder="Year"
@@ -74,6 +88,19 @@ export const TableFilter = ({ filter, onChangeFilter }: Props) => {
 						value={filter.month ? String(filter.month) : null}
 						onChange={(value) => onChangeFilter('month', value ? Number(value) : '')}
 					/>
+					<Select
+						placeholder="All Programs"
+						leftSection={<IconCategory size={16} />}
+						clearable
+						searchable
+						data={programs?.data.map((program) => ({
+							value: program.id,
+							label: program.name,
+						}))}
+						value={filter.programId || null}
+						onChange={(value) => onChangeFilter('programId', value || '')}
+					/>
+
 					<Select
 						placeholder="All families"
 						leftSection={<IconUsersGroup size={16} />}

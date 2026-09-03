@@ -7,7 +7,7 @@ export const EmptyBody = () => {
 	return (
 		<Table.Tr>
 			<Table.Td className={stickyStyles.stickyLeft} />
-			<Table.Td colSpan={7}>
+			<Table.Td colSpan={8}>
 				<Center h={200}>
 					<Stack align="center">
 						<IconMoodEmpty size={40} color="var(--theme-primary-color)" />

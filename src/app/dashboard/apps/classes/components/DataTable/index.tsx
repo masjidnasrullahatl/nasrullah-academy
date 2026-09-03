@@ -23,6 +23,7 @@ export const DataTable = () => {
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		teacherId?: string;
+		programId?: string;
 		status?: 'ACTIVE' | 'ARCHIVED';
 	}>({});
 
@@ -36,11 +37,12 @@ export const DataTable = () => {
 		limit: PAGE_SIZE,
 		keyword: filter.keyword,
 		teacherId: filter.teacherId,
+		programId: filter.programId,
 		status: filter.status,
 	});
 
 	const handleChangeFilter = (
-		key: 'keyword' | 'teacherId' | 'status',
+		key: 'keyword' | 'teacherId' | 'programId' | 'status',
 		value: string,
 	) => {
 		setFilter((prev) => ({ ...prev, [key]: value || undefined }));

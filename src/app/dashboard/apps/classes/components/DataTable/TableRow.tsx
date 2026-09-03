@@ -43,6 +43,8 @@ export const TableRow = ({ classItem, page, index, pageSize }: Props) => {
 
 			<Table.Td>{classItem.name}</Table.Td>
 
+			<Table.Td>{classItem.program.name}</Table.Td>
+
 			<Table.Td>
 				{classItem.teacher
 					? `${classItem.teacher.firstName} ${classItem.teacher.lastName}`

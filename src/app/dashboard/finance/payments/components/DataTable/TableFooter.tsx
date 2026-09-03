@@ -36,7 +36,7 @@ export const TableFooter = ({
 		>
 			<Table.Tr>
 				<Table.Td
-					colSpan={2}
+					colSpan={3}
 					fw={700}
 					className={stickyStyles.stickyLeft}
 					bg="gray.0"
@@ -71,7 +71,7 @@ export const TableFooter = ({
 			</Table.Tr>
 
 			<Table.Tr>
-				<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
+				<Table.Td colSpan={9} fw={700} className={stickyStyles.stickyLeft}>
 					<Group justify="space-between">
 						<Text fz="sm">Total: {total}</Text>
 

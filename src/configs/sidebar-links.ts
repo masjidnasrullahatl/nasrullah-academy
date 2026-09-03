@@ -1,4 +1,5 @@
 import {
+	IconCategory,
 	IconChalkboard,
 	IconKey,
 	IconLayoutDashboard,
@@ -9,7 +10,13 @@ import {
 	IconUsersGroup,
 } from '@tabler/icons-react';
 
-import { PATH_ACCOUNTS, PATH_APPS, PATH_DASHBOARD, PATH_FINANCE } from './routes';
+import {
+	PATH_ACCOUNTS,
+	PATH_APPS,
+	PATH_DASHBOARD,
+	PATH_FINANCE,
+	PATH_SETTINGS,
+} from './routes';
 
 export const SIDEBAR_LINKS = [
 	{
@@ -54,6 +61,16 @@ export const SIDEBAR_LINKS = [
 				label: 'Monthly Payments',
 				icon: IconReceipt,
 				link: PATH_FINANCE.payments,
+			},
+		],
+	},
+	{
+		title: 'Settings',
+		links: [
+			{
+				label: 'Programs',
+				icon: IconCategory,
+				link: PATH_SETTINGS.programs,
 			},
 		],
 	},

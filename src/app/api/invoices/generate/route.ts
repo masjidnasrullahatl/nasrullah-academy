@@ -31,7 +31,10 @@ const generateInvoices = async (request: AuthRequest) => {
 					some: {
 						status: 'ACTIVE',
 						enrollments: {
-							some: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
+							some: {
+								status: 'ACTIVE',
+								class: { status: 'ACTIVE', programId: data.programId },
+							},
 						},
 					},
 				},
@@ -41,8 +44,11 @@ const generateInvoices = async (request: AuthRequest) => {
 					where: { status: 'ACTIVE' },
 					include: {
 						enrollments: {
-							where: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
 							select: { id: true },
+							where: {
+								status: 'ACTIVE',
+								class: { status: 'ACTIVE', programId: data.programId },
+							},
 						},
 					},
 				},
@@ -59,6 +65,7 @@ const generateInvoices = async (request: AuthRequest) => {
 				year: data.year,
 				month: data.month,
 				familyId: { in: familyIds },
+				programId: data.programId,
 			},
 			select: { familyId: true },
 		});
@@ -73,7 +80,6 @@ const generateInvoices = async (request: AuthRequest) => {
 				registrationFee: number;
 				tuitionFee: number;
 				bookFee: number;
-				session: 'AM' | 'PM' | 'AM_PM' | 'NA' | null;
 			}
 		>();
 
@@ -84,13 +90,13 @@ const generateInvoices = async (request: AuthRequest) => {
 					year: previousMonth.year,
 					month: previousMonth.month,
 					familyId: { in: familyIds },
+					programId: data.programId,
 				},
 				select: {
 					familyId: true,
 					registrationFee: true,
 					tuitionFee: true,
 					bookFee: true,
-					session: true,
 				},
 			});
 
@@ -101,7 +107,6 @@ const generateInvoices = async (request: AuthRequest) => {
 						registrationFee: Number(invoice.registrationFee),
 						tuitionFee: Number(invoice.tuitionFee),
 						bookFee: Number(invoice.bookFee),
-						session: invoice.session,
 					},
 				]),
 			);
@@ -124,10 +129,10 @@ const generateInvoices = async (request: AuthRequest) => {
 			await prisma.monthlyInvoices.create({
 				data: {
 					familyId: family.id,
+					programId: data.programId,
 					year: data.year,
 					month: data.month,
 					studentCount,
-					session: previous?.session || null,
 					registrationFee: previous?.registrationFee || 0,
 					tuitionFee: previous?.tuitionFee || 0,
 					bookFee: previous?.bookFee || 0,

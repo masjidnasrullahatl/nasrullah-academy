@@ -12,6 +12,8 @@ export const TableHeader = () => {
 
 				<Table.Th>Class</Table.Th>
 
+				<Table.Th>Program</Table.Th>
+
 				<Table.Th>Teacher</Table.Th>
 
 				<Table.Th ta="center">Students</Table.Th>

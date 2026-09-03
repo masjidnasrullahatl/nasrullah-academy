@@ -28,19 +28,25 @@ const getSummary = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
 	const year = Number(searchParams.get('year') || new Date().getFullYear());
 
+	const programId = searchParams.get('programId') || '';
+
 	const prisma = createClient();
 
-	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
-		year,
-	};
+	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = { year };
+
+	if (programId) invoiceWhere.programId = programId;
 
 	const enrollmentWhere: Prisma.EnrollmentsWhereInput = {
 		status: 'ACTIVE',
-		class: { status: 'ACTIVE' },
+		class: {
+			status: 'ACTIVE',
+			...(programId ? { programId } : {}),
+		},
 	};
 
 	const classWhere: Prisma.ClassesWhereInput = {
 		status: 'ACTIVE',
+		...(programId ? { programId } : {}),
 	};
 
 	const [

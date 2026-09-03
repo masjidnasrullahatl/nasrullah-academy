@@ -20,6 +20,7 @@ const buildWhere = (
 	const year = Number(searchParams.get('year') || 0);
 	const month = Number(searchParams.get('month') || 0);
 	const keyword = searchParams.get('keyword') || '';
+	const programId = searchParams.get('programId') || '';
 	const paymentStatus = searchParams.get('paymentStatus') || '';
 	const payMethod = searchParams.get('payMethod') || '';
 	const familyId = searchParams.get('familyId') || '';
@@ -29,6 +30,7 @@ const buildWhere = (
 	if (year) where.year = year;
 	if (month) where.month = month;
 	if (familyId) where.familyId = familyId;
+	if (programId) where.programId = programId;
 	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
 	if (payMethod) where.payMethod = payMethod as PayMethod;
 	if (keyword) {
@@ -62,7 +64,10 @@ const getPaging = async (request: AuthRequest) => {
 			take: limit,
 			orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }],
 			where,
-			include: { family: true },
+			include: {
+				family: true,
+				program: { select: { id: true, name: true } },
+			},
 		}),
 		prisma.monthlyInvoices.aggregate({
 			where,
@@ -110,8 +115,9 @@ const create = async (request: AuthRequest) => {
 
 		const existing = await prisma.monthlyInvoices.findUnique({
 			where: {
-				familyId_year_month: {
+				familyId_programId_year_month: {
 					familyId: data.familyId,
+					programId: data.programId,
 					year: data.year,
 					month: data.month,
 				},
@@ -126,10 +132,10 @@ const create = async (request: AuthRequest) => {
 		const invoice = await prisma.monthlyInvoices.create({
 			data: {
 				familyId: data.familyId,
+				programId: data.programId,
 				year: data.year,
 				month: data.month,
 				studentCount: data.studentCount,
-				session: data.session || null,
 				registrationFee: data.registrationFee,
 				tuitionFee: data.tuitionFee,
 				bookFee: data.bookFee,
@@ -147,6 +153,7 @@ const create = async (request: AuthRequest) => {
 			},
 			include: {
 				family: true,
+				program: { select: { id: true, name: true } },
 			},
 		});
 

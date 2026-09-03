@@ -26,7 +26,12 @@ export const calcTotals = (payload: InvoiceTotalsPayload) => {
 };
 
 export const mapInvoice = (
-	invoice: Prisma.MonthlyInvoicesGetPayload<{ include: { family: true } }>,
+	invoice: Prisma.MonthlyInvoicesGetPayload<{
+		include: {
+			family: true;
+			program: { select: { id: true; name: true } };
+		};
+	}>,
 ) => ({
 	...invoice,
 	registrationFee: toNumber(invoice.registrationFee),

@@ -1,0 +1,116 @@
+import { ZodError } from 'zod/v4';
+
+import { AuthRequest, ParamsRequest } from '@app/api/types/common';
+import { catchZodError } from '@app/api/utils/catchZodError';
+import {
+	badRequest,
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
+import { withAuth } from '@app/api/utils/withAuth';
+
+import { createClient } from '@helpers/prisma/server';
+
+import { UpdateProgramSchema } from '../types';
+
+const getDetail = async (
+	request: AuthRequest,
+	{ params }: ParamsRequest<{ id: string }>,
+) => {
+	const { id } = await params;
+	const prisma = createClient();
+
+	const program = await prisma.programs.findUnique({
+		where: { id },
+		include: {
+			_count: { select: { classes: true, invoices: true } },
+		},
+	});
+
+	if (!program) return notFound('Program not found');
+
+	return success(program);
+};
+
+const update = async (
+	request: AuthRequest,
+	{ params }: ParamsRequest<{ id: string }>,
+) => {
+	try {
+		const { id } = await params;
+		const body = await request.json();
+		const data = UpdateProgramSchema.parse(body);
+		const prisma = createClient();
+
+		const existingProgram = await prisma.programs.findUnique({ where: { id } });
+
+		if (!existingProgram) return notFound('Program not found');
+
+		if (data.name && data.name !== existingProgram.name) {
+			const duplicateProgram = await prisma.programs.findFirst({
+				where: {
+					name: { equals: data.name, mode: 'insensitive' },
+					NOT: { id },
+				},
+			});
+
+			if (duplicateProgram) {
+				return badRequest('Program name already exists');
+			}
+		}
+
+		const program = await prisma.programs.update({
+			where: { id },
+			data: {
+				name: data.name,
+				description: data.description ?? null,
+				status: data.status,
+			},
+			include: {
+				_count: { select: { classes: true, invoices: true } },
+			},
+		});
+
+		return success(program);
+	} catch (error) {
+		console.log('Update program error', error);
+
+		if (error instanceof ZodError) {
+			return catchZodError(error);
+		}
+
+		return internalServerError();
+	}
+};
+
+const remove = async (
+	request: AuthRequest,
+	{ params }: ParamsRequest<{ id: string }>,
+) => {
+	const { id } = await params;
+	const prisma = createClient();
+
+	const program = await prisma.programs.findUnique({
+		where: { id },
+		include: {
+			_count: { select: { classes: true, invoices: true } },
+		},
+	});
+
+	if (!program) return notFound('Program not found');
+
+	if (program._count.classes > 0 || program._count.invoices > 0) {
+		return badRequest(
+			'Cannot delete program with existing classes or invoices',
+		);
+	}
+
+	await prisma.programs.delete({ where: { id } });
+
+	return success(program);
+};
+
+export const GET = withAuth(getDetail);
+export const PATCH = withAuth(update);
+export const DELETE = withAuth(remove);
