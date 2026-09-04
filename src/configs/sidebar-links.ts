@@ -1,4 +1,5 @@
 import {
+	IconCalendarDollar,
 	IconCategory,
 	IconChalkboard,
 	IconKey,
@@ -61,6 +62,11 @@ export const SIDEBAR_LINKS = [
 				label: 'Monthly Payments',
 				icon: IconReceipt,
 				link: PATH_FINANCE.payments,
+			},
+			{
+				label: 'Pay Periods',
+				icon: IconCalendarDollar,
+				link: PATH_FINANCE.payPeriods,
 			},
 		],
 	},

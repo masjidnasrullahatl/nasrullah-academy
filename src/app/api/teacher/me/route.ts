@@ -6,6 +6,7 @@ import { internalServerError, notFound, success } from '@app/api/utils/response'
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
+import { createAdminClient } from '@helpers/supabase/admin';
 
 import { getCurrentTeacher } from '../utils';
 
@@ -46,6 +47,13 @@ const updateMyProfile = async (request: AuthRequest) => {
 				firstName: payload.firstName,
 				lastName: payload.lastName,
 				phoneNumber: payload.phoneNumber || null,
+			},
+		});
+
+		const adminClient = createAdminClient();
+		await adminClient.auth.admin.updateUserById(request.user.id, {
+			user_metadata: {
+				full_name: `${payload.firstName} ${payload.lastName}`,
 			},
 		});
 

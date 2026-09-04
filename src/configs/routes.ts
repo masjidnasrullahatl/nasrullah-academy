@@ -43,6 +43,7 @@ export const PATH_APPS = {
 export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
+	payPeriods: path(ROOT_FINANCE, '/pay-periods'),
 };
 
 export const PATH_SETTINGS = {

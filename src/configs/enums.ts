@@ -4,6 +4,7 @@ import type {
 	Gender,
 	PaymentStatus,
 	PayMethod,
+	PayPeriodStatus,
 	RecordStatus,
 } from '@prisma/client';
 
@@ -113,6 +114,24 @@ export const PAYMENT_STATUS_OPTIONS: SelectOption[] = [
 	{ value: 'PARTIAL', label: PAYMENT_STATUS_LABELS.PARTIAL },
 	{ value: 'UNPAID', label: PAYMENT_STATUS_LABELS.UNPAID },
 	{ value: 'NA', label: PAYMENT_STATUS_LABELS.NA },
+];
+
+export const PAY_PERIOD_STATUS_LABELS: Record<PayPeriodStatus, string> = {
+	OPEN: 'Open',
+	LOCKED: 'Locked',
+	PAID: 'Paid',
+};
+
+export const PAY_PERIOD_STATUS_COLORS: Record<PayPeriodStatus, string> = {
+	OPEN: 'blue',
+	LOCKED: 'orange',
+	PAID: 'green',
+};
+
+export const PAY_PERIOD_STATUS_OPTIONS: SelectOption[] = [
+	{ value: 'OPEN', label: PAY_PERIOD_STATUS_LABELS.OPEN },
+	{ value: 'LOCKED', label: PAY_PERIOD_STATUS_LABELS.LOCKED },
+	{ value: 'PAID', label: PAY_PERIOD_STATUS_LABELS.PAID },
 ];
 
 export const MONTH_OPTIONS: SelectOption[] = [

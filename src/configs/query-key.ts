@@ -11,9 +11,20 @@ export const QUERY_KEYS = {
 	INVOICES: { GET_PAGING: 'invoices.get-paging', GET_DETAIL: 'invoices.get-detail' },
 	DASHBOARD: { SUMMARY: 'dashboard.summary', YEARS: 'dashboard.years' },
 	TEACHER: {
-		MY_CLASSES: 'teacher-my-classes',
-		MY_TIME_ENTRIES: 'teacher-my-time-entries',
-		MY_PAY_RECORDS: 'teacher-my-pay-records',
-		MY_PROFILE: 'teacher-my-profile',
+		MY_CLASSES: 'teacher.my-classes',
+		MY_TIME_ENTRIES: 'teacher.my-time-entries',
+		MY_PAY_RECORDS: 'teacher.my-pay-records',
+		MY_PROFILE: 'teacher.my-profile',
+	},
+	PAY_PERIODS: {
+		GET_PAGING: 'pay-periods.get-paging',
+		GET_ONE: 'pay-periods.get-one',
+		GET_SUBMISSIONS: 'pay-periods.get-submissions',
+	},
+	TIME_ENTRIES: {
+		GET_PAGING: 'time-entries.get-paging',
+	},
+	PAY_RECORDS: {
+		GET_PAGING: 'pay-records.get-paging',
 	},
 };
