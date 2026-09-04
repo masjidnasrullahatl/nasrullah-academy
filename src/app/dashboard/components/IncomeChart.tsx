@@ -13,13 +13,16 @@ export const IncomeChart = ({ data }: IncomeChartProps) => {
 	return (
 		<Paper p="md" withBorder>
 			<Title order={4} mb="md">
-				Monthly Income
+				Income vs Expense
 			</Title>
 			<BarChart
 				h={320}
 				data={data}
 				dataKey="label"
-				series={[{ name: 'income', label: 'Income', color: 'green' }]}
+				series={[
+					{ name: 'income', label: 'Income', color: 'green' },
+					{ name: 'expense', label: 'Expense', color: 'orange' },
+				]}
 				withTooltip
 				valueFormatter={formatMoney}
 				tickLine="xy"

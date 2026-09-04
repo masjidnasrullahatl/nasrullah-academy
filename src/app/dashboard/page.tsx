@@ -6,12 +6,14 @@ import { Alert, Container, SimpleGrid, Stack } from '@mantine/core';
 
 import { useGetDashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
+import { ClassProfitLossTable } from './components/ClassProfitLossTable';
 import { DashboardFilters } from './components/DashboardFilters';
 import { DashboardSkeleton } from './components/DashboardSkeleton';
 import { GenderDonut } from './components/GenderDonut';
 import { IncomeChart } from './components/IncomeChart';
 import { MonthlySummaryTable } from './components/MonthlySummaryTable';
 import { PaymentStatusDonut } from './components/PaymentStatusDonut';
+import { ProgramSummaryTable } from './components/ProgramSummaryTable';
 import { StatCards } from './components/StatCards';
 import { TopUnpaidFamilies } from './components/TopUnpaidFamilies';
 
@@ -20,10 +22,7 @@ export default function DashboardPage() {
 	const [year, setYear] = useState(currentYear);
 	const [programId, setProgramId] = useState<string | undefined>();
 
-	const summaryParams = useMemo(
-		() => ({ year, programId }),
-		[year, programId],
-	);
+	const summaryParams = useMemo(() => ({ year, programId }), [year, programId]);
 
 	const {
 		data: summary,
@@ -50,15 +49,14 @@ export default function DashboardPage() {
 				) : (
 					<>
 						<StatCards totals={summary.totals} />
-						<IncomeChart data={summary.monthly} />
-						<SimpleGrid cols={{ base: 1, md: 2 }}>
+						<SimpleGrid cols={{ base: 1, lg: 3 }}>
+							<IncomeChart data={summary.monthly} />
 							<GenderDonut genderSplit={summary.genderSplit} />
 							<PaymentStatusDonut paymentStatus={summary.paymentStatus} />
 						</SimpleGrid>
-						<MonthlySummaryTable
-							monthly={summary.monthly}
-							totals={summary.totals}
-						/>
+						<MonthlySummaryTable monthly={summary.monthly} totals={summary.totals} />
+						{!programId && <ProgramSummaryTable data={summary.programSummary} />}
+						<ClassProfitLossTable data={summary.classProfitLoss} />
 						<TopUnpaidFamilies data={summary.topUnpaidFamilies} />
 					</>
 				)}

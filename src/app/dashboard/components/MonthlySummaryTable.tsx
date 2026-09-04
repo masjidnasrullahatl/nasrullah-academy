@@ -19,7 +19,7 @@ export const MonthlySummaryTable = ({
 
 			<Divider my="md" />
 
-			<Table.ScrollContainer minWidth={680}>
+			<Table.ScrollContainer minWidth={900}>
 				<Table
 					striped="even"
 					highlightOnHover
@@ -31,9 +31,11 @@ export const MonthlySummaryTable = ({
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Month</Table.Th>
-							<Table.Th>No of Students</Table.Th>
-							<Table.Th>Income</Table.Th>
-							<Table.Th>Unpaid Balance</Table.Th>
+							<Table.Th ta="center">No of Students</Table.Th>
+							<Table.Th ta="right">Income</Table.Th>
+							<Table.Th ta="right">Expense</Table.Th>
+							<Table.Th ta="right">Profit</Table.Th>
+							<Table.Th ta="right">Unpaid Balance</Table.Th>
 						</Table.Tr>
 					</Table.Thead>
 
@@ -42,18 +44,23 @@ export const MonthlySummaryTable = ({
 							<Table.Tr key={item.month}>
 								<Table.Td>{item.label}</Table.Td>
 								<Table.Td
+									ta="center"
 									c={item.students > 0 ? 'blue' : 'gray'}
 									fw={item.students > 0 ? 600 : 500}
 								>
 									{item.students}
 								</Table.Td>
-								<Table.Td
-									c={item.income > 0 ? 'green' : 'gray'}
-									fw={item.income > 0 ? 600 : 500}
-								>
+								<Table.Td ta="right" c={item.income > 0 ? 'green' : 'gray'}>
 									{formatMoney(item.income)}
 								</Table.Td>
+								<Table.Td ta="right" c={item.expense > 0 ? 'red' : 'gray'}>
+									{formatMoney(item.expense)}
+								</Table.Td>
+								<Table.Td ta="right" c={item.profit >= 0 ? 'green' : 'red'} fw={600}>
+									{formatMoney(item.profit)}
+								</Table.Td>
 								<Table.Td
+									ta="right"
 									c={item.unpaidBalance > 0 ? 'red' : 'gray'}
 									fw={item.unpaidBalance > 0 ? 600 : 500}
 								>
@@ -69,15 +76,21 @@ export const MonthlySummaryTable = ({
 							backgroundColor: 'var(--mantine-color-gray-0)',
 						}}
 					>
-						<Table.Tr fw={700}>
+						<Table.Tr>
 							<Table.Td fw={700}>TOTAL</Table.Td>
-							<Table.Td c="blue" fw={700}>
+							<Table.Td ta="center" c="blue" fw={700}>
 								{totals.students}
 							</Table.Td>
-							<Table.Td c="green" fw={700}>
+							<Table.Td ta="right" c="green" fw={700}>
 								{formatMoney(totals.income)}
 							</Table.Td>
-							<Table.Td c="red" fw={700}>
+							<Table.Td ta="right" c="red" fw={700}>
+								{formatMoney(totals.expense)}
+							</Table.Td>
+							<Table.Td ta="right" c={totals.profit >= 0 ? 'green' : 'red'} fw={700}>
+								{formatMoney(totals.profit)}
+							</Table.Td>
+							<Table.Td ta="right" c="red" fw={700}>
 								{formatMoney(totals.unpaidBalance)}
 							</Table.Td>
 						</Table.Tr>

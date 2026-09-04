@@ -16,12 +16,16 @@ export type DashboardSummary = {
 		classes: number;
 		income: number;
 		unpaidBalance: number;
+		expense: number;
+		profit: number;
 	};
 	monthly: Array<{
 		month: number;
 		label: string;
 		students: number;
 		income: number;
+		expense: number;
+		profit: number;
 		unpaidBalance: number;
 	}>;
 	genderSplit: { boys: number; girls: number };
@@ -32,6 +36,24 @@ export type DashboardSummary = {
 		amount: number;
 	}>;
 	topUnpaidFamilies: Array<{ familyId: string; name: string; balance: number }>;
+	classProfitLoss: Array<{
+		classId: string;
+		className: string;
+		programName: string;
+		enrollmentCount: number;
+		revenue: number;
+		expense: number;
+		profit: number;
+	}>;
+	programSummary: Array<{
+		programId: string;
+		programName: string;
+		students: number;
+		classes: number;
+		income: number;
+		expense: number;
+		profit: number;
+	}>;
 };
 
 type SummaryParams = {
