@@ -21,6 +21,17 @@ export const PATH_TEACHER = {
 	default: path(ROOTS_TEACHER, ''),
 };
 
+export const PATH_TEACHER_APPS = {
+	classes: path(ROOTS_TEACHER, '/classes'),
+	timeEntries: path(ROOTS_TEACHER, '/time-entries'),
+	pay: path(ROOTS_TEACHER, '/pay'),
+};
+
+export const PATH_TEACHER_ACCOUNTS = {
+	profile: path(ROOTS_TEACHER, '/profile'),
+	changePassword: path(ROOTS_TEACHER, '/change-password'),
+};
+
 export const PATH_APPS = {
 	root: ROOT_APPS,
 	families: path(ROOT_APPS, '/families'),

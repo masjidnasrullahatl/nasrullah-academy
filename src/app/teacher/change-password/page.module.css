@@ -1,0 +1,5 @@
+.card {
+	max-width: rem(520px);
+	width: 100%;
+	padding: var(--mantine-spacing-lg);
+}

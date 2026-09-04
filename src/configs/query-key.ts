@@ -10,4 +10,10 @@ export const QUERY_KEYS = {
 	},
 	INVOICES: { GET_PAGING: 'invoices.get-paging', GET_DETAIL: 'invoices.get-detail' },
 	DASHBOARD: { SUMMARY: 'dashboard.summary', YEARS: 'dashboard.years' },
+	TEACHER: {
+		MY_CLASSES: 'teacher-my-classes',
+		MY_TIME_ENTRIES: 'teacher-my-time-entries',
+		MY_PAY_RECORDS: 'teacher-my-pay-records',
+		MY_PROFILE: 'teacher-my-profile',
+	},
 };

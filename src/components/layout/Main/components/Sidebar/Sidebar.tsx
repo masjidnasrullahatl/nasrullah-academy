@@ -10,6 +10,7 @@ import { SIDEBAR_LINKS } from '@configs/sidebar-links';
 
 import { useAuth } from '@hooks/useAuth';
 
+import type { SidebarLinks } from '../../MainLayout';
 import { LinksGroup } from '../NavLinks';
 
 import classes from './Sidebar.module.css';
@@ -17,14 +18,19 @@ import classes from './Sidebar.module.css';
 type NavigationProps = {
 	onClose: () => void;
 	showCloseButton?: boolean;
+	sidebarLinks?: SidebarLinks;
 };
 
-const SidebarNav = ({ onClose, showCloseButton = false }: NavigationProps) => {
+const SidebarNav = ({
+	onClose,
+	showCloseButton = false,
+	sidebarLinks,
+}: NavigationProps) => {
 	const tablet_match = useMediaQuery('(max-width: 768px)');
 
 	const { user } = useAuth();
 
-	const links = SIDEBAR_LINKS.map((m) => (
+	const links = (sidebarLinks || SIDEBAR_LINKS).map((m) => (
 		<Box key={m.title} pl={0} mb="md">
 			<Text
 				tt="uppercase"
