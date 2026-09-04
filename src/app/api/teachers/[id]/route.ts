@@ -7,7 +7,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -35,11 +35,16 @@ const update = async (
 				lastName: data.lastName,
 				phoneNumber: data.phoneNumber || null,
 				email: data.email || null,
+				hourlyRate: data.hourlyRate ?? null,
 				status: data.status,
 			},
 		});
 
-		return success(teacher);
+		return success({
+			...teacher,
+			hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+			hasAccount: Boolean(teacher.supabaseUserId),
+		});
 	} catch (error) {
 		console.log('Update teacher error', error);
 
@@ -72,8 +77,12 @@ const remove = async (
 
 	await prisma.teachers.delete({ where: { id } });
 
-	return success(teacher);
+	return success({
+		...teacher,
+		hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+		hasAccount: Boolean(teacher.supabaseUserId),
+	});
 };
 
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const PUT = withStaff(update);
+export const DELETE = withStaff(remove);

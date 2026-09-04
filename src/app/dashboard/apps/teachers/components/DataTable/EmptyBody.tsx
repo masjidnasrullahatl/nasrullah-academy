@@ -8,7 +8,7 @@ export const EmptyBody = () => {
 		<Table.Tr>
 			<Table.Td className={stickyStyles.stickyLeft} />
 
-			<Table.Td colSpan={5}>
+			<Table.Td colSpan={7}>
 				<Center h={260}>
 					<Stack justify="center" align="center">
 						<IconBox size={40} />

@@ -4,6 +4,7 @@ function path(root: string, sublink: string) {
 
 const ROOTS_DASHBOARD = '/dashboard';
 const ROOTS_AUTH = '/auth';
+const ROOTS_TEACHER = '/teacher';
 
 const ROOT_APPS = path(ROOTS_DASHBOARD, '/apps');
 const ROOT_FINANCE = path(ROOTS_DASHBOARD, '/finance');
@@ -13,6 +14,11 @@ const ROOTS_ACCOUNTS = path(ROOTS_DASHBOARD, '/accounts');
 export const PATH_DASHBOARD = {
 	root: ROOTS_DASHBOARD,
 	default: path(ROOTS_DASHBOARD, ''),
+};
+
+export const PATH_TEACHER = {
+	root: ROOTS_TEACHER,
+	default: path(ROOTS_TEACHER, ''),
 };
 
 export const PATH_APPS = {

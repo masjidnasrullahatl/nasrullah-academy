@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -51,7 +51,13 @@ const getPaging = async (request: AuthRequest) => {
 		where,
 	});
 
-	return NextResponse.json({ data: teachers, total, error: null });
+	const data = teachers.map((teacher) => ({
+		...teacher,
+		hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+		hasAccount: Boolean(teacher.supabaseUserId),
+	}));
+
+	return NextResponse.json({ data, total, error: null });
 };
 
 const create = async (request: AuthRequest) => {
@@ -67,11 +73,16 @@ const create = async (request: AuthRequest) => {
 				lastName: data.lastName,
 				phoneNumber: data.phoneNumber || null,
 				email: data.email || null,
+				hourlyRate: data.hourlyRate ?? null,
 				status: data.status,
 			},
 		});
 
-		return success(teacher);
+		return success({
+			...teacher,
+			hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+			hasAccount: Boolean(teacher.supabaseUserId),
+		});
 	} catch (error) {
 		console.log('Create teacher error', error);
 
@@ -81,5 +92,5 @@ const create = async (request: AuthRequest) => {
 	}
 };
 
-export const GET = withAuth(getPaging);
-export const POST = withAuth(create);
+export const GET = withStaff(getPaging);
+export const POST = withStaff(create);

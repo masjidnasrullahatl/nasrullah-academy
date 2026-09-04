@@ -40,6 +40,7 @@ export const CreateInvoiceSchema = z.object({
 
 export const UpdateInvoiceSchema = CreateInvoiceSchema.omit({
 	familyId: true,
+	programId: true,
 });
 
 export const GenerateInvoicesSchema = z.object({

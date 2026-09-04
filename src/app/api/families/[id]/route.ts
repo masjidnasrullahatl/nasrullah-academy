@@ -7,7 +7,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -159,6 +159,6 @@ const remove = async (
 	return success(family);
 };
 
-export const GET = withAuth(getDetail);
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const GET = withStaff(getDetail);
+export const PUT = withStaff(update);
+export const DELETE = withStaff(remove);

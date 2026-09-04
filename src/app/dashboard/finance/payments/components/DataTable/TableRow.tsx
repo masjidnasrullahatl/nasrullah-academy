@@ -75,7 +75,6 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 		await updateInvoice({
 			id: item.id,
 			data: {
-				programId: item.programId,
 				year: item.year,
 				month: item.month,
 				studentCount: item.studentCount,

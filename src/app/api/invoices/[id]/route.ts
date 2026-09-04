@@ -7,7 +7,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -59,7 +59,6 @@ const update = async (
 		const invoice = await prisma.monthlyInvoices.update({
 			where: { id },
 			data: {
-				programId: data.programId,
 				year: data.year,
 				month: data.month,
 				studentCount: data.studentCount,
@@ -116,6 +115,6 @@ const remove = async (
 	return success(mapInvoice(invoice));
 };
 
-export const GET = withAuth(getDetail);
-export const PATCH = withAuth(update);
-export const DELETE = withAuth(remove);
+export const GET = withStaff(getDetail);
+export const PATCH = withStaff(update);
+export const DELETE = withStaff(remove);

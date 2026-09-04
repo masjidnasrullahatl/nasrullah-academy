@@ -9,7 +9,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -155,6 +155,6 @@ const getAvailableStudents = async (
 	return success(students);
 };
 
-export const POST = withAuth(assignStudents);
-export const DELETE = withAuth(removeStudent);
-export const GET = withAuth(getAvailableStudents);
+export const POST = withStaff(assignStudents);
+export const DELETE = withStaff(removeStudent);
+export const GET = withStaff(getAvailableStudents);

@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -110,5 +110,5 @@ const create = async (request: AuthRequest) => {
 	}
 };
 
-export const GET = withAuth(getPaging);
-export const POST = withAuth(create);
+export const GET = withStaff(getPaging);
+export const POST = withStaff(create);

@@ -3,7 +3,7 @@ import { ZodError } from 'zod/v4';
 import { AuthRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
 import { internalServerError, success } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -169,4 +169,4 @@ const generateInvoices = async (request: AuthRequest) => {
 	}
 };
 
-export const POST = withAuth(generateInvoices);
+export const POST = withStaff(generateInvoices);

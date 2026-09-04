@@ -16,9 +16,13 @@ export const TableHeader = () => {
 
 				<Table.Th>Email</Table.Th>
 
+				<Table.Th ta="right">Rate</Table.Th>
+
 				<Table.Th>Classes</Table.Th>
 
 				<Table.Th ta="center">Status</Table.Th>
+
+				<Table.Th ta="center">Account</Table.Th>
 
 				<Table.Th w={1} ta="center" className={stickyStyles.stickyRight}>
 					Actions

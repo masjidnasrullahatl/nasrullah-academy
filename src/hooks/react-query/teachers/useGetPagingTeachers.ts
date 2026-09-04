@@ -1,4 +1,4 @@
-import { Classes, Teachers } from '@prisma/client';
+import { Classes } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetTeachersQueryParams } from '@app/api/teachers/types';
@@ -8,7 +8,18 @@ import { QUERY_KEYS } from '@configs/query-key';
 
 import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
-type TeacherRow = Teachers & {
+export type TeacherRow = {
+	id: string;
+	firstName: string;
+	lastName: string;
+	phoneNumber: string | null;
+	email: string | null;
+	hourlyRate: number | null;
+	supabaseUserId: string | null;
+	status: 'ACTIVE' | 'INACTIVE';
+	createdAt: string;
+	updatedAt: string;
+	hasAccount: boolean;
 	classes: Classes[];
 	_count: { classes: number };
 };

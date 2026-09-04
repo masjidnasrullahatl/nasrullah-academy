@@ -2,7 +2,7 @@ import { PaymentStatus, PayMethod, Prisma } from '@prisma/client';
 
 import { AuthRequest } from '@app/api/types/common';
 import { success } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -259,4 +259,4 @@ const getSummary = async (request: AuthRequest) => {
 	});
 };
 
-export const GET = withAuth(getSummary);
+export const GET = withStaff(getSummary);

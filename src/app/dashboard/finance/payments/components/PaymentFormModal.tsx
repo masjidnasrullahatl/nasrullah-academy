@@ -181,7 +181,6 @@ export const PaymentFormModal = ({
 
 		if (isEdit && invoice) {
 			const payload: UpdateInvoicePayload = {
-				programId: values.programId,
 				year: values.year,
 				month: values.month,
 				studentCount: values.studentCount,
@@ -268,19 +267,21 @@ export const PaymentFormModal = ({
 								/>
 							</Grid.Col>
 						)}
-						<Grid.Col span={{ base: 12, md: 4 }}>
-							<Select
-								label="Program"
-								placeholder="Select program"
-								withAsterisk
-								searchable
-								data={programs?.data.map((program) => ({
-									value: program.id,
-									label: program.name,
-								}))}
-								{...form.getInputProps('programId')}
-							/>
-						</Grid.Col>
+						{!isEdit && (
+							<Grid.Col span={{ base: 12, md: 4 }}>
+								<Select
+									label="Program"
+									placeholder="Select program"
+									withAsterisk
+									searchable
+									data={programs?.data.map((program) => ({
+										value: program.id,
+										label: program.name,
+									}))}
+									{...form.getInputProps('programId')}
+								/>
+							</Grid.Col>
+						)}
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Year"
