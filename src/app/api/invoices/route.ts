@@ -31,8 +31,8 @@ const buildWhere = (
 	if (month) where.month = month;
 	if (familyId) where.familyId = familyId;
 	if (programId) where.programId = programId;
-	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
 	if (payMethod) where.payMethod = payMethod as PayMethod;
+	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
 	if (keyword) {
 		where.family = {
 			OR: [
@@ -60,14 +60,11 @@ const getPaging = async (request: AuthRequest) => {
 	const [total, invoices, aggregate] = await Promise.all([
 		prisma.monthlyInvoices.count({ where }),
 		prisma.monthlyInvoices.findMany({
+			where,
 			skip,
 			take: limit,
 			orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }],
-			where,
-			include: {
-				family: true,
-				program: { select: { id: true, name: true } },
-			},
+			include: { family: true, program: { select: { id: true, name: true } } },
 		}),
 		prisma.monthlyInvoices.aggregate({
 			where,
@@ -151,10 +148,7 @@ const create = async (request: AuthRequest) => {
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: {
-				family: true,
-				program: { select: { id: true, name: true } },
-			},
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		return success(mapInvoice(invoice));

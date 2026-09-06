@@ -16,7 +16,6 @@ import {
 	PATH_APPS,
 	PATH_DASHBOARD,
 	PATH_FINANCE,
-	PATH_SETTINGS,
 } from './routes';
 
 export const SIDEBAR_LINKS = [
@@ -33,6 +32,11 @@ export const SIDEBAR_LINKS = [
 	{
 		title: 'School',
 		links: [
+			{
+				label: 'Programs',
+				icon: IconCategory,
+				link: PATH_APPS.programs,
+			},
 			{
 				label: 'Classes',
 				icon: IconSchool,
@@ -67,16 +71,6 @@ export const SIDEBAR_LINKS = [
 				label: 'Pay Periods',
 				icon: IconCalendarDollar,
 				link: PATH_FINANCE.payPeriods,
-			},
-		],
-	},
-	{
-		title: 'Settings',
-		links: [
-			{
-				label: 'Programs',
-				icon: IconCategory,
-				link: PATH_SETTINGS.programs,
 			},
 		],
 	},

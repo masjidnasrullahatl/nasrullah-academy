@@ -34,11 +34,7 @@ const update = async (
 
 		if (nextName !== existing.name || nextProgramId !== existing.programId) {
 			const duplicateClass = await prisma.classes.findFirst({
-				where: {
-					name: nextName,
-					programId: nextProgramId,
-					NOT: { id },
-				},
+				where: { name: nextName, programId: nextProgramId, NOT: { id } },
 			});
 
 			if (duplicateClass) return badRequest('Class already exists');

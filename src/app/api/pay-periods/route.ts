@@ -25,13 +25,9 @@ const getPaging = async (request: AuthRequest) => {
 
 	const where: Prisma.PayPeriodsWhereInput = {};
 
-	if (keyword) {
-		where.name = { contains: keyword, mode: 'insensitive' };
-	}
+	if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
 
-	if (status) {
-		where.status = status as any;
-	}
+	if (status) where.status = status as any;
 
 	const total = await prisma.payPeriods.count({ where });
 
@@ -42,11 +38,7 @@ const getPaging = async (request: AuthRequest) => {
 		orderBy: [{ startDate: 'desc' }, { endDate: 'desc' }],
 		include: {
 			_count: {
-				select: {
-					timeEntries: true,
-					payRecords: true,
-					submissions: true,
-				},
+				select: { timeEntries: true, payRecords: true, submissions: true },
 			},
 		},
 	});
@@ -68,11 +60,7 @@ const create = async (request: AuthRequest) => {
 			},
 			include: {
 				_count: {
-					select: {
-						timeEntries: true,
-						payRecords: true,
-						submissions: true,
-					},
+					select: { timeEntries: true, payRecords: true, submissions: true },
 				},
 			},
 		});

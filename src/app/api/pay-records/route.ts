@@ -19,12 +19,9 @@ const getPaging = async (request: AuthRequest) => {
 	const skip = (page - 1) * limit;
 
 	const where: Prisma.PayRecordsWhereInput = {};
-	if (payPeriodId) {
-		where.payPeriodId = payPeriodId;
-	}
-	if (teacherId) {
-		where.teacherId = teacherId;
-	}
+
+	if (payPeriodId) where.payPeriodId = payPeriodId;
+	if (teacherId) where.teacherId = teacherId;
 
 	const total = await prisma.payRecords.count({ where });
 	const records = await prisma.payRecords.findMany({
@@ -32,13 +29,7 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		include: {
-			teacher: {
-				select: {
-					id: true,
-					firstName: true,
-					lastName: true,
-				},
-			},
+			teacher: { select: { id: true, firstName: true, lastName: true } },
 			payPeriod: {
 				select: {
 					id: true,
@@ -49,7 +40,10 @@ const getPaging = async (request: AuthRequest) => {
 				},
 			},
 		},
-		orderBy: [{ payPeriod: { endDate: 'desc' } }, { teacher: { lastName: 'asc' } }],
+		orderBy: [
+			{ payPeriod: { endDate: 'desc' } },
+			{ teacher: { lastName: 'asc' } },
+		],
 	});
 
 	const data = records.map((record) => ({

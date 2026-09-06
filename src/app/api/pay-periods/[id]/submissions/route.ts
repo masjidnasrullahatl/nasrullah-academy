@@ -12,43 +12,31 @@ const getSubmissions = async (
 	const prisma = createClient();
 
 	const period = await prisma.payPeriods.findUnique({ where: { id } });
-	if (!period) {
-		return notFound('Pay period not found');
-	}
+
+	if (!period) return notFound('Pay period not found');
 
 	const [teachers, submissions, hourGroups] = await Promise.all([
 		prisma.teachers.findMany({
 			where: {
 				status: 'ACTIVE',
-				classes: {
-					some: {},
-				},
+				classes: { some: {} },
 			},
 			select: {
 				id: true,
 				firstName: true,
 				lastName: true,
-				_count: {
-					select: {
-						classes: true,
-					},
-				},
+				_count: { select: { classes: true } },
 			},
 			orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 		}),
 		prisma.teacherSubmissions.findMany({
 			where: { payPeriodId: id },
-			select: {
-				teacherId: true,
-				submittedAt: true,
-			},
+			select: { teacherId: true, submittedAt: true },
 		}),
 		prisma.timeEntries.groupBy({
 			by: ['teacherId'],
 			where: { payPeriodId: id },
-			_sum: {
-				hours: true,
-			},
+			_sum: { hours: true },
 		}),
 	]);
 

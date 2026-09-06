@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { Prisma } from '@prisma/client';
+import countBy from 'lodash/countBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -51,16 +52,17 @@ const getPaging = async (request: AuthRequest) => {
 	});
 
 	const data = classes.map((item) => {
-		const activeStudents = item.enrollments.map(
-			(enrollment) => enrollment.student,
-		);
+		const { enrollments, ...rest } = item;
+
+		const students = item.enrollments.map(({ student }) => student);
+		const genderCounts = countBy(students, 'gender');
+
 		return {
-			...item,
-			studentCount: activeStudents.length,
-			boysCount: activeStudents.filter((student) => student.gender === 'BOY')
-				.length,
-			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL')
-				.length,
+			...rest,
+			enrollments,
+			studentCount: students.length,
+			boysCount: genderCounts.BOY || 0,
+			girlsCount: genderCounts.GIRL || 0,
 		};
 	});
 

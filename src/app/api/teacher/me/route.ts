@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, notFound, success } from '@app/api/utils/response';
+import {
+	internalServerError,
+	notFound,
+	success,
+} from '@app/api/utils/response';
 import { withAuth } from '@app/api/utils/withAuth';
 
 import { createClient } from '@helpers/prisma/server';
@@ -33,14 +37,13 @@ const updateMyProfile = async (request: AuthRequest) => {
 	try {
 		const teacher = await getCurrentTeacher(request.user.id);
 
-		if (!teacher) {
-			return notFound('Teacher profile not found');
-		}
+		if (!teacher) return notFound('Teacher profile not found');
 
 		const body = await request.json();
 		const payload = UpdateTeacherProfileSchema.parse(body);
 
 		const prisma = createClient();
+
 		const updated = await prisma.teachers.update({
 			where: { id: teacher.id },
 			data: {
@@ -63,7 +66,8 @@ const updateMyProfile = async (request: AuthRequest) => {
 			firstName: updated.firstName,
 			lastName: updated.lastName,
 			phoneNumber: updated.phoneNumber || '',
-			hourlyRate: updated.hourlyRate === null ? null : Number(updated.hourlyRate),
+			hourlyRate:
+				updated.hourlyRate === null ? null : Number(updated.hourlyRate),
 		});
 	} catch (error) {
 		if (error instanceof ZodError) {

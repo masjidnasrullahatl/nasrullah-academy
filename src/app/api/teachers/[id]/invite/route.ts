@@ -11,7 +11,7 @@ import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
 const inviteTeacher = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	try {
@@ -21,9 +21,7 @@ const inviteTeacher = async (
 
 		const teacher = await prisma.teachers.findUnique({ where: { id } });
 
-		if (!teacher) {
-			return notFound('Teacher not found');
-		}
+		if (!teacher) return notFound('Teacher not found');
 
 		if (!teacher.email) {
 			return badRequest('Teacher email is required to create account');
@@ -35,9 +33,9 @@ const inviteTeacher = async (
 
 		const { data, error } = await adminClient.auth.admin.createUser({
 			email: teacher.email,
+			email_confirm: false,
 			app_metadata: { role: 'teacher' },
 			user_metadata: { full_name: `${teacher.firstName} ${teacher.lastName}` },
-			email_confirm: false,
 		});
 
 		if (error || !data.user) {

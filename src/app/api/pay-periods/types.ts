@@ -28,10 +28,7 @@ export const UpdatePayPeriodSchema = z
 	})
 	.refine(
 		(data) => {
-			if (!data.startDate || !data.endDate) {
-				return true;
-			}
-
+			if (!data.startDate || !data.endDate) return true;
 			return data.endDate > data.startDate;
 		},
 		{

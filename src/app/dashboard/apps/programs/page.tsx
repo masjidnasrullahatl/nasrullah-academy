@@ -4,14 +4,14 @@ import { Anchor, Container, Stack } from '@mantine/core';
 
 import PageHeader from '@components/PageHeader';
 
-import { PATH_DASHBOARD, PATH_SETTINGS } from '@configs/routes';
+import { PATH_APPS, PATH_DASHBOARD } from '@configs/routes';
 
 import { DataTable } from './components/DataTable';
 
 const items = [
 	{ title: 'Dashboard', href: PATH_DASHBOARD.default },
-	{ title: 'Settings', href: PATH_SETTINGS.root },
-	{ title: 'Programs', href: PATH_SETTINGS.programs },
+	{ title: 'Apps', href: PATH_APPS.root },
+	{ title: 'Programs', href: PATH_APPS.programs },
 ].map((item, index) => (
 	<Anchor href={item.href} key={index}>
 		{item.title}

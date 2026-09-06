@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { Prisma } from '@prisma/client';
+import countBy from 'lodash/countBy';
+import filter from 'lodash/filter';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -51,17 +53,14 @@ const getPaging = async (request: AuthRequest) => {
 	});
 
 	const data = families.map((family) => {
-		const activeStudents = family.students.filter(
-			(student) => student.status === 'ACTIVE',
-		);
+		const activeStudents = filter(family.students, { status: 'ACTIVE' });
+		const genderCounts = countBy(activeStudents, 'gender');
 
 		return {
 			...family,
 			studentCount: activeStudents.length,
-			boysCount: activeStudents.filter((student) => student.gender === 'BOY')
-				.length,
-			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL')
-				.length,
+			boysCount: genderCounts.BOY ?? 0,
+			girlsCount: genderCounts.GIRL ?? 0,
 		};
 	});
 
@@ -79,6 +78,15 @@ const create = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
+		const studentsPayload = payload.students.map((student) => ({
+			firstName: student.firstName,
+			lastName: student.lastName,
+			gender: student.gender,
+			dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth) : null,
+			status: student.status,
+			notes: student.notes || null,
+		}));
+
 		const family = await prisma.families.create({
 			data: {
 				name: payload.name,
@@ -90,18 +98,7 @@ const create = async (request: AuthRequest) => {
 				address: payload.address || null,
 				status: payload.status,
 				notes: payload.notes || null,
-				students: {
-					create: payload.students.map((student) => ({
-						firstName: student.firstName,
-						lastName: student.lastName,
-						gender: student.gender,
-						dateOfBirth: student.dateOfBirth
-							? new Date(student.dateOfBirth)
-							: null,
-						status: student.status,
-						notes: student.notes || null,
-					})),
-				},
+				students: { create: studentsPayload },
 			},
 			include: { students: true },
 		});

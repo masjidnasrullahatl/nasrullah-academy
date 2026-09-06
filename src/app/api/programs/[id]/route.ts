@@ -15,7 +15,7 @@ import { createClient } from '@helpers/prisma/server';
 import { UpdateProgramSchema } from '../types';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
@@ -23,9 +23,7 @@ const getDetail = async (
 
 	const program = await prisma.programs.findUnique({
 		where: { id },
-		include: {
-			_count: { select: { classes: true, invoices: true } },
-		},
+		include: { _count: { select: { classes: true, invoices: true } } },
 	});
 
 	if (!program) return notFound('Program not found');
@@ -40,7 +38,9 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const data = UpdateProgramSchema.parse(body);
+
 		const prisma = createClient();
 
 		const existingProgram = await prisma.programs.findUnique({ where: { id } });
@@ -50,14 +50,12 @@ const update = async (
 		if (data.name && data.name !== existingProgram.name) {
 			const duplicateProgram = await prisma.programs.findFirst({
 				where: {
-					name: { equals: data.name, mode: 'insensitive' },
 					NOT: { id },
+					name: { equals: data.name, mode: 'insensitive' },
 				},
 			});
 
-			if (duplicateProgram) {
-				return badRequest('Program name already exists');
-			}
+			if (duplicateProgram) return badRequest('Program name already exists');
 		}
 
 		const program = await prisma.programs.update({
@@ -67,9 +65,7 @@ const update = async (
 				description: data.description ?? null,
 				status: data.status,
 			},
-			include: {
-				_count: { select: { classes: true, invoices: true } },
-			},
+			include: { _count: { select: { classes: true, invoices: true } } },
 		});
 
 		return success(program);

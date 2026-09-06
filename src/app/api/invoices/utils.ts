@@ -14,12 +14,15 @@ export type InvoiceTotalsPayload = {
 };
 
 export const calcTotals = (payload: InvoiceTotalsPayload) => {
-	const totalDue = payload.registrationFee + payload.tuitionFee + payload.bookFee;
+	const totalDue =
+		payload.registrationFee + payload.tuitionFee + payload.bookFee;
+
 	const totalPaid =
 		payload.paidRegistrationFee +
 		payload.paidTuitionFee +
 		payload.paidBookFee +
 		payload.extraPaid;
+
 	const balance = totalDue - totalPaid;
 
 	return { totalDue, totalPaid, balance };

@@ -11,7 +11,7 @@ import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
 const resendTeacherInvite = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	try {
@@ -21,9 +21,7 @@ const resendTeacherInvite = async (
 
 		const teacher = await prisma.teachers.findUnique({ where: { id } });
 
-		if (!teacher) {
-			return notFound('Teacher not found');
-		}
+		if (!teacher) return notFound('Teacher not found');
 
 		if (!teacher.email) {
 			return badRequest('Teacher email is required to resend invite');
@@ -38,9 +36,7 @@ const resendTeacherInvite = async (
 			email: teacher.email,
 		});
 
-		if (error) {
-			return badRequest(error.message);
-		}
+		if (error) return badRequest(error.message);
 
 		return success(teacher);
 	} catch (error) {

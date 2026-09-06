@@ -21,12 +21,11 @@ const submitHours = async (request: AuthRequest) => {
 	try {
 		const teacher = await getCurrentTeacher(request.user.id);
 
-		if (!teacher) {
-			return notFound('Teacher profile not found');
-		}
+		if (!teacher) return notFound('Teacher profile not found');
 
 		const body = await request.json();
 		const payload = SubmitHoursSchema.parse(body);
+
 		const prisma = createClient();
 
 		const [payPeriod, existingSubmission, entriesCount] = await Promise.all([
@@ -47,9 +46,7 @@ const submitHours = async (request: AuthRequest) => {
 			}),
 		]);
 
-		if (!payPeriod) {
-			return notFound('Pay period not found');
-		}
+		if (!payPeriod) return notFound('Pay period not found');
 
 		if (payPeriod.status !== 'OPEN') {
 			return badRequest('Cannot submit hours. Pay period is not open');

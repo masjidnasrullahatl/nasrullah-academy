@@ -22,14 +22,13 @@ const normalizeDate = (value: Date) => {
 const getMyTimeEntries = async (request: AuthRequest) => {
 	const teacher = await getCurrentTeacher(request.user.id);
 
-	if (!teacher) {
-		return notFound('Teacher profile not found');
-	}
+	if (!teacher) return notFound('Teacher profile not found');
 
 	const { searchParams } = new URL(request.url);
 	const payPeriodId = searchParams.get('payPeriodId') || '';
 
 	const prisma = createClient();
+
 	const where = {
 		teacherId: teacher.id,
 		...(payPeriodId ? { payPeriodId } : {}),
@@ -41,11 +40,7 @@ const getMyTimeEntries = async (request: AuthRequest) => {
 			orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
 			include: {
 				class: {
-					select: {
-						id: true,
-						name: true,
-						program: { select: { name: true } },
-					},
+					select: { id: true, name: true, program: { select: { name: true } } },
 				},
 				payPeriod: {
 					select: {
@@ -62,10 +57,7 @@ const getMyTimeEntries = async (request: AuthRequest) => {
 		payPeriodId
 			? prisma.teacherSubmissions.findUnique({
 					where: {
-						teacherId_payPeriodId: {
-							teacherId: teacher.id,
-							payPeriodId,
-						},
+						teacherId_payPeriodId: { teacherId: teacher.id, payPeriodId },
 					},
 				})
 			: null,
@@ -87,9 +79,7 @@ const createMyTimeEntry = async (request: AuthRequest) => {
 	try {
 		const teacher = await getCurrentTeacher(request.user.id);
 
-		if (!teacher) {
-			return notFound('Teacher profile not found');
-		}
+		if (!teacher) return notFound('Teacher profile not found');
 
 		const body = await request.json();
 		const payload = CreateTimeEntrySchema.parse(body);
@@ -107,12 +97,12 @@ const createMyTimeEntry = async (request: AuthRequest) => {
 		]);
 
 		if (!classItem) {
-			return badRequest('Invalid class. You can only log hours for your classes');
+			return badRequest(
+				'Invalid class. You can only log hours for your classes',
+			);
 		}
 
-		if (!payPeriod) {
-			return notFound('Pay period not found');
-		}
+		if (!payPeriod) return notFound('Pay period not found');
 
 		if (payPeriod.status !== 'OPEN') {
 			return badRequest('Cannot add time entry. Pay period is not open');
@@ -150,11 +140,7 @@ const createMyTimeEntry = async (request: AuthRequest) => {
 			},
 			include: {
 				class: {
-					select: {
-						id: true,
-						name: true,
-						program: { select: { name: true } },
-					},
+					select: { id: true, name: true, program: { select: { name: true } } },
 				},
 				payPeriod: {
 					select: {

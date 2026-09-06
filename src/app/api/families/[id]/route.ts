@@ -24,12 +24,10 @@ const getDetail = async (
 	const family = await prisma.families.findUnique({
 		where: { id },
 		include: {
-		students: {
-			include: {
-				enrollments: {
-					include: { class: { include: { teacher: true } } },
+			students: {
+				include: {
+					enrollments: { include: { class: { include: { teacher: true } } } },
 				},
-			},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
 		},
@@ -47,6 +45,7 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const payload = UpdateFamilySchema.parse(body);
 
 		const prisma = createClient();
@@ -82,10 +81,9 @@ const update = async (
 
 			for (const student of existingFamily.students) {
 				const incoming = payloadById.get(student.id);
+
 				if (!incoming) {
-					await tx.students.delete({
-						where: { id: student.id },
-					});
+					await tx.students.delete({ where: { id: student.id } });
 					continue;
 				}
 
@@ -105,9 +103,7 @@ const update = async (
 			}
 
 			for (const student of payload.students) {
-				if (student.id) {
-					continue;
-				}
+				if (student.id) continue;
 
 				await tx.students.create({
 					data: {
@@ -148,9 +144,7 @@ const remove = async (
 
 	const prisma = createClient();
 
-	const family = await prisma.families.findUnique({
-		where: { id },
-	});
+	const family = await prisma.families.findUnique({ where: { id } });
 
 	if (!family) return notFound('Family not found');
 

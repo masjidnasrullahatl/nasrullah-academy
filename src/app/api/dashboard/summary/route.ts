@@ -82,32 +82,21 @@ const getSummary = async (request: AuthRequest) => {
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
 			orderBy: { month: 'asc' },
-			where: {
-				...invoiceWhere,
-				balance: { gt: 0 },
-			},
+			where: { ...invoiceWhere, balance: { gt: 0 } },
 			_sum: { balance: true },
 		}),
 		prisma.enrollments.findMany({
 			where: enrollmentWhere,
 			select: {
 				classId: true,
-				class: {
-					select: {
-						programId: true,
-					},
-				},
+				class: { select: { programId: true } },
 				student: {
 					select: {
 						id: true,
 						gender: true,
 						familyId: true,
 						status: true,
-						family: {
-							select: {
-								status: true,
-							},
-						},
+						family: { select: { status: true } },
 					},
 				},
 			},
@@ -119,17 +108,8 @@ const getSummary = async (request: AuthRequest) => {
 				id: true,
 				name: true,
 				programId: true,
-				teacher: {
-					select: {
-						hourlyRate: true,
-					},
-				},
-				program: {
-					select: {
-						id: true,
-						name: true,
-					},
-				},
+				teacher: { select: { hourlyRate: true } },
+				program: { select: { id: true, name: true } },
 			},
 			orderBy: [{ program: { name: 'asc' } }, { name: 'asc' }],
 		}),
@@ -149,14 +129,9 @@ const getSummary = async (request: AuthRequest) => {
 		}),
 		prisma.monthlyInvoices.groupBy({
 			by: ['familyId'],
-			where: {
-				...invoiceWhere,
-				balance: { gt: 0 },
-			},
+			where: { ...invoiceWhere, balance: { gt: 0 } },
 			_sum: { balance: true },
-			orderBy: {
-				_sum: { balance: 'desc' },
-			},
+			orderBy: { _sum: { balance: 'desc' } },
 			take: 10,
 		}),
 		prisma.monthlyInvoices.groupBy({
@@ -171,54 +146,38 @@ const getSummary = async (request: AuthRequest) => {
 				date: true,
 				hours: true,
 				classId: true,
-				teacher: {
-					select: {
-						hourlyRate: true,
-					},
-				},
-				class: {
-					select: {
-						programId: true,
-					},
-				},
+				teacher: { select: { hourlyRate: true } },
+				class: { select: { programId: true } },
 			},
 		}),
 		prisma.payRecords.aggregate({
 			where: {
 				payPeriod: {
 					status: { in: ['LOCKED', 'PAID'] },
-					endDate: {
-						gte: yearStart,
-						lte: yearEnd,
-					},
+					endDate: { gte: yearStart, lte: yearEnd },
 				},
 			},
-			_sum: {
-				totalPay: true,
-			},
+			_sum: { totalPay: true },
 		}),
 		prisma.programs.findMany({
-			where: programId
-				? { id: programId }
-				: {
-					status: 'ACTIVE',
-				},
-			select: {
-				id: true,
-				name: true,
-			},
-			orderBy: {
-				name: 'asc',
-			},
+			where: programId ? { id: programId } : { status: 'ACTIVE' },
+			select: { id: true, name: true },
+			orderBy: { name: 'asc' },
 		}),
 	]);
 
 	const unpaidByMonth = new Map(
-		invoiceUnpaidMonthly.map((item) => [item.month, toNumber(item._sum?.balance)]),
+		invoiceUnpaidMonthly.map((item) => [
+			item.month,
+			toNumber(item._sum?.balance),
+		]),
 	);
 
 	const programRevenueMap = new Map(
-		programRevenueGroups.map((item) => [item.programId, toNumber(item._sum?.totalPaid)]),
+		programRevenueGroups.map((item) => [
+			item.programId,
+			toNumber(item._sum?.totalPaid),
+		]),
 	);
 
 	const expenseByMonth = new Map<number, number>();
@@ -229,7 +188,10 @@ const getSummary = async (request: AuthRequest) => {
 		const expense = toNumber(entry.hours) * toNumber(entry.teacher.hourlyRate);
 
 		expenseByMonth.set(month, (expenseByMonth.get(month) || 0) + expense);
-		expenseByClass.set(entry.classId, (expenseByClass.get(entry.classId) || 0) + expense);
+		expenseByClass.set(
+			entry.classId,
+			(expenseByClass.get(entry.classId) || 0) + expense,
+		);
 	}
 
 	const monthlyMap = new Map(
@@ -270,7 +232,10 @@ const getSummary = async (request: AuthRequest) => {
 			item.student.family.status === 'ACTIVE',
 	);
 
-	const uniqueStudents = new Map<string, { gender: 'BOY' | 'GIRL'; familyId: string }>();
+	const uniqueStudents = new Map<
+		string,
+		{ gender: 'BOY' | 'GIRL'; familyId: string }
+	>();
 	for (const enrollment of validEnrollments) {
 		if (!uniqueStudents.has(enrollment.student.id)) {
 			uniqueStudents.set(enrollment.student.id, {
@@ -301,7 +266,9 @@ const getSummary = async (request: AuthRequest) => {
 		if (!studentIdsByProgram.has(enrollment.class.programId)) {
 			studentIdsByProgram.set(enrollment.class.programId, new Set<string>());
 		}
-		studentIdsByProgram.get(enrollment.class.programId)?.add(enrollment.student.id);
+		studentIdsByProgram
+			.get(enrollment.class.programId)
+			?.add(enrollment.student.id);
 	}
 
 	const totalEnrollmentsByProgram = new Map<string, number>();
@@ -309,7 +276,8 @@ const getSummary = async (request: AuthRequest) => {
 		const enrollmentCount = enrollmentCountByClass.get(classItem.id) || 0;
 		totalEnrollmentsByProgram.set(
 			classItem.programId,
-			(totalEnrollmentsByProgram.get(classItem.programId) || 0) + enrollmentCount,
+			(totalEnrollmentsByProgram.get(classItem.programId) || 0) +
+				enrollmentCount,
 		);
 	}
 
@@ -444,7 +412,9 @@ const getSummary = async (request: AuthRequest) => {
 				select: { id: true, name: true },
 			})
 		: [];
-	const familyNameMap = new Map(familiesById.map((item) => [item.id, item.name]));
+	const familyNameMap = new Map(
+		familiesById.map((item) => [item.id, item.name]),
+	);
 
 	const topUnpaidFamilies = topUnpaidFamilyGroups.map((item) => ({
 		familyId: item.familyId,

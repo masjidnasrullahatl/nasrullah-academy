@@ -15,18 +15,16 @@ import { UpdateInvoiceSchema } from '../types';
 import { calcTotals, mapInvoice } from '../utils';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: {
-			family: true,
-			program: { select: { id: true, name: true } },
-		},
+		include: { family: true, program: { select: { id: true, name: true } } },
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -41,15 +39,14 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const data = UpdateInvoiceSchema.parse(body);
+
 		const prisma = createClient();
 
 		const existing = await prisma.monthlyInvoices.findUnique({
 			where: { id },
-			include: {
-				family: true,
-				program: { select: { id: true, name: true } },
-			},
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		if (!existing) return notFound('Invoice not found');
@@ -77,10 +74,7 @@ const update = async (
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: {
-				family: true,
-				program: { select: { id: true, name: true } },
-			},
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		return success(mapInvoice(invoice));
@@ -94,18 +88,16 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: {
-			family: true,
-			program: { select: { id: true, name: true } },
-		},
+		include: { family: true, program: { select: { id: true, name: true } } },
 	});
 
 	if (!invoice) return notFound('Invoice not found');

@@ -26,13 +26,9 @@ const getPaging = async (request: AuthRequest) => {
 
 	const where: Prisma.ProgramsWhereInput = {};
 
-	if (keyword) {
-		where.name = { contains: keyword, mode: 'insensitive' };
-	}
+	if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
 
-	if (status) {
-		where.status = status as any;
-	}
+	if (status) where.status = status as any;
 
 	const [data, total] = await Promise.all([
 		prisma.programs.findMany({
@@ -40,9 +36,7 @@ const getPaging = async (request: AuthRequest) => {
 			take: limit,
 			orderBy: { name: 'asc' },
 			where,
-			include: {
-				_count: { select: { classes: true, invoices: true } },
-			},
+			include: { _count: { select: { classes: true, invoices: true } } },
 		}),
 		prisma.programs.count({ where }),
 	]);
@@ -58,17 +52,10 @@ const create = async (request: AuthRequest) => {
 		const prisma = createClient();
 
 		const existingProgram = await prisma.programs.findFirst({
-			where: {
-				name: {
-					equals: data.name,
-					mode: 'insensitive',
-				},
-			},
+			where: { name: { equals: data.name, mode: 'insensitive' } },
 		});
 
-		if (existingProgram) {
-			return badRequest('Program name already exists');
-		}
+		if (existingProgram) return badRequest('Program name already exists');
 
 		const program = await prisma.programs.create({
 			data: {
@@ -76,9 +63,7 @@ const create = async (request: AuthRequest) => {
 				description: data.description || null,
 				status: data.status || 'ACTIVE',
 			},
-			include: {
-				_count: { select: { classes: true, invoices: true } },
-			},
+			include: { _count: { select: { classes: true, invoices: true } } },
 		});
 
 		return success(program);

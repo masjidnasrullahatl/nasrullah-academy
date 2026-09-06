@@ -28,15 +28,12 @@ const generatePay = async (
 
 		const timeEntryGroups = await prisma.timeEntries.groupBy({
 			by: ['teacherId'],
-			where: {
-				payPeriodId: id,
-			},
-			_sum: {
-				hours: true,
-			},
+			where: { payPeriodId: id },
+			_sum: { hours: true },
 		});
 
 		const teacherIds = timeEntryGroups.map((item) => item.teacherId);
+
 		const teachers = teacherIds.length
 			? await prisma.teachers.findMany({
 					where: { id: { in: teacherIds } },
@@ -49,7 +46,9 @@ const generatePay = async (
 				})
 			: [];
 
-		const teacherById = new Map(teachers.map((teacher) => [teacher.id, teacher]));
+		const teacherById = new Map(
+			teachers.map((teacher) => [teacher.id, teacher]),
+		);
 
 		const records = await prisma.$transaction(async (tx) => {
 			await tx.payRecords.deleteMany({ where: { payPeriodId: id } });

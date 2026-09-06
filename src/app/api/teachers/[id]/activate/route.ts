@@ -11,7 +11,7 @@ import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
 const activateTeacher = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	try {
@@ -21,9 +21,7 @@ const activateTeacher = async (
 
 		const teacher = await prisma.teachers.findUnique({ where: { id } });
 
-		if (!teacher) {
-			return notFound('Teacher not found');
-		}
+		if (!teacher) return notFound('Teacher not found');
 
 		if (!teacher.supabaseUserId) {
 			return badRequest('Teacher account has not been created yet');
@@ -34,9 +32,7 @@ const activateTeacher = async (
 			{ ban_duration: 'none' },
 		);
 
-		if (error) {
-			return badRequest(error.message);
-		}
+		if (error) return badRequest(error.message);
 
 		const updatedTeacher = await prisma.teachers.update({
 			where: { id },

@@ -25,28 +25,20 @@ const updateMyTimeEntry = async (
 	try {
 		const teacher = await getCurrentTeacher(request.user.id);
 
-		if (!teacher) {
-			return notFound('Teacher profile not found');
-		}
+		if (!teacher) return notFound('Teacher profile not found');
 
 		const { id } = await params;
 		const body = await request.json();
+
 		const payload = UpdateTimeEntrySchema.parse(body);
 
 		const prisma = createClient();
 		const existing = await prisma.timeEntries.findFirst({
-			where: {
-				id,
-				teacherId: teacher.id,
-			},
-			include: {
-				payPeriod: true,
-			},
+			where: { id, teacherId: teacher.id },
+			include: { payPeriod: true },
 		});
 
-		if (!existing) {
-			return notFound('Time entry not found');
-		}
+		if (!existing) return notFound('Time entry not found');
 
 		if (existing.payPeriod.status !== 'OPEN') {
 			return badRequest('Cannot edit time entry. Pay period is not open');
@@ -75,7 +67,9 @@ const updateMyTimeEntry = async (
 			});
 
 			if (!classItem) {
-				return badRequest('Invalid class. You can only log hours for your classes');
+				return badRequest(
+					'Invalid class. You can only log hours for your classes',
+				);
 			}
 		}
 
@@ -95,18 +89,12 @@ const updateMyTimeEntry = async (
 				date: payload.date ? normalizeDate(payload.date) : existing.date,
 				hours: payload.hours ?? existing.hours,
 				notes:
-					typeof payload.notes === 'string'
-						? payload.notes
-						: existing.notes,
+					typeof payload.notes === 'string' ? payload.notes : existing.notes,
 				classId: payload.classId || existing.classId,
 			},
 			include: {
 				class: {
-					select: {
-						id: true,
-						name: true,
-						program: { select: { name: true } },
-					},
+					select: { id: true, name: true, program: { select: { name: true } } },
 				},
 				payPeriod: {
 					select: {

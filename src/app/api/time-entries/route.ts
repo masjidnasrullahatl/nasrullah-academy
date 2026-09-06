@@ -25,22 +25,13 @@ const normalizeDate = (value: Date) => {
 
 const includeOptions = {
 	teacher: {
-		select: {
-			id: true,
-			firstName: true,
-			lastName: true,
-		},
+		select: { id: true, firstName: true, lastName: true },
 	},
 	class: {
 		select: {
 			id: true,
 			name: true,
-			program: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			program: { select: { id: true, name: true } },
 		},
 	},
 	payPeriod: {
@@ -67,15 +58,12 @@ const getPaging = async (request: AuthRequest) => {
 
 	const where: Prisma.TimeEntriesWhereInput = {};
 
-	if (payPeriodId) {
-		where.payPeriodId = payPeriodId;
-	}
+	if (payPeriodId) where.payPeriodId = payPeriodId;
 
-	if (teacherId) {
-		where.teacherId = teacherId;
-	}
+	if (teacherId) where.teacherId = teacherId;
 
 	const total = await prisma.timeEntries.count({ where });
+
 	const entries = await prisma.timeEntries.findMany({
 		where,
 		skip,
@@ -104,9 +92,7 @@ const create = async (request: AuthRequest) => {
 			prisma.payPeriods.findUnique({ where: { id: payload.payPeriodId } }),
 		]);
 
-		if (!teacher) {
-			return notFound('Teacher not found');
-		}
+		if (!teacher) return notFound('Teacher not found');
 
 		if (teacher.status !== 'ACTIVE') {
 			return badRequest('Teacher must be ACTIVE');
@@ -116,9 +102,7 @@ const create = async (request: AuthRequest) => {
 			return badRequest('Class must belong to the selected teacher');
 		}
 
-		if (!payPeriod) {
-			return notFound('Pay period not found');
-		}
+		if (!payPeriod) return notFound('Pay period not found');
 
 		if (payPeriod.status !== 'OPEN') {
 			return badRequest('Cannot create time entry. Pay period is not open');
@@ -149,9 +133,7 @@ const create = async (request: AuthRequest) => {
 			hours: Number(entry.hours),
 		});
 	} catch (error) {
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
 		console.log('Create staff time entry error', error);
 		return internalServerError();

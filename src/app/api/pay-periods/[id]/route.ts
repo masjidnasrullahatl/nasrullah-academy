@@ -15,7 +15,7 @@ import { createClient } from '@helpers/prisma/server';
 import { UpdatePayPeriodSchema } from '../types';
 
 const getOne = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
@@ -25,33 +25,16 @@ const getOne = async (
 		where: { id },
 		include: {
 			_count: {
-				select: {
-					timeEntries: true,
-					payRecords: true,
-					submissions: true,
-				},
+				select: { timeEntries: true, payRecords: true, submissions: true },
 			},
 			submissions: {
-				include: {
-					teacher: {
-						select: {
-							firstName: true,
-							lastName: true,
-						},
-					},
-				},
-				orderBy: {
-					teacher: {
-						lastName: 'asc',
-					},
-				},
+				include: { teacher: { select: { firstName: true, lastName: true } } },
+				orderBy: { teacher: { lastName: 'asc' } },
 			},
 		},
 	});
 
-	if (!payPeriod) {
-		return notFound('Pay period not found');
-	}
+	if (!payPeriod) return notFound('Pay period not found');
 
 	return success(payPeriod);
 };
@@ -68,9 +51,7 @@ const update = async (
 		const prisma = createClient();
 		const existing = await prisma.payPeriods.findUnique({ where: { id } });
 
-		if (!existing) {
-			return notFound('Pay period not found');
-		}
+		if (!existing) return notFound('Pay period not found');
 
 		if (existing.status === 'PAID') {
 			return badRequest('Cannot update a paid pay period');
@@ -94,7 +75,9 @@ const update = async (
 				payload.startDate !== undefined ||
 				payload.endDate !== undefined
 			) {
-				return badRequest('Cannot edit period fields when pay period is LOCKED');
+				return badRequest(
+					'Cannot edit period fields when pay period is LOCKED',
+				);
 			}
 		}
 
@@ -109,23 +92,21 @@ const update = async (
 			existing.status === 'LOCKED'
 				? { status: 'PAID' as const }
 				: {
-					...(payload.name !== undefined ? { name: payload.name } : {}),
-					...(payload.startDate !== undefined
-						? { startDate: payload.startDate }
-						: {}),
-					...(payload.endDate !== undefined ? { endDate: payload.endDate } : {}),
-				  };
+						...(payload.name !== undefined ? { name: payload.name } : {}),
+						...(payload.startDate !== undefined
+							? { startDate: payload.startDate }
+							: {}),
+						...(payload.endDate !== undefined
+							? { endDate: payload.endDate }
+							: {}),
+					};
 
 		const updated = await prisma.payPeriods.update({
 			where: { id },
 			data,
 			include: {
 				_count: {
-					select: {
-						timeEntries: true,
-						payRecords: true,
-						submissions: true,
-					},
+					select: { timeEntries: true, payRecords: true, submissions: true },
 				},
 			},
 		});

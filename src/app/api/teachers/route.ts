@@ -41,14 +41,11 @@ const getPaging = async (request: AuthRequest) => {
 	const total = await prisma.teachers.count({ where });
 
 	const teachers = await prisma.teachers.findMany({
+		where,
 		skip,
 		take: limit,
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
-		include: {
-			classes: true,
-			_count: { select: { classes: true } },
-		},
-		where,
+		include: { classes: true, _count: { select: { classes: true } } },
 	});
 
 	const data = teachers.map((teacher) => ({
@@ -80,7 +77,8 @@ const create = async (request: AuthRequest) => {
 
 		return success({
 			...teacher,
-			hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+			hourlyRate:
+				teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
 			hasAccount: Boolean(teacher.supabaseUserId),
 		});
 	} catch (error) {

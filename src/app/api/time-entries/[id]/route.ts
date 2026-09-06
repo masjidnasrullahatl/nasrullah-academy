@@ -21,23 +21,12 @@ const normalizeDate = (value: Date) => {
 };
 
 const includeOptions = {
-	teacher: {
-		select: {
-			id: true,
-			firstName: true,
-			lastName: true,
-		},
-	},
+	teacher: { select: { id: true, firstName: true, lastName: true } },
 	class: {
 		select: {
 			id: true,
 			name: true,
-			program: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			program: { select: { id: true, name: true } },
 		},
 	},
 	payPeriod: {
@@ -58,19 +47,17 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const payload = UpdateTimeEntrySchema.parse(body);
 
 		const prisma = createClient();
+
 		const existing = await prisma.timeEntries.findUnique({
 			where: { id },
-			include: {
-				payPeriod: true,
-			},
+			include: { payPeriod: true },
 		});
 
-		if (!existing) {
-			return notFound('Time entry not found');
-		}
+		if (!existing) return notFound('Time entry not found');
 
 		if (existing.payPeriod.status !== 'OPEN') {
 			return badRequest('Cannot update time entry. Pay period is not open');
@@ -114,9 +101,7 @@ const update = async (
 			hours: Number(updated.hours),
 		});
 	} catch (error) {
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
 		console.log('Update staff time entry error', error);
 		return internalServerError();
@@ -124,22 +109,19 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
 
 	const prisma = createClient();
+
 	const existing = await prisma.timeEntries.findUnique({
 		where: { id },
-		include: {
-			payPeriod: true,
-		},
+		include: { payPeriod: true },
 	});
 
-	if (!existing) {
-		return notFound('Time entry not found');
-	}
+	if (!existing) return notFound('Time entry not found');
 
 	if (existing.payPeriod.status !== 'OPEN') {
 		return badRequest('Cannot delete time entry. Pay period is not open');

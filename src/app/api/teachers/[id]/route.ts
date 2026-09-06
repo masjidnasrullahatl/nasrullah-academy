@@ -42,7 +42,8 @@ const update = async (
 
 		return success({
 			...teacher,
-			hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
+			hourlyRate:
+				teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
 			hasAccount: Boolean(teacher.supabaseUserId),
 		});
 	} catch (error) {
@@ -55,7 +56,7 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;

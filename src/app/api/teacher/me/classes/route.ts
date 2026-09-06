@@ -16,15 +16,10 @@ const getMyClasses = async (request: AuthRequest) => {
 	const prisma = createClient();
 
 	const classes = await prisma.classes.findMany({
-		where: {
-			teacherId: teacher.id,
-			status: 'ACTIVE',
-		},
+		where: { teacherId: teacher.id, status: 'ACTIVE' },
 		orderBy: { name: 'asc' },
 		include: {
-			program: {
-				select: { name: true },
-			},
+			program: { select: { name: true } },
 			enrollments: {
 				where: { status: 'ACTIVE' },
 				include: {
@@ -39,13 +34,7 @@ const getMyClasses = async (request: AuthRequest) => {
 					},
 				},
 			},
-			_count: {
-				select: {
-					enrollments: {
-						where: { status: 'ACTIVE' },
-					},
-				},
-			},
+			_count: { select: { enrollments: { where: { status: 'ACTIVE' } } } },
 		},
 	});
 

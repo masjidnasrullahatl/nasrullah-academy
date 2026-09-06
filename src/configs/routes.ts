@@ -8,7 +8,6 @@ const ROOTS_TEACHER = '/teacher';
 
 const ROOT_APPS = path(ROOTS_DASHBOARD, '/apps');
 const ROOT_FINANCE = path(ROOTS_DASHBOARD, '/finance');
-const ROOT_SETTINGS = path(ROOTS_DASHBOARD, '/settings');
 const ROOTS_ACCOUNTS = path(ROOTS_DASHBOARD, '/accounts');
 
 export const PATH_DASHBOARD = {
@@ -34,6 +33,7 @@ export const PATH_TEACHER_ACCOUNTS = {
 
 export const PATH_APPS = {
 	root: ROOT_APPS,
+	programs: path(ROOT_APPS, '/programs'),
 	families: path(ROOT_APPS, '/families'),
 	students: path(ROOT_APPS, '/students'),
 	classes: path(ROOT_APPS, '/classes'),
@@ -44,11 +44,6 @@ export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
 	payPeriods: path(ROOT_FINANCE, '/pay-periods'),
-};
-
-export const PATH_SETTINGS = {
-	root: ROOT_SETTINGS,
-	programs: path(ROOT_SETTINGS, '/programs'),
 };
 
 export const PATH_ACCOUNTS = {
