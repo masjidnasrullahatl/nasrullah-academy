@@ -74,6 +74,10 @@ export const DataTable = () => {
 				<Box flex={1}>
 					<TableFilter onChangeFilter={handleChangeFilter} />
 				</Box>
+
+				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+					Create Program
+				</Button>
 			</Group>
 
 			<Table.ScrollContainer minWidth={1000}>
@@ -99,12 +103,6 @@ export const DataTable = () => {
 					/>
 				</Table>
 			</Table.ScrollContainer>
-
-			<Group justify="flex-end" mt="md">
-				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-					Create Program
-				</Button>
-			</Group>
 		</Paper>
 	);
 };

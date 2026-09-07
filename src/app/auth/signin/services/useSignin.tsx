@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
 
-import { PATH_DASHBOARD } from '@configs/routes';
+import { PATH_DASHBOARD, PATH_TEACHER } from '@configs/routes';
 
 import { useAuth } from '@hooks/useAuth';
 
@@ -16,8 +16,13 @@ export const useSignin = () => {
 		mutationFn: async (data: SigninPayload) => {
 			return login(data.email, data.password);
 		},
-		onSuccess: () => {
-			router.push(PATH_DASHBOARD.default);
+		onSuccess: (data) => {
+			const role =
+				data.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff';
+
+			router.push(
+				role === 'teacher' ? PATH_TEACHER.default : PATH_DASHBOARD.default,
+			);
 		},
 	});
 };

@@ -7,6 +7,8 @@ import {
 } from '@app/api/utils/response';
 import { withStaff } from '@app/api/utils/withStaff';
 
+import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
+
 import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
@@ -31,12 +33,37 @@ const resendTeacherInvite = async (
 			return badRequest('Teacher account has not been created yet');
 		}
 
-		const { error } = await adminClient.auth.admin.generateLink({
-			type: 'invite',
-			email: teacher.email,
-		});
+		const redirectTo = `${NEXT_PUBLIC_SITE_URL}/auth/password-reset/confirm`;
 
-		if (error) return badRequest(error.message);
+		const { data: existing, error: getUserError } =
+			await adminClient.auth.admin.getUserById(teacher.supabaseUserId);
+
+		if (getUserError || !existing.user) {
+			return badRequest(getUserError?.message || 'Teacher account not found');
+		}
+
+		const hasAccepted = Boolean(
+			existing.user.email_confirmed_at || existing.user.last_sign_in_at,
+		);
+
+		if (hasAccepted) {
+			const { error } = await adminClient.auth.resetPasswordForEmail(
+				teacher.email,
+				{ redirectTo },
+			);
+
+			if (error) return badRequest(error.message);
+		} else {
+			const { error } = await adminClient.auth.admin.inviteUserByEmail(
+				teacher.email,
+				{
+					redirectTo,
+					data: { full_name: `${teacher.firstName} ${teacher.lastName}` },
+				},
+			);
+
+			if (error) return badRequest(error.message);
+		}
 
 		return success(teacher);
 	} catch (error) {
