@@ -65,11 +65,12 @@ const inviteTeacher = async (
 		} catch (stepError) {
 			// Rollback: xoá user vừa tạo. Để lại một user không có app_metadata.role
 			// đồng nghĩa cấp nhầm quyền staff, vì withStaff chỉ chặn role === 'teacher'.
-			await adminClient.auth.admin
-				.deleteUser(invitedUserId)
-				.catch((deleteError) => {
-					console.log('Rollback invited user failed', invitedUserId, deleteError);
-				});
+			const { error: deleteError } =
+				await adminClient.auth.admin.deleteUser(invitedUserId);
+
+			if (deleteError) {
+				console.log('Rollback invited user failed', invitedUserId, deleteError);
+			}
 
 			return badRequest(
 				stepError instanceof Error
