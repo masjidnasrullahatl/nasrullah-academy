@@ -45,20 +45,38 @@ const inviteTeacher = async (
 			return badRequest(error?.message || 'Unable to send teacher invite');
 		}
 
-		// inviteUserByEmail không set được app_metadata → set riêng
-		const { error: roleError } = await adminClient.auth.admin.updateUserById(
-			data.user.id,
-			{ app_metadata: { role: 'teacher' } },
-		);
+		const invitedUserId = data.user.id;
 
-		if (roleError) return badRequest(roleError.message);
+		try {
+			// inviteUserByEmail không set được app_metadata → set riêng
+			const { error: roleError } = await adminClient.auth.admin.updateUserById(
+				invitedUserId,
+				{ app_metadata: { role: 'teacher' } },
+			);
 
-		const updatedTeacher = await prisma.teachers.update({
-			where: { id },
-			data: { supabaseUserId: data.user.id },
-		});
+			if (roleError) throw new Error(roleError.message);
 
-		return success(updatedTeacher);
+			const updatedTeacher = await prisma.teachers.update({
+				where: { id },
+				data: { supabaseUserId: invitedUserId },
+			});
+
+			return success(updatedTeacher);
+		} catch (stepError) {
+			// Rollback: xoá user vừa tạo. Để lại một user không có app_metadata.role
+			// đồng nghĩa cấp nhầm quyền staff, vì withStaff chỉ chặn role === 'teacher'.
+			await adminClient.auth.admin
+				.deleteUser(invitedUserId)
+				.catch((deleteError) => {
+					console.log('Rollback invited user failed', invitedUserId, deleteError);
+				});
+
+			return badRequest(
+				stepError instanceof Error
+					? stepError.message
+					: 'Unable to complete teacher invite',
+			);
+		}
 	} catch (error) {
 		console.log('Invite teacher account error', error);
 		return internalServerError();
