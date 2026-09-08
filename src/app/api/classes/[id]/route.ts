@@ -8,7 +8,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -29,9 +29,12 @@ const update = async (
 
 		if (!existing) return notFound('Class not found');
 
-		if (existing.name !== data.name) {
-			const duplicateClass = await prisma.classes.findUnique({
-				where: { name: data.name },
+		const nextName = data.name || existing.name;
+		const nextProgramId = data.programId || existing.programId;
+
+		if (nextName !== existing.name || nextProgramId !== existing.programId) {
+			const duplicateClass = await prisma.classes.findFirst({
+				where: { name: nextName, programId: nextProgramId, NOT: { id } },
 			});
 
 			if (duplicateClass) return badRequest('Class already exists');
@@ -40,12 +43,14 @@ const update = async (
 		const classItem = await prisma.classes.update({
 			where: { id },
 			data: {
-				name: data.name,
+				name: nextName,
+				programId: nextProgramId,
 				teacherId: data.teacherId || null,
-				status: data.status,
+				status: data.status || existing.status,
 			},
 			include: {
 				teacher: true,
+				program: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },
 					include: { student: { include: { family: true } } },
@@ -88,5 +93,5 @@ const remove = async (
 	return success(classItem);
 };
 
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const PATCH = withStaff(update);
+export const DELETE = withStaff(remove);

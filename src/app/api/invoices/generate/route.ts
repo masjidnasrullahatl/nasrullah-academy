@@ -1,18 +1,20 @@
+import { Dictionary } from 'lodash';
+import keyBy from 'lodash/keyBy';
+import map from 'lodash/map';
+import sumBy from 'lodash/sumBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
 import { internalServerError, success } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
 import { GenerateInvoicesSchema } from './types';
 
 const getPreviousMonth = (year: number, month: number) => {
-	if (month === 1) {
-		return { year: year - 1, month: 12 };
-	}
+	if (month === 1) return { year: year - 1, month: 12 };
 
 	return { year, month: month - 1 };
 };
@@ -31,7 +33,10 @@ const generateInvoices = async (request: AuthRequest) => {
 					some: {
 						status: 'ACTIVE',
 						enrollments: {
-							some: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
+							some: {
+								status: 'ACTIVE',
+								class: { status: 'ACTIVE', programId: data.programId },
+							},
 						},
 					},
 				},
@@ -41,8 +46,11 @@ const generateInvoices = async (request: AuthRequest) => {
 					where: { status: 'ACTIVE' },
 					include: {
 						enrollments: {
-							where: { status: 'ACTIVE', class: { status: 'ACTIVE' } },
 							select: { id: true },
+							where: {
+								status: 'ACTIVE',
+								class: { status: 'ACTIVE', programId: data.programId },
+							},
 						},
 					},
 				},
@@ -59,51 +67,45 @@ const generateInvoices = async (request: AuthRequest) => {
 				year: data.year,
 				month: data.month,
 				familyId: { in: familyIds },
+				programId: data.programId,
 			},
 			select: { familyId: true },
 		});
 
-		const existingFamilyIds = new Set(
-			existingInvoices.map((invoice) => invoice.familyId),
-		);
+		const existingFamilyIds = new Set(map(existingInvoices, 'familyId'));
 
-		let previousByFamily = new Map<
-			string,
-			{
-				registrationFee: number;
-				tuitionFee: number;
-				bookFee: number;
-				session: 'AM' | 'PM' | 'AM_PM' | 'NA' | null;
-			}
-		>();
+		let previousByFamily: Dictionary<{
+			registrationFee: number;
+			tuitionFee: number;
+			bookFee: number;
+		}> = {};
 
 		if (data.copyFromPreviousMonth) {
 			const previousMonth = getPreviousMonth(data.year, data.month);
+
 			const previousInvoices = await prisma.monthlyInvoices.findMany({
 				where: {
 					year: previousMonth.year,
 					month: previousMonth.month,
 					familyId: { in: familyIds },
+					programId: data.programId,
 				},
 				select: {
 					familyId: true,
 					registrationFee: true,
 					tuitionFee: true,
 					bookFee: true,
-					session: true,
 				},
 			});
 
-			previousByFamily = new Map(
-				previousInvoices.map((invoice) => [
-					invoice.familyId,
-					{
-						registrationFee: Number(invoice.registrationFee),
-						tuitionFee: Number(invoice.tuitionFee),
-						bookFee: Number(invoice.bookFee),
-						session: invoice.session,
-					},
-				]),
+			previousByFamily = keyBy(
+				map(previousInvoices, (invoice) => ({
+					familyId: invoice.familyId,
+					registrationFee: Number(invoice.registrationFee),
+					tuitionFee: Number(invoice.tuitionFee),
+					bookFee: Number(invoice.bookFee),
+				})),
+				'familyId',
 			);
 		}
 
@@ -112,22 +114,23 @@ const generateInvoices = async (request: AuthRequest) => {
 
 		for (const family of families) {
 			if (existingFamilyIds.has(family.id)) {
-				skipped += 1;
+				skipped++;
 				continue;
 			}
 
-			const studentCount = family.students.filter(
-				(student) => student.enrollments.length > 0,
-			).length;
-			const previous = previousByFamily.get(family.id);
+			const studentCount = sumBy(family.students, ({ enrollments }) =>
+				Number(!!enrollments.length),
+			);
+
+			const previous = previousByFamily[family.id];
 
 			await prisma.monthlyInvoices.create({
 				data: {
 					familyId: family.id,
+					programId: data.programId,
 					year: data.year,
 					month: data.month,
 					studentCount,
-					session: previous?.session || null,
 					registrationFee: previous?.registrationFee || 0,
 					tuitionFee: previous?.tuitionFee || 0,
 					bookFee: previous?.bookFee || 0,
@@ -164,4 +167,4 @@ const generateInvoices = async (request: AuthRequest) => {
 	}
 };
 
-export const POST = withAuth(generateInvoices);
+export const POST = withStaff(generateInvoices);

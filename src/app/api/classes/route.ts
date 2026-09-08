@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { Prisma } from '@prisma/client';
+import countBy from 'lodash/countBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -20,6 +21,7 @@ const getPaging = async (request: AuthRequest) => {
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
 	const teacherId = searchParams.get('teacherId') || '';
+	const programId = searchParams.get('programId') || '';
 	const status = searchParams.get('status') || '';
 
 	const prisma = createClient();
@@ -29,6 +31,7 @@ const getPaging = async (request: AuthRequest) => {
 
 	if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
 	if (teacherId) where.teacherId = teacherId;
+	if (programId) where.programId = programId;
 	if (status) where.status = status as any;
 
 	const total = await prisma.classes.count({ where });
@@ -39,6 +42,7 @@ const getPaging = async (request: AuthRequest) => {
 		orderBy: { name: 'asc' },
 		include: {
 			teacher: true,
+			program: true,
 			enrollments: {
 				where: { status: 'ACTIVE' },
 				include: { student: { include: { family: true } } },
@@ -48,16 +52,17 @@ const getPaging = async (request: AuthRequest) => {
 	});
 
 	const data = classes.map((item) => {
-		const activeStudents = item.enrollments.map(
-			(enrollment) => enrollment.student,
-		);
+		const { enrollments, ...rest } = item;
+
+		const students = item.enrollments.map(({ student }) => student);
+		const genderCounts = countBy(students, 'gender');
+
 		return {
-			...item,
-			studentCount: activeStudents.length,
-			boysCount: activeStudents.filter((student) => student.gender === 'BOY')
-				.length,
-			girlsCount: activeStudents.filter((student) => student.gender === 'GIRL')
-				.length,
+			...rest,
+			enrollments,
+			studentCount: students.length,
+			boysCount: genderCounts.BOY || 0,
+			girlsCount: genderCounts.GIRL || 0,
 		};
 	});
 
@@ -71,8 +76,11 @@ const create = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
-		const existing = await prisma.classes.findUnique({
-			where: { name: data.name },
+		const existing = await prisma.classes.findFirst({
+			where: {
+				name: data.name,
+				programId: data.programId,
+			},
 		});
 
 		if (existing) return badRequest('Class already exists');
@@ -80,11 +88,13 @@ const create = async (request: AuthRequest) => {
 		const classItem = await prisma.classes.create({
 			data: {
 				name: data.name,
+				programId: data.programId,
 				teacherId: data.teacherId || null,
 				status: data.status,
 			},
 			include: {
 				teacher: true,
+				program: true,
 				enrollments: {
 					where: { status: 'ACTIVE' },
 					include: { student: { include: { family: true } } },
@@ -102,5 +112,5 @@ const create = async (request: AuthRequest) => {
 	}
 };
 
-export const GET = withAuth(getPaging);
-export const POST = withAuth(create);
+export const GET = withStaff(getPaging);
+export const POST = withStaff(create);

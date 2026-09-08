@@ -7,14 +7,14 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
 import { UpdateStudentSchema } from '../types';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
@@ -25,9 +25,7 @@ const getDetail = async (
 		where: { id },
 		include: {
 			family: true,
-			enrollments: {
-				include: { class: { include: { teacher: true } } },
-			},
+			enrollments: { include: { class: { include: { teacher: true } } } },
 		},
 	});
 
@@ -47,9 +45,7 @@ const update = async (
 
 		const prisma = createClient();
 
-		const existingStudent = await prisma.students.findUnique({
-			where: { id },
-		});
+		const existingStudent = await prisma.students.findUnique({ where: { id } });
 
 		if (!existingStudent) return notFound('Student not found');
 
@@ -66,9 +62,7 @@ const update = async (
 			},
 			include: {
 				family: true,
-				enrollments: {
-					include: { class: { include: { teacher: true } } },
-				},
+				enrollments: { include: { class: { include: { teacher: true } } } },
 			},
 		});
 
@@ -83,16 +77,14 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
 
 	const prisma = createClient();
 
-	const student = await prisma.students.findUnique({
-		where: { id },
-	});
+	const student = await prisma.students.findUnique({ where: { id } });
 
 	if (!student) return notFound('Student not found');
 
@@ -101,6 +93,6 @@ const remove = async (
 	return success(student);
 };
 
-export const GET = withAuth(getDetail);
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const GET = withStaff(getDetail);
+export const PUT = withStaff(update);
+export const DELETE = withStaff(remove);

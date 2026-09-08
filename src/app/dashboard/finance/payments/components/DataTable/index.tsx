@@ -26,6 +26,7 @@ export const DataTable = () => {
 	const [filter, setFilter] = useState<{
 		year?: number;
 		month?: number;
+		programId?: string;
 		paymentStatus?: string;
 		payMethod?: string;
 		familyId?: string;
@@ -45,6 +46,7 @@ export const DataTable = () => {
 		limit: PAGE_SIZE,
 		year: filter.year,
 		month: filter.month,
+		programId: filter.programId,
 		paymentStatus: filter.paymentStatus as any,
 		payMethod: filter.payMethod as any,
 		familyId: filter.familyId,
@@ -55,6 +57,7 @@ export const DataTable = () => {
 		key:
 			| 'year'
 			| 'month'
+			| 'programId'
 			| 'familyId'
 			| 'payMethod'
 			| 'paymentStatus'

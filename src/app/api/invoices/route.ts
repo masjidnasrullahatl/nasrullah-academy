@@ -4,7 +4,7 @@ import { PaymentStatus, PayMethod, Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -20,6 +20,7 @@ const buildWhere = (
 	const year = Number(searchParams.get('year') || 0);
 	const month = Number(searchParams.get('month') || 0);
 	const keyword = searchParams.get('keyword') || '';
+	const programId = searchParams.get('programId') || '';
 	const paymentStatus = searchParams.get('paymentStatus') || '';
 	const payMethod = searchParams.get('payMethod') || '';
 	const familyId = searchParams.get('familyId') || '';
@@ -29,8 +30,9 @@ const buildWhere = (
 	if (year) where.year = year;
 	if (month) where.month = month;
 	if (familyId) where.familyId = familyId;
-	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
+	if (programId) where.programId = programId;
 	if (payMethod) where.payMethod = payMethod as PayMethod;
+	if (paymentStatus) where.paymentStatus = paymentStatus as PaymentStatus;
 	if (keyword) {
 		where.family = {
 			OR: [
@@ -58,11 +60,11 @@ const getPaging = async (request: AuthRequest) => {
 	const [total, invoices, aggregate] = await Promise.all([
 		prisma.monthlyInvoices.count({ where }),
 		prisma.monthlyInvoices.findMany({
+			where,
 			skip,
 			take: limit,
 			orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }],
-			where,
-			include: { family: true },
+			include: { family: true, program: { select: { id: true, name: true } } },
 		}),
 		prisma.monthlyInvoices.aggregate({
 			where,
@@ -110,8 +112,9 @@ const create = async (request: AuthRequest) => {
 
 		const existing = await prisma.monthlyInvoices.findUnique({
 			where: {
-				familyId_year_month: {
+				familyId_programId_year_month: {
 					familyId: data.familyId,
+					programId: data.programId,
 					year: data.year,
 					month: data.month,
 				},
@@ -126,10 +129,10 @@ const create = async (request: AuthRequest) => {
 		const invoice = await prisma.monthlyInvoices.create({
 			data: {
 				familyId: data.familyId,
+				programId: data.programId,
 				year: data.year,
 				month: data.month,
 				studentCount: data.studentCount,
-				session: data.session || null,
 				registrationFee: data.registrationFee,
 				tuitionFee: data.tuitionFee,
 				bookFee: data.bookFee,
@@ -145,9 +148,7 @@ const create = async (request: AuthRequest) => {
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: {
-				family: true,
-			},
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		return success(mapInvoice(invoice));
@@ -160,5 +161,5 @@ const create = async (request: AuthRequest) => {
 	}
 };
 
-export const GET = withAuth(getPaging);
-export const POST = withAuth(create);
+export const GET = withStaff(getPaging);
+export const POST = withStaff(create);

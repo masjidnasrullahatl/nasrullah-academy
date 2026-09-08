@@ -1,3 +1,5 @@
+import filter from 'lodash/filter';
+import keyBy from 'lodash/keyBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
@@ -7,14 +9,14 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
 import { UpdateFamilySchema } from '../types';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
@@ -24,12 +26,10 @@ const getDetail = async (
 	const family = await prisma.families.findUnique({
 		where: { id },
 		include: {
-		students: {
-			include: {
-				enrollments: {
-					include: { class: { include: { teacher: true } } },
+			students: {
+				include: {
+					enrollments: { include: { class: { include: { teacher: true } } } },
 				},
-			},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
 		},
@@ -47,6 +47,7 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const payload = UpdateFamilySchema.parse(body);
 
 		const prisma = createClient();
@@ -62,52 +63,47 @@ const update = async (
 			await tx.families.update({
 				where: { id },
 				data: {
+					email: payload.email || null,
 					name: payload.name,
+					status: payload.status,
 					fatherName: payload.fatherName || null,
 					motherName: payload.motherName || null,
 					primaryPhone: payload.primaryPhone,
 					secondaryPhone: payload.secondaryPhone || null,
-					email: payload.email || null,
 					address: payload.address || null,
-					status: payload.status,
 					notes: payload.notes || null,
 				},
 			});
 
-			const payloadById = new Map(
-				payload.students
-					.filter((student) => Boolean(student.id))
-					.map((student) => [student.id as string, student]),
-			);
+			const payloadById = keyBy(filter(payload.students, 'id'), 'id');
 
 			for (const student of existingFamily.students) {
-				const incoming = payloadById.get(student.id);
+				const incoming = payloadById[student.id];
+
 				if (!incoming) {
-					await tx.students.delete({
-						where: { id: student.id },
-					});
+					await tx.students.delete({ where: { id: student.id } });
 					continue;
 				}
+
+				const { dateOfBirth, ...studentData } = incoming;
 
 				await tx.students.update({
 					where: { id: student.id },
 					data: {
-						firstName: incoming.firstName,
-						lastName: incoming.lastName,
-						gender: incoming.gender,
-						dateOfBirth: incoming.dateOfBirth
-							? new Date(incoming.dateOfBirth)
-							: null,
-						status: incoming.status,
-						notes: incoming.notes || null,
+						firstName: studentData.firstName,
+						lastName: studentData.lastName,
+						gender: studentData.gender,
+						dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+						status: studentData.status,
+						notes: studentData.notes || null,
 					},
 				});
 			}
 
 			for (const student of payload.students) {
-				if (student.id) {
-					continue;
-				}
+				if (student.id) continue;
+
+				const dOB = student.dateOfBirth ? new Date(student.dateOfBirth) : null;
 
 				await tx.students.create({
 					data: {
@@ -115,9 +111,7 @@ const update = async (
 						firstName: student.firstName,
 						lastName: student.lastName,
 						gender: student.gender,
-						dateOfBirth: student.dateOfBirth
-							? new Date(student.dateOfBirth)
-							: null,
+						dateOfBirth: dOB,
 						status: student.status,
 						notes: student.notes || null,
 					},
@@ -141,16 +135,14 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
 
 	const prisma = createClient();
 
-	const family = await prisma.families.findUnique({
-		where: { id },
-	});
+	const family = await prisma.families.findUnique({ where: { id } });
 
 	if (!family) return notFound('Family not found');
 
@@ -159,6 +151,6 @@ const remove = async (
 	return success(family);
 };
 
-export const GET = withAuth(getDetail);
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const GET = withStaff(getDetail);
+export const PUT = withStaff(update);
+export const DELETE = withStaff(remove);

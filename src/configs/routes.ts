@@ -4,6 +4,7 @@ function path(root: string, sublink: string) {
 
 const ROOTS_DASHBOARD = '/dashboard';
 const ROOTS_AUTH = '/auth';
+const ROOTS_TEACHER = '/teacher';
 
 const ROOT_APPS = path(ROOTS_DASHBOARD, '/apps');
 const ROOT_FINANCE = path(ROOTS_DASHBOARD, '/finance');
@@ -14,8 +15,25 @@ export const PATH_DASHBOARD = {
 	default: path(ROOTS_DASHBOARD, ''),
 };
 
+export const PATH_TEACHER = {
+	root: ROOTS_TEACHER,
+	default: path(ROOTS_TEACHER, ''),
+};
+
+export const PATH_TEACHER_APPS = {
+	classes: path(ROOTS_TEACHER, '/classes'),
+	timeEntries: path(ROOTS_TEACHER, '/time-entries'),
+	pay: path(ROOTS_TEACHER, '/pay'),
+};
+
+export const PATH_TEACHER_ACCOUNTS = {
+	profile: path(ROOTS_TEACHER, '/profile'),
+	changePassword: path(ROOTS_TEACHER, '/change-password'),
+};
+
 export const PATH_APPS = {
 	root: ROOT_APPS,
+	programs: path(ROOT_APPS, '/programs'),
 	families: path(ROOT_APPS, '/families'),
 	students: path(ROOT_APPS, '/students'),
 	classes: path(ROOT_APPS, '/classes'),
@@ -25,6 +43,7 @@ export const PATH_APPS = {
 export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
+	payPeriods: path(ROOT_FINANCE, '/pay-periods'),
 };
 
 export const PATH_ACCOUNTS = {

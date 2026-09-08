@@ -78,7 +78,6 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 				year: item.year,
 				month: item.month,
 				studentCount: item.studentCount,
-				session: item.session,
 				registrationFee: item.registrationFee,
 				tuitionFee: item.tuitionFee,
 				bookFee: item.bookFee,
@@ -116,6 +115,8 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 			</Table.Td>
 
 			<Table.Td>{invoice.family.name}</Table.Td>
+
+			<Table.Td>{invoice.program.name}</Table.Td>
 
 			<Table.Td ta="center">{invoice.studentCount}</Table.Td>
 

@@ -1,5 +1,4 @@
 import {
-	ClassSession,
 	Families,
 	PaymentStatus,
 	PayMethod,
@@ -32,7 +31,11 @@ export type InvoiceRow = {
 	year: number;
 	month: number;
 	studentCount: number;
-	session: ClassSession | null;
+	programId: string;
+	program: {
+		id: string;
+		name: string;
+	};
 	registrationFee: number;
 	tuitionFee: number;
 	bookFee: number;
@@ -64,6 +67,7 @@ export const useGetPagingInvoices = (params: GetInvoicesQueryParams) => {
 				limit: params.limit.toString(),
 				year: params.year?.toString() || '',
 				month: params.month?.toString() || '',
+				programId: params.programId || '',
 				paymentStatus: params.paymentStatus || '',
 				payMethod: params.payMethod || '',
 				familyId: params.familyId || '',

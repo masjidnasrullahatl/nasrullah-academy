@@ -1,46 +1,54 @@
-import { PaymentStatus, PayMethod, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 import { AuthRequest } from '@app/api/types/common';
 import { success } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
-const MONTH_LABELS = [
-	'Jan',
-	'Feb',
-	'Mar',
-	'Apr',
-	'May',
-	'Jun',
-	'Jul',
-	'Aug',
-	'Sep',
-	'Oct',
-	'Nov',
-	'Dec',
-];
-
-const toNumber = (value: Prisma.Decimal | number | null | undefined) =>
-	Number(value ?? 0);
+import {
+	aggregateClasses,
+	aggregateEnrollments,
+	aggregateExpenses,
+	buildClassProfitLoss,
+	buildEnumBreakdown,
+	buildMonthly,
+	buildProgramSummary,
+	PAY_METHOD_ORDER,
+	PAYMENT_STATUS_ORDER,
+	toNumber,
+} from './utils';
 
 const getSummary = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
+
 	const year = Number(searchParams.get('year') || new Date().getFullYear());
+	const programId = searchParams.get('programId') || '';
+
+	const yearStart = new Date(year, 0, 1, 0, 0, 0, 0);
+	const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
 
 	const prisma = createClient();
 
-	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
-		year,
+	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = { year };
+
+	if (programId) invoiceWhere.programId = programId;
+
+	const classWhere: Prisma.ClassesWhereInput = {
+		status: 'ACTIVE',
+		...(programId ? { programId } : {}),
 	};
 
 	const enrollmentWhere: Prisma.EnrollmentsWhereInput = {
 		status: 'ACTIVE',
-		class: { status: 'ACTIVE' },
+		class: classWhere,
+		student: { status: 'ACTIVE', family: { status: 'ACTIVE' } },
 	};
 
-	const classWhere: Prisma.ClassesWhereInput = {
-		status: 'ACTIVE',
+	const expenseEntriesWhere: Prisma.TimeEntriesWhereInput = {
+		date: { gte: yearStart, lte: yearEnd },
+		payPeriod: { status: { in: ['LOCKED', 'PAID'] } },
+		...(programId ? { class: { programId } } : {}),
 	};
 
 	const [
@@ -48,11 +56,14 @@ const getSummary = async (request: AuthRequest) => {
 		invoiceUnpaidMonthly,
 		activeEnrollments,
 		activeTeachersCount,
-		activeClassesCount,
+		activeClasses,
 		paymentStatusGroups,
 		payMethodGroups,
 		topUnpaidFamilyGroups,
-	] = await prisma.$transaction([
+		programRevenueGroups,
+		expenseEntries,
+		programs,
+	] = await Promise.all([
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
 			orderBy: { month: 'asc' },
@@ -62,28 +73,28 @@ const getSummary = async (request: AuthRequest) => {
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
 			orderBy: { month: 'asc' },
-			where: {
-				...invoiceWhere,
-				balance: { gt: 0 },
-			},
+			where: { ...invoiceWhere, balance: { gt: 0 } },
 			_sum: { balance: true },
 		}),
 		prisma.enrollments.findMany({
 			where: enrollmentWhere,
 			select: {
-				student: {
-					select: {
-						id: true,
-						gender: true,
-						familyId: true,
-						status: true,
-						family: { select: { status: true } },
-					},
-				},
+				classId: true,
+				class: { select: { programId: true } },
+				student: { select: { id: true, gender: true, familyId: true } },
 			},
 		}),
 		prisma.teachers.count({ where: { status: 'ACTIVE' } }),
-		prisma.classes.count({ where: classWhere }),
+		prisma.classes.findMany({
+			where: classWhere,
+			select: {
+				id: true,
+				name: true,
+				programId: true,
+				program: { select: { id: true, name: true } },
+			},
+			orderBy: [{ program: { name: 'asc' } }, { name: 'asc' }],
+		}),
 		prisma.monthlyInvoices.groupBy({
 			by: ['paymentStatus'],
 			orderBy: { paymentStatus: 'asc' },
@@ -100,15 +111,31 @@ const getSummary = async (request: AuthRequest) => {
 		}),
 		prisma.monthlyInvoices.groupBy({
 			by: ['familyId'],
-			where: {
-				...invoiceWhere,
-				balance: { gt: 0 },
-			},
+			where: { ...invoiceWhere, balance: { gt: 0 } },
 			_sum: { balance: true },
-			orderBy: {
-				_sum: { balance: 'desc' },
-			},
+			orderBy: { _sum: { balance: 'desc' } },
 			take: 10,
+		}),
+		prisma.monthlyInvoices.groupBy({
+			by: ['programId'],
+			orderBy: { programId: 'asc' },
+			where: invoiceWhere,
+			_sum: { totalPaid: true },
+		}),
+		prisma.timeEntries.findMany({
+			where: expenseEntriesWhere,
+			select: {
+				date: true,
+				hours: true,
+				classId: true,
+				teacher: { select: { hourlyRate: true } },
+				class: { select: { programId: true } },
+			},
+		}),
+		prisma.programs.findMany({
+			where: programId ? { id: programId } : { status: 'ACTIVE' },
+			select: { id: true, name: true },
+			orderBy: { name: 'asc' },
 		}),
 	]);
 
@@ -119,60 +146,51 @@ const getSummary = async (request: AuthRequest) => {
 		]),
 	);
 
-	const monthlyMap = new Map(
-		invoiceMonthly.map((item) => [
-			item.month,
-			{
-				students: Number(item._sum?.studentCount || 0),
-				income: toNumber(item._sum?.totalPaid),
-				unpaidBalance: unpaidByMonth.get(item.month) || 0,
-			},
+	const programRevenueMap = new Map(
+		programRevenueGroups.map((item) => [
+			item.programId,
+			toNumber(item._sum?.totalPaid),
 		]),
 	);
 
-	const monthly = MONTH_LABELS.map((label, index) => {
-		const month = index + 1;
+	const {
+		byMonth: expenseByMonth,
+		byClass: expenseByClass,
+		byProgram: expenseByProgram,
+	} = aggregateExpenses(expenseEntries);
 
-		const invoiceMetrics = monthlyMap.get(month) || {
-			students: 0,
-			income: 0,
-			unpaidBalance: 0,
-		};
+	const { students, families, boys, girls, countByClass, studentIdsByProgram } =
+		aggregateEnrollments(activeEnrollments);
 
-		return {
-			month,
-			label,
-			students: invoiceMetrics.students,
-			income: invoiceMetrics.income,
-			unpaidBalance: invoiceMetrics.unpaidBalance,
-		};
-	});
+	const { enrollmentsByProgram, classesByProgram } = aggregateClasses(
+		activeClasses,
+		countByClass,
+	);
 
-	const uniqueStudents = new Map<
-		string,
-		{ gender: 'BOY' | 'GIRL'; familyId: string }
-	>();
-	for (const enrollment of activeEnrollments) {
-		const student = enrollment.student;
-		if (student.status !== 'ACTIVE' || student.family.status !== 'ACTIVE') {
-			continue;
-		}
-		if (!uniqueStudents.has(student.id)) {
-			uniqueStudents.set(student.id, {
-				gender: student.gender,
-				familyId: student.familyId,
-			});
-		}
-	}
+	const monthly = buildMonthly(invoiceMonthly, unpaidByMonth, expenseByMonth);
 
-	const students = uniqueStudents.size;
-	const families = new Set(
-		Array.from(uniqueStudents.values()).map((item) => item.familyId),
-	).size;
-	const boys = Array.from(uniqueStudents.values()).filter(
-		(item) => item.gender === 'BOY',
-	).length;
-	const girls = students - boys;
+	const classProfitLoss = buildClassProfitLoss(
+		activeClasses,
+		countByClass,
+		enrollmentsByProgram,
+		programRevenueMap,
+		expenseByClass,
+	);
+
+	const programSummary = buildProgramSummary(
+		programs,
+		studentIdsByProgram,
+		classesByProgram,
+		programRevenueMap,
+		expenseByProgram,
+	);
+
+	const totalsIncome = monthly.reduce((sum, item) => sum + item.income, 0);
+	const totalsUnpaidBalance = monthly.reduce(
+		(sum, item) => sum + item.unpaidBalance,
+		0,
+	);
+	const totalsExpense = monthly.reduce((sum, item) => sum + item.expense, 0);
 
 	const totals = {
 		students,
@@ -180,51 +198,32 @@ const getSummary = async (request: AuthRequest) => {
 		boys,
 		girls,
 		teachers: activeTeachersCount,
-		classes: activeClassesCount,
-		income: monthly.reduce((sum, item) => sum + item.income, 0),
-		unpaidBalance: monthly.reduce((sum, item) => sum + item.unpaidBalance, 0),
+		classes: activeClasses.length,
+		income: totalsIncome,
+		unpaidBalance: totalsUnpaidBalance,
+		expense: totalsExpense,
+		profit: totalsIncome - totalsExpense,
 	};
 
-	const genderSplit = { boys, girls };
+	const paymentStatus = buildEnumBreakdown(
+		'status',
+		PAYMENT_STATUS_ORDER,
+		paymentStatusGroups.map((group) => ({
+			value: group.paymentStatus,
+			count: group._count._all,
+			amount: toNumber(group._sum?.totalDue),
+		})),
+	);
 
-	const paymentStatus = (
-		[
-			PaymentStatus.PAID,
-			PaymentStatus.PARTIAL,
-			PaymentStatus.UNPAID,
-			PaymentStatus.NA,
-		] as PaymentStatus[]
-	).map((status) => {
-		const found = paymentStatusGroups.find(
-			(item) => item.paymentStatus === status,
-		);
-		return {
-			status,
-			count: Number((found as any)?._count?._all || 0),
-			amount: toNumber(found?._sum?.totalDue),
-		};
-	});
-
-	const payMethod = (
-		[
-			PayMethod.KEELA,
-			PayMethod.ZELLE,
-			PayMethod.CASH,
-			PayMethod.CASHAPP,
-			PayMethod.SQUARE,
-			PayMethod.CHECK,
-			PayMethod.FREE,
-			PayMethod.OTHER,
-			PayMethod.NA,
-		] as PayMethod[]
-	).map((method) => {
-		const found = payMethodGroups.find((item) => item.payMethod === method);
-		return {
-			method,
-			count: Number((found as any)?._count?._all || 0),
-			amount: toNumber(found?._sum?.totalDue),
-		};
-	});
+	const payMethod = buildEnumBreakdown(
+		'method',
+		PAY_METHOD_ORDER,
+		payMethodGroups.map((group) => ({
+			value: group.payMethod,
+			count: group._count._all,
+			amount: toNumber(group._sum?.totalDue),
+		})),
+	);
 
 	const familyIds = topUnpaidFamilyGroups.map((item) => item.familyId);
 	const familiesById = familyIds.length
@@ -233,9 +232,7 @@ const getSummary = async (request: AuthRequest) => {
 				select: { id: true, name: true },
 			})
 		: [];
-	const familyNameMap = new Map(
-		familiesById.map((item) => [item.id, item.name]),
-	);
+	const familyNameMap = new Map(familiesById.map((item) => [item.id, item.name]));
 
 	const topUnpaidFamilies = topUnpaidFamilyGroups.map((item) => ({
 		familyId: item.familyId,
@@ -246,11 +243,13 @@ const getSummary = async (request: AuthRequest) => {
 	return success({
 		totals,
 		monthly,
-		genderSplit,
+		genderSplit: { boys, girls },
 		paymentStatus,
 		payMethodSplit: payMethod,
 		topUnpaidFamilies,
+		classProfitLoss,
+		programSummary,
 	});
 };
 
-export const GET = withAuth(getSummary);
+export const GET = withStaff(getSummary);

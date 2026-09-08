@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -47,9 +47,7 @@ const getPaging = async (request: AuthRequest) => {
 
 	if (classId) enrollmentFilter.classId = classId;
 
-	if (classId) {
-		where.enrollments = { some: enrollmentFilter };
-	}
+	if (classId) where.enrollments = { some: enrollmentFilter };
 
 	const total = await prisma.students.count({ where });
 
@@ -57,10 +55,7 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
-		include: {
-			family: true,
-			enrollments: { include: { class: true } },
-		},
+		include: { family: true, enrollments: { include: { class: true } } },
 		where,
 	});
 
@@ -88,10 +83,7 @@ const create = async (request: AuthRequest) => {
 				status: payload.status,
 				notes: payload.notes || null,
 			},
-			include: {
-				family: true,
-				enrollments: { include: { class: true } },
-			},
+			include: { family: true, enrollments: { include: { class: true } } },
 		});
 
 		return success(student);
@@ -104,5 +96,5 @@ const create = async (request: AuthRequest) => {
 	}
 };
 
-export const GET = withAuth(getPaging);
-export const POST = withAuth(create);
+export const GET = withStaff(getPaging);
+export const POST = withStaff(create);

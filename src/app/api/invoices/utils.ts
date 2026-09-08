@@ -14,19 +14,27 @@ export type InvoiceTotalsPayload = {
 };
 
 export const calcTotals = (payload: InvoiceTotalsPayload) => {
-	const totalDue = payload.registrationFee + payload.tuitionFee + payload.bookFee;
+	const totalDue =
+		payload.registrationFee + payload.tuitionFee + payload.bookFee;
+
 	const totalPaid =
 		payload.paidRegistrationFee +
 		payload.paidTuitionFee +
 		payload.paidBookFee +
 		payload.extraPaid;
+
 	const balance = totalDue - totalPaid;
 
 	return { totalDue, totalPaid, balance };
 };
 
 export const mapInvoice = (
-	invoice: Prisma.MonthlyInvoicesGetPayload<{ include: { family: true } }>,
+	invoice: Prisma.MonthlyInvoicesGetPayload<{
+		include: {
+			family: true;
+			program: { select: { id: true; name: true } };
+		};
+	}>,
 ) => ({
 	...invoice,
 	registrationFee: toNumber(invoice.registrationFee),

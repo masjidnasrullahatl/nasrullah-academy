@@ -12,7 +12,8 @@ export const CreateTeacherSchema = z.object({
 	firstName: z.string().min(1, 'First name is required'),
 	lastName: z.string().min(1, 'Last name is required'),
 	phoneNumber: z.string().optional().nullable(),
-	email: z.string().email('Invalid email').optional().or(z.literal('')).nullable(),
+	email: z.string().min(1, 'Email is required').email('Invalid email'),
+	hourlyRate: z.coerce.number().min(0).optional().nullable(),
 	status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
 });
 

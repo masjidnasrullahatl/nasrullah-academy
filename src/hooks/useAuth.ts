@@ -15,10 +15,11 @@ export const useAuth = () => {
 	const router = useRouter();
 	const supabase = createClient();
 
-	const { setIsFetched, setUser, setSession } = useAuthStore();
+	const { setIsFetched, setUser, setSession, setRole } = useAuthStore();
 
 	const user = useAuthStore((state) => state.user);
 	const session = useAuthStore((state) => state.session);
+	const role = useAuthStore((state) => state.role);
 	const isFetched = useAuthStore((state) => state.isFetched);
 
 	useEffect(() => {
@@ -33,6 +34,7 @@ export const useAuth = () => {
 
 			setUser(session?.user ?? null);
 			setSession(session);
+			setRole(session?.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff');
 			setIsFetched(true);
 		};
 
@@ -44,13 +46,15 @@ export const useAuth = () => {
 		} = supabase.auth.onAuthStateChange(async (event, session) => {
 			setUser(session?.user ?? null);
 			setSession(session);
+			setRole(
+				session?.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff',
+			);
 		});
 
 		return () => {
 			subscription.unsubscribe();
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [supabase.auth]);
+	}, [setIsFetched, setRole, setSession, setUser, supabase.auth]);
 
 	const login = async (email: string, password: string) => {
 		const { data, error } = await supabase.auth.signInWithPassword({
@@ -121,6 +125,7 @@ export const useAuth = () => {
 		user,
 		session,
 		isFetched,
+		role,
 		isAuthenticated: !!session,
 		accessToken: session?.access_token,
 		login,

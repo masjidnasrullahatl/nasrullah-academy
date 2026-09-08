@@ -20,7 +20,7 @@ export const TableFooter = ({ total, page, setPage }: Props) => {
 			}}
 		>
 			<Table.Tr>
-				<Table.Td colSpan={6} fw={700} className={stickyStyles.stickyLeft}>
+				<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
 					<Group justify="space-between">
 						<Text fz="sm">Total: {total}</Text>
 

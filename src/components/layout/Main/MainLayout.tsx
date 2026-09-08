@@ -9,11 +9,22 @@ import HeaderNav from './components/Header';
 import SidebarNav from './components/Sidebar';
 import layoutClasses from './MainLayout.module.css';
 
+export type SidebarLinks = Array<{
+	title: string;
+	links: Array<{
+		label: string;
+		icon?: any;
+		link: string;
+		links?: Array<{ label: string; link: string }>;
+	}>;
+}>;
+
 type Props = {
 	children: ReactNode;
+	sidebarLinks?: SidebarLinks;
 };
 
-export function MainLayout({ children }: Props) {
+export function MainLayout({ children, sidebarLinks }: Props) {
 	const [openedSidebar, setOpenedSidebar] = useState(false);
 	const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -28,7 +39,11 @@ export function MainLayout({ children }: Props) {
 						zIndex: 101,
 					}}
 				>
-					<SidebarNav showCloseButton={false} onClose={() => {}} />
+					<SidebarNav
+						showCloseButton={false}
+						onClose={() => {}}
+						sidebarLinks={sidebarLinks}
+					/>
 				</Box>
 			)}
 
@@ -43,6 +58,7 @@ export function MainLayout({ children }: Props) {
 				<SidebarNav
 					showCloseButton={true}
 					onClose={() => setOpenedSidebar(false)}
+					sidebarLinks={sidebarLinks}
 				/>
 			</Drawer>
 

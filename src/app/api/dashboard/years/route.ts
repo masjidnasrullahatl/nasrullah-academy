@@ -1,5 +1,5 @@
 import { success } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -14,6 +14,7 @@ const getYears = async () => {
 	});
 
 	const yearSet = new Set(years.map((item) => item.year));
+
 	yearSet.add(currentYear);
 
 	const data = Array.from(yearSet).sort((a, b) => b - a);
@@ -21,4 +22,4 @@ const getYears = async () => {
 	return success(data);
 };
 
-export const GET = withAuth(getYears);
+export const GET = withStaff(getYears);

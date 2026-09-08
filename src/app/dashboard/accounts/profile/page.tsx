@@ -44,7 +44,7 @@ const items = [
 	</Anchor>
 ));
 
-export default function ProfilePage() {
+export default function Page() {
 	const { data: profile } = useGetProfile();
 
 	const {
@@ -86,7 +86,9 @@ export default function ProfilePage() {
 		<Container fluid>
 			<Stack gap="lg">
 				<title>Profile | Nasrullah Academy</title>
+
 				<PageHeader title="Profile" breadcrumbItems={items} />
+
 				<Grid>
 					<Grid.Col span={{ base: 12, md: 6, lg: 5 }}>
 						<Surface component={Paper} className={classes.card}>

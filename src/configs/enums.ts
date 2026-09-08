@@ -1,10 +1,10 @@
 import type {
 	ArchiveStatus,
-	ClassSession,
 	EnrollmentStatus,
 	Gender,
 	PaymentStatus,
 	PayMethod,
+	PayPeriodStatus,
 	RecordStatus,
 } from '@prisma/client';
 
@@ -51,20 +51,6 @@ export const GENDER_LABELS: Record<Gender, string> = {
 export const GENDER_OPTIONS: SelectOption[] = [
 	{ value: 'BOY', label: GENDER_LABELS.BOY },
 	{ value: 'GIRL', label: GENDER_LABELS.GIRL },
-];
-
-export const CLASS_SESSION_LABELS: Record<ClassSession, string> = {
-	AM: 'AM',
-	PM: 'PM',
-	AM_PM: 'AM/PM',
-	NA: 'N/A',
-};
-
-export const CLASS_SESSION_OPTIONS: SelectOption[] = [
-	{ value: 'AM', label: CLASS_SESSION_LABELS.AM },
-	{ value: 'PM', label: CLASS_SESSION_LABELS.PM },
-	{ value: 'AM_PM', label: CLASS_SESSION_LABELS.AM_PM },
-	{ value: 'NA', label: CLASS_SESSION_LABELS.NA },
 ];
 
 export const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
@@ -128,6 +114,24 @@ export const PAYMENT_STATUS_OPTIONS: SelectOption[] = [
 	{ value: 'PARTIAL', label: PAYMENT_STATUS_LABELS.PARTIAL },
 	{ value: 'UNPAID', label: PAYMENT_STATUS_LABELS.UNPAID },
 	{ value: 'NA', label: PAYMENT_STATUS_LABELS.NA },
+];
+
+export const PAY_PERIOD_STATUS_LABELS: Record<PayPeriodStatus, string> = {
+	OPEN: 'Open',
+	LOCKED: 'Locked',
+	PAID: 'Paid',
+};
+
+export const PAY_PERIOD_STATUS_COLORS: Record<PayPeriodStatus, string> = {
+	OPEN: 'blue',
+	LOCKED: 'orange',
+	PAID: 'green',
+};
+
+export const PAY_PERIOD_STATUS_OPTIONS: SelectOption[] = [
+	{ value: 'OPEN', label: PAY_PERIOD_STATUS_LABELS.OPEN },
+	{ value: 'LOCKED', label: PAY_PERIOD_STATUS_LABELS.LOCKED },
+	{ value: 'PAID', label: PAY_PERIOD_STATUS_LABELS.PAID },
 ];
 
 export const MONTH_OPTIONS: SelectOption[] = [

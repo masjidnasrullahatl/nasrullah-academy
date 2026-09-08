@@ -29,7 +29,6 @@ import {
 import { ModalFooter } from '@components/ModalFooter';
 
 import {
-	CLASS_SESSION_OPTIONS,
 	MONTH_OPTIONS,
 	PAY_METHOD_OPTIONS,
 	PAYMENT_STATUS_OPTIONS,
@@ -39,6 +38,7 @@ import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFa
 import { useCreateInvoice } from '@hooks/react-query/invoices/useCreateInvoice';
 import { InvoiceRow } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useUpdateInvoice } from '@hooks/react-query/invoices/useUpdateInvoice';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 import { formatDecimal } from '@utils/number';
 
@@ -50,10 +50,10 @@ type PaymentFormModalProps = {
 
 type FormValue = {
 	familyId: string;
+	programId: string;
 	year: number;
 	month: number;
 	studentCount: number;
-	session: 'AM' | 'PM' | 'AM_PM' | 'NA' | null;
 	registrationFee: number;
 	tuitionFee: number;
 	bookFee: number;
@@ -100,6 +100,7 @@ export const PaymentFormModal = ({
 		useState(false);
 
 	const { data: families } = useGetPagingFamilies({ page: 1, limit: 500 });
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const {
 		mutateAsync: createInvoice,
@@ -118,10 +119,10 @@ export const PaymentFormModal = ({
 	const form = useForm<FormValue>({
 		initialValues: {
 			familyId: invoice?.familyId || '',
+			programId: invoice?.programId || '',
 			year: invoice?.year || defaultYear || new Date().getFullYear(),
 			month: invoice?.month || defaultMonth || new Date().getMonth() + 1,
 			studentCount: invoice?.studentCount || 0,
-			session: invoice?.session || null,
 			registrationFee: invoice?.registrationFee || 0,
 			tuitionFee: invoice?.tuitionFee || 0,
 			bookFee: invoice?.bookFee || 0,
@@ -183,7 +184,6 @@ export const PaymentFormModal = ({
 				year: values.year,
 				month: values.month,
 				studentCount: values.studentCount,
-				session: values.session,
 				registrationFee: values.registrationFee,
 				tuitionFee: values.tuitionFee,
 				bookFee: values.bookFee,
@@ -201,10 +201,10 @@ export const PaymentFormModal = ({
 		} else {
 			const payload: CreateInvoicePayload = {
 				familyId: values.familyId,
+				programId: values.programId,
 				year: values.year,
 				month: values.month,
 				studentCount: values.studentCount,
-				session: values.session,
 				registrationFee: values.registrationFee,
 				tuitionFee: values.tuitionFee,
 				bookFee: values.bookFee,
@@ -267,6 +267,21 @@ export const PaymentFormModal = ({
 								/>
 							</Grid.Col>
 						)}
+						{!isEdit && (
+							<Grid.Col span={{ base: 12, md: 4 }}>
+								<Select
+									label="Program"
+									placeholder="Select program"
+									withAsterisk
+									searchable
+									data={programs?.data.map((program) => ({
+										value: program.id,
+										label: program.name,
+									}))}
+									{...form.getInputProps('programId')}
+								/>
+							</Grid.Col>
+						)}
 						<Grid.Col span={{ base: 12, md: 4 }}>
 							<NumberInput
 								label="Year"
@@ -300,20 +315,6 @@ export const PaymentFormModal = ({
 							/>
 						</Grid.Col>
 					</Grid>
-
-					<Select
-						label="Session"
-						clearable
-						placeholder="Select session"
-						data={CLASS_SESSION_OPTIONS}
-						value={form.values.session || ''}
-						onChange={(value) =>
-							form.setFieldValue(
-								'session',
-								(value || null) as FormValue['session'],
-							)
-						}
-					/>
 
 					<Grid>
 						<Grid.Col span={{ base: 12, md: 4 }}>

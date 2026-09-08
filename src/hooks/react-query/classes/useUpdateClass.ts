@@ -17,7 +17,7 @@ export const useUpdateClass = () => {
 	return useMutation({
 		mutationFn: async (params: UseUpdateClassParams) => {
 			return fetchAuth(`/api/classes/${params.id}`, {
-				method: 'PUT',
+				method: 'PATCH',
 				body: JSON.stringify(params.data),
 			});
 		},

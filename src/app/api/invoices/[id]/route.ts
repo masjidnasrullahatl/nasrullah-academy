@@ -7,7 +7,7 @@ import {
 	notFound,
 	success,
 } from '@app/api/utils/response';
-import { withAuth } from '@app/api/utils/withAuth';
+import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
@@ -15,15 +15,16 @@ import { UpdateInvoiceSchema } from '../types';
 import { calcTotals, mapInvoice } from '../utils';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true },
+		include: { family: true, program: { select: { id: true, name: true } } },
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -38,12 +39,14 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const data = UpdateInvoiceSchema.parse(body);
+
 		const prisma = createClient();
 
 		const existing = await prisma.monthlyInvoices.findUnique({
 			where: { id },
-			include: { family: true },
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		if (!existing) return notFound('Invoice not found');
@@ -56,7 +59,6 @@ const update = async (
 				year: data.year,
 				month: data.month,
 				studentCount: data.studentCount,
-				session: data.session || null,
 				registrationFee: data.registrationFee,
 				tuitionFee: data.tuitionFee,
 				bookFee: data.bookFee,
@@ -72,7 +74,7 @@ const update = async (
 				paidAt: data.paidAt ? new Date(data.paidAt) : null,
 				notes: data.notes || null,
 			},
-			include: { family: true },
+			include: { family: true, program: { select: { id: true, name: true } } },
 		});
 
 		return success(mapInvoice(invoice));
@@ -86,15 +88,16 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const invoice = await prisma.monthlyInvoices.findUnique({
 		where: { id },
-		include: { family: true },
+		include: { family: true, program: { select: { id: true, name: true } } },
 	});
 
 	if (!invoice) return notFound('Invoice not found');
@@ -104,6 +107,6 @@ const remove = async (
 	return success(mapInvoice(invoice));
 };
 
-export const GET = withAuth(getDetail);
-export const PUT = withAuth(update);
-export const DELETE = withAuth(remove);
+export const GET = withStaff(getDetail);
+export const PATCH = withStaff(update);
+export const DELETE = withStaff(remove);

@@ -10,6 +10,8 @@ export const TableHeader = () => {
 
 				<Table.Th>Family</Table.Th>
 
+				<Table.Th>Program</Table.Th>
+
 				<Table.Th ta="center">#Kids</Table.Th>
 
 				<Table.Th ta="right">Total Due</Table.Th>

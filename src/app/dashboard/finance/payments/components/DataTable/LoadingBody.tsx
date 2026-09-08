@@ -11,13 +11,13 @@ export const LoadingBody = ({ pageSize }: Props) => {
 		<>
 			{Array.from({ length: pageSize }).map((_, index) => (
 				<Table.Tr key={index}>
-					{Array.from({ length: 9 }).map((_, columnIndex) => (
+					{Array.from({ length: 10 }).map((_, columnIndex) => (
 						<Table.Td
 							key={columnIndex}
 							className={
 								columnIndex === 0
 									? stickyStyles.stickyLeft
-									: columnIndex === 8
+									: columnIndex === 9
 										? stickyStyles.stickyRight
 										: undefined
 							}

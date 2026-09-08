@@ -17,7 +17,7 @@ export const useUpdateInvoice = () => {
 	return useMutation({
 		mutationFn: async (params: UseUpdateInvoiceParams) => {
 			return fetchAuth(`/api/invoices/${params.id}`, {
-				method: 'PUT',
+				method: 'PATCH',
 				body: JSON.stringify(params.data),
 			});
 		},

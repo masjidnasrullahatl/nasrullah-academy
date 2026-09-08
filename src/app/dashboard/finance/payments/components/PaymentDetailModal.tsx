@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import { ModalFooter } from '@components/ModalFooter';
 
 import {
-	CLASS_SESSION_LABELS,
 	PAY_METHOD_LABELS,
 	PAYMENT_STATUS_COLORS,
 	PAYMENT_STATUS_LABELS,
@@ -69,11 +68,9 @@ export const PaymentDetailModal = ({ invoice }: PaymentDetailModalProps) => {
 					</Badge>
 				)}
 
-				{invoice.session && invoice.session !== 'NA' && (
-					<Badge variant="light" color="cyan">
-						{CLASS_SESSION_LABELS[invoice.session]}
-					</Badge>
-				)}
+				<Badge variant="light" color="cyan">
+					{invoice.program.name}
+				</Badge>
 
 				{invoice.payMethod !== 'NA' && (
 					<Badge variant="light" color="indigo">
