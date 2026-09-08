@@ -1,3 +1,5 @@
+import filter from 'lodash/filter';
+import keyBy from 'lodash/keyBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
@@ -14,7 +16,7 @@ import { createClient } from '@helpers/prisma/server';
 import { UpdateFamilySchema } from '../types';
 
 const getDetail = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
@@ -61,43 +63,39 @@ const update = async (
 			await tx.families.update({
 				where: { id },
 				data: {
+					email: payload.email || null,
 					name: payload.name,
+					status: payload.status,
 					fatherName: payload.fatherName || null,
 					motherName: payload.motherName || null,
 					primaryPhone: payload.primaryPhone,
 					secondaryPhone: payload.secondaryPhone || null,
-					email: payload.email || null,
 					address: payload.address || null,
-					status: payload.status,
 					notes: payload.notes || null,
 				},
 			});
 
-			const payloadById = new Map(
-				payload.students
-					.filter((student) => Boolean(student.id))
-					.map((student) => [student.id as string, student]),
-			);
+			const payloadById = keyBy(filter(payload.students, 'id'), 'id');
 
 			for (const student of existingFamily.students) {
-				const incoming = payloadById.get(student.id);
+				const incoming = payloadById[student.id];
 
 				if (!incoming) {
 					await tx.students.delete({ where: { id: student.id } });
 					continue;
 				}
 
+				const { dateOfBirth, ...studentData } = incoming;
+
 				await tx.students.update({
 					where: { id: student.id },
 					data: {
-						firstName: incoming.firstName,
-						lastName: incoming.lastName,
-						gender: incoming.gender,
-						dateOfBirth: incoming.dateOfBirth
-							? new Date(incoming.dateOfBirth)
-							: null,
-						status: incoming.status,
-						notes: incoming.notes || null,
+						firstName: studentData.firstName,
+						lastName: studentData.lastName,
+						gender: studentData.gender,
+						dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+						status: studentData.status,
+						notes: studentData.notes || null,
 					},
 				});
 			}
@@ -105,15 +103,15 @@ const update = async (
 			for (const student of payload.students) {
 				if (student.id) continue;
 
+				const dOB = student.dateOfBirth ? new Date(student.dateOfBirth) : null;
+
 				await tx.students.create({
 					data: {
 						familyId: id,
 						firstName: student.firstName,
 						lastName: student.lastName,
 						gender: student.gender,
-						dateOfBirth: student.dateOfBirth
-							? new Date(student.dateOfBirth)
-							: null,
+						dateOfBirth: dOB,
 						status: student.status,
 						notes: student.notes || null,
 					},
@@ -137,7 +135,7 @@ const update = async (
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;

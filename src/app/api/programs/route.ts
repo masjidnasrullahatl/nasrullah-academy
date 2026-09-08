@@ -51,13 +51,13 @@ const create = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
-		const existingProgram = await prisma.programs.findFirst({
+		let program = await prisma.programs.findFirst({
 			where: { name: { equals: data.name, mode: 'insensitive' } },
 		});
 
-		if (existingProgram) return badRequest('Program name already exists');
+		if (program) return badRequest('Program name already exists');
 
-		const program = await prisma.programs.create({
+		program = await prisma.programs.create({
 			data: {
 				name: data.name,
 				description: data.description || null,

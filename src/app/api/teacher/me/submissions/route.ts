@@ -28,22 +28,30 @@ const submitHours = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
-		const [payPeriod, existingSubmission, entriesCount] = await Promise.all([
-			prisma.payPeriods.findUnique({ where: { id: payload.payPeriodId } }),
-			prisma.teacherSubmissions.findUnique({
-				where: {
-					teacherId_payPeriodId: {
-						teacherId: teacher.id,
-						payPeriodId: payload.payPeriodId,
-					},
-				},
-			}),
-			prisma.timeEntries.count({
-				where: {
+		const payPeriodQuery = prisma.payPeriods.findUnique({
+			where: { id: payload.payPeriodId },
+		});
+
+		const teacherSubmissionsQuery = prisma.teacherSubmissions.findUnique({
+			where: {
+				teacherId_payPeriodId: {
 					teacherId: teacher.id,
 					payPeriodId: payload.payPeriodId,
 				},
-			}),
+			},
+		});
+
+		const timeEntriesQuery = prisma.timeEntries.count({
+			where: {
+				teacherId: teacher.id,
+				payPeriodId: payload.payPeriodId,
+			},
+		});
+
+		const [payPeriod, existingSubmission, entriesCount] = await Promise.all([
+			payPeriodQuery,
+			teacherSubmissionsQuery,
+			timeEntriesQuery,
 		]);
 
 		if (!payPeriod) return notFound('Pay period not found');

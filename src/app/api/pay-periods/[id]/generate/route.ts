@@ -1,3 +1,7 @@
+import keyBy from 'lodash/keyBy';
+import map from 'lodash/map';
+import sumBy from 'lodash/sumBy';
+
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import {
 	badRequest,
@@ -9,22 +13,22 @@ import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
+import { GeneratePayResponse } from './types';
+
 const generatePay = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	try {
 		const { id } = await params;
+
 		const prisma = createClient();
 
 		const payPeriod = await prisma.payPeriods.findUnique({ where: { id } });
-		if (!payPeriod) {
-			return notFound('Pay period not found');
-		}
 
-		if (payPeriod.status !== 'OPEN') {
-			return badRequest('Already generated');
-		}
+		if (!payPeriod) return notFound('Pay period not found');
+
+		if (payPeriod.status !== 'OPEN') return badRequest('Already generated');
 
 		const timeEntryGroups = await prisma.timeEntries.groupBy({
 			by: ['teacherId'],
@@ -32,7 +36,7 @@ const generatePay = async (
 			_sum: { hours: true },
 		});
 
-		const teacherIds = timeEntryGroups.map((item) => item.teacherId);
+		const teacherIds = map(timeEntryGroups, 'teacherId');
 
 		const teachers = teacherIds.length
 			? await prisma.teachers.findMany({
@@ -46,61 +50,48 @@ const generatePay = async (
 				})
 			: [];
 
-		const teacherById = new Map(
-			teachers.map((teacher) => [teacher.id, teacher]),
-		);
+		const teacherById = keyBy(teachers, 'id');
 
 		const records = await prisma.$transaction(async (tx) => {
 			await tx.payRecords.deleteMany({ where: { payPeriodId: id } });
 
-			const createdRecords: Array<{
-				teacherId: string;
-				teacherName: string;
-				totalHours: number;
-				hourlyRate: number;
-				totalPay: number;
-			}> = [];
+			const createdRecords: Array<GeneratePayResponse> = [];
 
 			for (const group of timeEntryGroups) {
-				const teacher = teacherById.get(group.teacherId);
-				if (!teacher) {
-					continue;
-				}
+				const teacher = teacherById[group.teacherId];
+
+				if (!teacher) continue;
 
 				const totalHours = Number(group._sum.hours || 0);
 				const hourlyRate = Number(teacher.hourlyRate || 0);
 				const totalPay = totalHours * hourlyRate;
 
-				await tx.payRecords.create({
-					data: {
-						teacherId: teacher.id,
-						payPeriodId: id,
-						totalHours,
-						hourlyRate,
-						totalPay,
-					},
-				});
-
-				createdRecords.push({
+				const payload = {
 					teacherId: teacher.id,
-					teacherName: `${teacher.firstName} ${teacher.lastName}`,
 					totalHours,
 					hourlyRate,
 					totalPay,
+				};
+
+				await tx.payRecords.create({
+					data: { payPeriodId: id, ...payload },
+				});
+
+				createdRecords.push({
+					teacherName: `${teacher.firstName} ${teacher.lastName}`,
+					...payload,
 				});
 			}
 
 			await tx.payPeriods.update({
 				where: { id },
-				data: {
-					status: 'LOCKED',
-				},
+				data: { status: 'LOCKED' },
 			});
 
 			return createdRecords;
 		});
 
-		const totalExpense = records.reduce((sum, item) => sum + item.totalPay, 0);
+		const totalExpense = sumBy(records, 'totalPay');
 
 		return success({
 			periodId: id,

@@ -34,33 +34,39 @@ const getMyTimeEntries = async (request: AuthRequest) => {
 		...(payPeriodId ? { payPeriodId } : {}),
 	};
 
-	const [entries, total, submission] = await Promise.all([
-		prisma.timeEntries.findMany({
-			where,
-			orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-			include: {
-				class: {
-					select: { id: true, name: true, program: { select: { name: true } } },
-				},
-				payPeriod: {
-					select: {
-						id: true,
-						name: true,
-						status: true,
-						startDate: true,
-						endDate: true,
-					},
+	const getEntriesQuery = prisma.timeEntries.findMany({
+		where,
+		orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+		include: {
+			class: {
+				select: { id: true, name: true, program: { select: { name: true } } },
+			},
+			payPeriod: {
+				select: {
+					id: true,
+					name: true,
+					status: true,
+					startDate: true,
+					endDate: true,
 				},
 			},
-		}),
-		prisma.timeEntries.count({ where }),
-		payPeriodId
-			? prisma.teacherSubmissions.findUnique({
-					where: {
-						teacherId_payPeriodId: { teacherId: teacher.id, payPeriodId },
-					},
-				})
-			: null,
+		},
+	});
+
+	const getTotalEntriesTotalQuery = prisma.timeEntries.count({ where });
+
+	const getSubmissionQuery = payPeriodId
+		? prisma.teacherSubmissions.findUnique({
+				where: {
+					teacherId_payPeriodId: { teacherId: teacher.id, payPeriodId },
+				},
+			})
+		: null;
+
+	const [entries, total, submission] = await Promise.all([
+		getEntriesQuery,
+		getTotalEntriesTotalQuery,
+		getSubmissionQuery,
 	]);
 
 	const data = entries.map((entry) => ({

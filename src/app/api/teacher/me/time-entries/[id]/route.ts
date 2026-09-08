@@ -33,6 +33,7 @@ const updateMyTimeEntry = async (
 		const payload = UpdateTimeEntrySchema.parse(body);
 
 		const prisma = createClient();
+
 		const existing = await prisma.timeEntries.findFirst({
 			where: { id, teacherId: teacher.id },
 			include: { payPeriod: true },
@@ -121,25 +122,18 @@ const deleteMyTimeEntry = async (
 ) => {
 	const teacher = await getCurrentTeacher(request.user.id);
 
-	if (!teacher) {
-		return notFound('Teacher profile not found');
-	}
+	if (!teacher) return notFound('Teacher profile not found');
 
 	const { id } = await params;
+
 	const prisma = createClient();
+
 	const existing = await prisma.timeEntries.findFirst({
-		where: {
-			id,
-			teacherId: teacher.id,
-		},
-		include: {
-			payPeriod: true,
-		},
+		where: { id, teacherId: teacher.id },
+		include: { payPeriod: true },
 	});
 
-	if (!existing) {
-		return notFound('Time entry not found');
-	}
+	if (!existing) return notFound('Time entry not found');
 
 	if (existing.payPeriod.status !== 'OPEN') {
 		return badRequest('Cannot delete time entry. Pay period is not open');

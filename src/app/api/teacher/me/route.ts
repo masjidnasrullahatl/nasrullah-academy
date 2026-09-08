@@ -19,9 +19,7 @@ import { UpdateTeacherProfileSchema } from './types';
 const getMyProfile = async (request: AuthRequest) => {
 	const teacher = await getCurrentTeacher(request.user.id);
 
-	if (!teacher) {
-		return notFound('Teacher profile not found');
-	}
+	if (!teacher) return notFound('Teacher profile not found');
 
 	return success({
 		id: teacher.id,
@@ -43,6 +41,7 @@ const updateMyProfile = async (request: AuthRequest) => {
 		const payload = UpdateTeacherProfileSchema.parse(body);
 
 		const prisma = createClient();
+		const adminClient = createAdminClient();
 
 		const updated = await prisma.teachers.update({
 			where: { id: teacher.id },
@@ -53,7 +52,6 @@ const updateMyProfile = async (request: AuthRequest) => {
 			},
 		});
 
-		const adminClient = createAdminClient();
 		await adminClient.auth.admin.updateUserById(request.user.id, {
 			user_metadata: {
 				full_name: `${payload.firstName} ${payload.lastName}`,
@@ -70,9 +68,7 @@ const updateMyProfile = async (request: AuthRequest) => {
 				updated.hourlyRate === null ? null : Number(updated.hourlyRate),
 		});
 	} catch (error) {
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
 		return internalServerError();
 	}

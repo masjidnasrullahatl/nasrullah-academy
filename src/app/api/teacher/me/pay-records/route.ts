@@ -12,6 +12,7 @@ const getMyPayRecords = async (request: AuthRequest) => {
 	if (!teacher) return notFound('Teacher profile not found');
 
 	const prisma = createClient();
+
 	const payRecords = await prisma.payRecords.findMany({
 		where: { teacherId: teacher.id },
 		orderBy: { payPeriod: { startDate: 'desc' } },

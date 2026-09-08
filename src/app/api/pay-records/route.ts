@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { Prisma } from '@prisma/client';
+import sumBy from 'lodash/sumBy';
 
 import { AuthRequest } from '@app/api/types/common';
 import { withStaff } from '@app/api/utils/withStaff';
@@ -10,12 +11,13 @@ import { createClient } from '@helpers/prisma/server';
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
 
+	const prisma = createClient();
+
 	const page = Number(searchParams.get('page') || 1);
 	const limit = Number(searchParams.get('limit') || 20);
 	const payPeriodId = searchParams.get('payPeriodId') || '';
 	const teacherId = searchParams.get('teacherId') || '';
 
-	const prisma = createClient();
 	const skip = (page - 1) * limit;
 
 	const where: Prisma.PayRecordsWhereInput = {};
@@ -23,8 +25,8 @@ const getPaging = async (request: AuthRequest) => {
 	if (payPeriodId) where.payPeriodId = payPeriodId;
 	if (teacherId) where.teacherId = teacherId;
 
-	const total = await prisma.payRecords.count({ where });
-	const records = await prisma.payRecords.findMany({
+	const getTotalQuery = prisma.payRecords.count({ where });
+	const getRecordsQuery = prisma.payRecords.findMany({
 		where,
 		skip,
 		take: limit,
@@ -46,6 +48,8 @@ const getPaging = async (request: AuthRequest) => {
 		],
 	});
 
+	const [total, records] = await Promise.all([getTotalQuery, getRecordsQuery]);
+
 	const data = records.map((record) => ({
 		...record,
 		totalHours: Number(record.totalHours),
@@ -53,15 +57,10 @@ const getPaging = async (request: AuthRequest) => {
 		totalPay: Number(record.totalPay),
 	}));
 
-	const summary = data.reduce(
-		(acc, record) => {
-			acc.totalHours += record.totalHours;
-			acc.totalPay += record.totalPay;
-			return acc;
-		},
-		{ totalHours: 0, totalPay: 0 },
-	);
-
+	const summary = {
+		totalHours: sumBy(data, 'totalHours'),
+		totalPay: sumBy(data, 'totalPay'),
+	};
 	return NextResponse.json({ data, total, summary, error: null });
 };
 

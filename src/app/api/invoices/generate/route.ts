@@ -1,3 +1,7 @@
+import { Dictionary } from 'lodash';
+import keyBy from 'lodash/keyBy';
+import map from 'lodash/map';
+import sumBy from 'lodash/sumBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -68,21 +72,17 @@ const generateInvoices = async (request: AuthRequest) => {
 			select: { familyId: true },
 		});
 
-		const existingFamilyIds = new Set(
-			existingInvoices.map((invoice) => invoice.familyId),
-		);
+		const existingFamilyIds = new Set(map(existingInvoices, 'familyId'));
 
-		let previousByFamily = new Map<
-			string,
-			{
-				registrationFee: number;
-				tuitionFee: number;
-				bookFee: number;
-			}
-		>();
+		let previousByFamily: Dictionary<{
+			registrationFee: number;
+			tuitionFee: number;
+			bookFee: number;
+		}> = {};
 
 		if (data.copyFromPreviousMonth) {
 			const previousMonth = getPreviousMonth(data.year, data.month);
+
 			const previousInvoices = await prisma.monthlyInvoices.findMany({
 				where: {
 					year: previousMonth.year,
@@ -98,15 +98,14 @@ const generateInvoices = async (request: AuthRequest) => {
 				},
 			});
 
-			previousByFamily = new Map(
-				previousInvoices.map((invoice) => [
-					invoice.familyId,
-					{
-						registrationFee: Number(invoice.registrationFee),
-						tuitionFee: Number(invoice.tuitionFee),
-						bookFee: Number(invoice.bookFee),
-					},
-				]),
+			previousByFamily = keyBy(
+				map(previousInvoices, (invoice) => ({
+					familyId: invoice.familyId,
+					registrationFee: Number(invoice.registrationFee),
+					tuitionFee: Number(invoice.tuitionFee),
+					bookFee: Number(invoice.bookFee),
+				})),
+				'familyId',
 			);
 		}
 
@@ -115,14 +114,15 @@ const generateInvoices = async (request: AuthRequest) => {
 
 		for (const family of families) {
 			if (existingFamilyIds.has(family.id)) {
-				skipped += 1;
+				skipped++;
 				continue;
 			}
 
-			const studentCount = family.students.filter(
-				(student) => student.enrollments.length > 0,
-			).length;
-			const previous = previousByFamily.get(family.id);
+			const studentCount = sumBy(family.students, ({ enrollments }) =>
+				Number(!!enrollments.length),
+			);
+
+			const previous = previousByFamily[family.id];
 
 			await prisma.monthlyInvoices.create({
 				data: {

@@ -18,6 +18,7 @@ const inviteTeacher = async (
 ) => {
 	try {
 		const { id } = await params;
+
 		const prisma = createClient();
 		const adminClient = createAdminClient();
 

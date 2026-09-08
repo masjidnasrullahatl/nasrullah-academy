@@ -14,6 +14,7 @@ const getYears = async () => {
 	});
 
 	const yearSet = new Set(years.map((item) => item.year));
+
 	yearSet.add(currentYear);
 
 	const data = Array.from(yearSet).sort((a, b) => b - a);

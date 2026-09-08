@@ -9,9 +9,7 @@ import { getCurrentTeacher } from '../../utils';
 const getMyClasses = async (request: AuthRequest) => {
 	const teacher = await getCurrentTeacher(request.user.id);
 
-	if (!teacher) {
-		return notFound('Teacher profile not found');
-	}
+	if (!teacher) return notFound('Teacher profile not found');
 
 	const prisma = createClient();
 

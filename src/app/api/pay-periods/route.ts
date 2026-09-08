@@ -15,12 +15,12 @@ import { CreatePayPeriodSchema } from './types';
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
 
+	const prisma = createClient();
+
 	const page = Number(searchParams.get('page') || 1);
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
 	const status = searchParams.get('status') || '';
-
-	const prisma = createClient();
 	const skip = (page - 1) * limit;
 
 	const where: Prisma.PayPeriodsWhereInput = {};

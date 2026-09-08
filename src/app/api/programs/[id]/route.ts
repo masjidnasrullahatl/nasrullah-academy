@@ -19,6 +19,7 @@ const getDetail = async (
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const program = await prisma.programs.findUnique({
@@ -43,11 +44,11 @@ const update = async (
 
 		const prisma = createClient();
 
-		const existingProgram = await prisma.programs.findUnique({ where: { id } });
+		let program = await prisma.programs.findUnique({ where: { id } });
 
-		if (!existingProgram) return notFound('Program not found');
+		if (!program) return notFound('Program not found');
 
-		if (data.name && data.name !== existingProgram.name) {
+		if (data.name && data.name !== program.name) {
 			const duplicateProgram = await prisma.programs.findFirst({
 				where: {
 					NOT: { id },
@@ -58,7 +59,7 @@ const update = async (
 			if (duplicateProgram) return badRequest('Program name already exists');
 		}
 
-		const program = await prisma.programs.update({
+		program = await prisma.programs.update({
 			where: { id },
 			data: {
 				name: data.name,
@@ -72,16 +73,14 @@ const update = async (
 	} catch (error) {
 		console.log('Update program error', error);
 
-		if (error instanceof ZodError) {
-			return catchZodError(error);
-		}
+		if (error instanceof ZodError) return catchZodError(error);
 
 		return internalServerError();
 	}
 };
 
 const remove = async (
-	request: AuthRequest,
+	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;

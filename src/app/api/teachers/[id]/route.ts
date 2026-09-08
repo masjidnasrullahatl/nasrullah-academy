@@ -19,6 +19,7 @@ const update = async (
 ) => {
 	try {
 		const { id } = await params;
+
 		const body = await request.json();
 		const data = UpdateTeacherSchema.parse(body);
 
@@ -60,6 +61,7 @@ const remove = async (
 	{ params }: ParamsRequest<{ id: string }>,
 ) => {
 	const { id } = await params;
+
 	const prisma = createClient();
 
 	const teacher = await prisma.teachers.findUnique({

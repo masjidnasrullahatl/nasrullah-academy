@@ -21,6 +21,7 @@ const getOne = async (
 	const { id } = await params;
 
 	const prisma = createClient();
+
 	const payPeriod = await prisma.payPeriods.findUnique({
 		where: { id },
 		include: {
@@ -46,9 +47,11 @@ const update = async (
 	try {
 		const { id } = await params;
 		const body = await request.json();
+
 		const payload = UpdatePayPeriodSchema.parse(body);
 
 		const prisma = createClient();
+
 		const existing = await prisma.payPeriods.findUnique({ where: { id } });
 
 		if (!existing) return notFound('Pay period not found');
@@ -61,20 +64,21 @@ const update = async (
 			return badRequest('Cannot lock pay period directly. Use generate pay');
 		}
 
-		if (existing.status === 'OPEN') {
-			if (payload.status === 'PAID') {
-				return badRequest('Cannot mark OPEN pay period as PAID');
-			}
-		} else if (existing.status === 'LOCKED') {
+		if (existing.status === 'OPEN' && payload.status === 'PAID') {
+			return badRequest('Cannot mark OPEN pay period as PAID');
+		}
+
+		if (existing.status === 'LOCKED') {
 			if (payload.status !== 'PAID') {
 				return badRequest('Only status change LOCKED → PAID is allowed');
 			}
 
-			if (
+			const hasPeriodChanges =
 				payload.name !== undefined ||
 				payload.startDate !== undefined ||
-				payload.endDate !== undefined
-			) {
+				payload.endDate !== undefined;
+
+			if (hasPeriodChanges) {
 				return badRequest(
 					'Cannot edit period fields when pay period is LOCKED',
 				);
@@ -92,13 +96,9 @@ const update = async (
 			existing.status === 'LOCKED'
 				? { status: 'PAID' as const }
 				: {
-						...(payload.name !== undefined ? { name: payload.name } : {}),
-						...(payload.startDate !== undefined
-							? { startDate: payload.startDate }
-							: {}),
-						...(payload.endDate !== undefined
-							? { endDate: payload.endDate }
-							: {}),
+						name: payload.name,
+						startDate: payload.startDate,
+						endDate: payload.endDate,
 					};
 
 		const updated = await prisma.payPeriods.update({
@@ -129,11 +129,10 @@ const remove = async (
 	const { id } = await params;
 
 	const prisma = createClient();
+
 	const existing = await prisma.payPeriods.findUnique({ where: { id } });
 
-	if (!existing) {
-		return notFound('Pay period not found');
-	}
+	if (!existing) return notFound('Pay period not found');
 
 	if (existing.status !== 'OPEN') {
 		return badRequest('Cannot delete a locked or paid pay period');
