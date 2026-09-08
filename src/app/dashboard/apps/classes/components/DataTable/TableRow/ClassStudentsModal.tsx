@@ -19,6 +19,7 @@ export const ClassStudentsModal = ({ classId }: ClassStudentsModalProps) => {
 		page: 1,
 		limit: 500,
 	});
+
 	const { mutateAsync: removeStudent, isPending: isRemovingStudent } =
 		useRemoveStudentFromClass();
 

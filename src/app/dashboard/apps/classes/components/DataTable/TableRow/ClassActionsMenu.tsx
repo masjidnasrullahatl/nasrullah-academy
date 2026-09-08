@@ -13,7 +13,7 @@ import { useDeleteClass } from '@hooks/react-query/classes/useDeleteClass';
 import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useUpdateClass } from '@hooks/react-query/classes/useUpdateClass';
 
-import { ClassFormModal } from '../ClassFormModal';
+import { ClassFormModal } from '../../ClassFormModal';
 
 type ClassActionsMenuProps = {
 	classItem: ClassRow;
@@ -41,13 +41,17 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 			},
 		});
 
+		const title =
+			classItem.status === 'ACTIVE' ? 'Class archived' : 'Class activated';
+
+		const message =
+			classItem.status === 'ACTIVE'
+				? 'Class status changed to ARCHIVED'
+				: 'Class status changed to ACTIVE';
+
 		notifications.show({
-			title:
-				classItem.status === 'ACTIVE' ? 'Class archived' : 'Class activated',
-			message:
-				classItem.status === 'ACTIVE'
-					? 'Class status changed to ARCHIVED'
-					: 'Class status changed to ACTIVE',
+			title,
+			message,
 			color: 'green',
 		});
 	};
@@ -60,10 +64,11 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
 				await deleteClass({ id: classItem.id });
+
 				notifications.show({
+					color: 'green',
 					title: 'Class deleted',
 					message: 'Class deleted successfully',
-					color: 'green',
 				});
 			},
 		});
@@ -76,6 +81,7 @@ export const ClassActionsMenu = ({ classItem }: ClassActionsMenuProps) => {
 					<IconDotsVertical size={16} />
 				</ActionIcon>
 			</Menu.Target>
+
 			<Menu.Dropdown>
 				<Menu.Item leftSection={<IconEdit size={14} />} onClick={handleEdit}>
 					Edit

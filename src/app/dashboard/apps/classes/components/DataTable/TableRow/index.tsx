@@ -6,10 +6,9 @@ import { IconChalkboard, IconUsers } from '@tabler/icons-react';
 
 import { ClassRow } from '@hooks/react-query/classes/useGetPagingClasses';
 
-import { AssignTeacherModal } from '../AssignTeacherModal';
-import { ClassStudentsModal } from '../ClassStudentsModal';
-
+import { AssignTeacherModal } from './AssignTeacherModal';
 import { ClassActionsMenu } from './ClassActionsMenu';
+import { ClassStudentsModal } from './ClassStudentsModal';
 
 type Props = {
 	classItem: ClassRow;
