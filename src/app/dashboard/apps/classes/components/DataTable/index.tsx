@@ -52,7 +52,7 @@ export const DataTable = () => {
 	const handleCreate = () => {
 		modals.open({
 			title: 'Create Class',
-			size: 'md',
+			size: 'lg',
 			children: <ClassFormModal />,
 		});
 	};

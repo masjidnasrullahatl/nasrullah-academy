@@ -12,6 +12,8 @@ import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
 import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
+import { inviteTeacherAccount } from '../../utils';
+
 const resendTeacherInvite = async (
 	_: AuthRequest,
 	{ params }: ParamsRequest<{ id: string }>,
@@ -29,8 +31,13 @@ const resendTeacherInvite = async (
 			return badRequest('Teacher email is required to resend invite');
 		}
 
+		// Chưa có tài khoản (tạo giáo viên xong nhưng invite hỏng) → tạo mới
 		if (!teacher.supabaseUserId) {
-			return badRequest('Teacher account has not been created yet');
+			const invite = await inviteTeacherAccount(teacher);
+
+			if ('error' in invite) return badRequest(invite.error);
+
+			return success(teacher);
 		}
 
 		const redirectTo = `${NEXT_PUBLIC_SITE_URL}/auth/password-reset/confirm`;

@@ -76,30 +76,42 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 				firstName: values.firstName,
 				lastName: values.lastName,
 				phoneNumber: values.phoneNumber || null,
-				email: values.email || null,
+				email: values.email,
 				hourlyRate: values.hourlyRate || null,
 				status: values.status,
 			};
 			await updateTeacher({ id: teacher.id, data: payload });
+
+			notifications.show({
+				title: 'Teacher updated',
+				message: 'Teacher updated successfully',
+				color: 'green',
+			});
 		} else {
 			const payload: CreateTeacherPayload = {
 				firstName: values.firstName,
 				lastName: values.lastName,
 				phoneNumber: values.phoneNumber || null,
-				email: values.email || null,
+				email: values.email,
 				hourlyRate: values.hourlyRate || null,
 				status: values.status,
 			};
-			await createTeacher(payload);
-		}
+			const created = await createTeacher(payload);
 
-		notifications.show({
-			title: isEdit ? 'Teacher updated' : 'Teacher created',
-			message: isEdit
-				? 'Teacher updated successfully'
-				: 'Teacher created successfully',
-			color: 'green',
-		});
+			if (created?.inviteError) {
+				notifications.show({
+					color: 'yellow',
+					title: 'Teacher created, invite not sent',
+					message: `${created.inviteError}. Use "Resend Invite" to send it again.`,
+				});
+			} else {
+				notifications.show({
+					title: 'Teacher created',
+					message: 'Teacher created successfully',
+					color: 'green',
+				});
+			}
+		}
 
 		modals.closeAll();
 	};
@@ -140,6 +152,7 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 							flex={1}
 							label="Email"
 							placeholder="teacher@example.com"
+							withAsterisk
 							{...form.getInputProps('email')}
 						/>
 					</Group>

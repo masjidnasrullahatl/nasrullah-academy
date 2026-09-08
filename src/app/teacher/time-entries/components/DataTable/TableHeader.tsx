@@ -6,17 +6,17 @@ export const TableHeader = () => {
 	return (
 		<Table.Thead>
 			<Table.Tr>
-				<Table.Th className={stickyStyles.stickyLeft}>#</Table.Th>
+				<Table.Th w={40} className={stickyStyles.stickyLeft}>
+					#
+				</Table.Th>
 
-				<Table.Th>Name</Table.Th>
+				<Table.Th w={150}>Date</Table.Th>
 
-				<Table.Th>Period</Table.Th>
+				<Table.Th w={250}>Class</Table.Th>
 
-				<Table.Th ta="center">Entries</Table.Th>
+				<Table.Th w={150}>Hours</Table.Th>
 
-				<Table.Th ta="center">Submissions</Table.Th>
-
-				<Table.Th>Status</Table.Th>
+				<Table.Th flex={1}>Notes</Table.Th>
 
 				<Table.Th w={1} ta="center" className={stickyStyles.stickyRight}>
 					Actions

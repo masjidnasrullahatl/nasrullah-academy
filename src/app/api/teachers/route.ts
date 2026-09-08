@@ -9,9 +9,10 @@ import { withStaff } from '@app/api/utils/withStaff';
 import { createClient } from '@helpers/prisma/server';
 
 import { catchZodError } from '../utils/catchZodError';
-import { internalServerError, success } from '../utils/response';
+import { badRequest, internalServerError, success } from '../utils/response';
 
 import { CreateTeacherSchema } from './types';
+import { inviteTeacherAccount } from './utils';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -64,22 +65,32 @@ const create = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
+		const duplicated = await prisma.teachers.findFirst({
+			where: { email: { equals: data.email, mode: 'insensitive' } },
+		});
+
+		if (duplicated) return badRequest('Teacher email already exists');
+
 		const teacher = await prisma.teachers.create({
 			data: {
 				firstName: data.firstName,
 				lastName: data.lastName,
 				phoneNumber: data.phoneNumber || null,
-				email: data.email || null,
+				email: data.email,
 				hourlyRate: data.hourlyRate ?? null,
 				status: data.status,
 			},
 		});
 
+		const invite = await inviteTeacherAccount(teacher);
+		const inviteError = 'error' in invite ? invite.error : null;
+
 		return success({
 			...teacher,
 			hourlyRate:
 				teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
-			hasAccount: Boolean(teacher.supabaseUserId),
+			hasAccount: !inviteError,
+			inviteError,
 		});
 	} catch (error) {
 		console.log('Create teacher error', error);

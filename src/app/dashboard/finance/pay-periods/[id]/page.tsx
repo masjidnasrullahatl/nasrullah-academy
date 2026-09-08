@@ -12,6 +12,7 @@ import {
 	Button,
 	Center,
 	Container,
+	Divider,
 	Group,
 	Loader,
 	Modal,
@@ -28,7 +29,14 @@ import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
-import { IconAlertCircle, IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+	IconAlertCircle,
+	IconCashBanknoteMove,
+	IconCheck,
+	IconEdit,
+	IconPlus,
+	IconTrash,
+} from '@tabler/icons-react';
 import dayjs from 'dayjs';
 
 import {
@@ -38,7 +46,10 @@ import {
 
 import PageHeader from '@components/PageHeader';
 
-import { PAY_PERIOD_STATUS_COLORS, PAY_PERIOD_STATUS_LABELS } from '@configs/enums';
+import {
+	PAY_PERIOD_STATUS_COLORS,
+	PAY_PERIOD_STATUS_LABELS,
+} from '@configs/enums';
 import { PATH_DASHBOARD, PATH_FINANCE } from '@configs/routes';
 
 import { useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClasses';
@@ -78,10 +89,13 @@ export default function PayPeriodDetailPage() {
 
 	const [teacherFilter, setTeacherFilter] = useState<string | null>(null);
 	const [formOpened, setFormOpened] = useState(false);
-	const [editingEntry, setEditingEntry] = useState<StaffTimeEntryRow | null>(null);
+	const [editingEntry, setEditingEntry] = useState<StaffTimeEntryRow | null>(
+		null,
+	);
 	const [submitError, setSubmitError] = useState('');
 
-	const { data: payPeriod, isLoading: isLoadingPayPeriod } = useGetPayPeriod(payPeriodId);
+	const { data: payPeriod, isLoading: isLoadingPayPeriod } =
+		useGetPayPeriod(payPeriodId);
 	const { data: submissions, isLoading: isLoadingSubmissions } =
 		useGetSubmissions(payPeriodId);
 
@@ -118,7 +132,8 @@ export default function PayPeriodDetailPage() {
 			teacherId: (value) => (value ? null : 'Teacher is required'),
 			classId: (value) => (value ? null : 'Class is required'),
 			date: (value) => (value ? null : 'Date is required'),
-			hours: (value) => (value >= 0.25 && value <= 24 ? null : 'Hours must be 0.25 to 24'),
+			hours: (value) =>
+				value >= 0.25 && value <= 24 ? null : 'Hours must be 0.25 to 24',
 		},
 	});
 
@@ -131,11 +146,15 @@ export default function PayPeriodDetailPage() {
 		status: 'ACTIVE',
 	});
 
-	const { mutateAsync: createTimeEntry, isPending: isCreatingEntry } = useCreateTimeEntry();
-	const { mutateAsync: updateTimeEntry, isPending: isUpdatingEntry } = useUpdateTimeEntry();
-	const { mutateAsync: deleteTimeEntry, isPending: isDeletingEntry } = useDeleteTimeEntry();
+	const { mutateAsync: createTimeEntry, isPending: isCreatingEntry } =
+		useCreateTimeEntry();
+	const { mutateAsync: updateTimeEntry, isPending: isUpdatingEntry } =
+		useUpdateTimeEntry();
+	const { mutateAsync: deleteTimeEntry, isPending: isDeletingEntry } =
+		useDeleteTimeEntry();
 
-	const { mutateAsync: generatePay, isPending: isGenerating } = useGeneratePay();
+	const { mutateAsync: generatePay, isPending: isGenerating } =
+		useGeneratePay();
 	const { mutateAsync: updatePayPeriod, isPending: isUpdatingPayPeriod } =
 		useUpdatePayPeriod();
 
@@ -143,7 +162,10 @@ export default function PayPeriodDetailPage() {
 		{ title: 'Dashboard', href: PATH_DASHBOARD.default },
 		{ title: 'Finance', href: PATH_FINANCE.root },
 		{ title: 'Pay Periods', href: PATH_FINANCE.payPeriods },
-		{ title: payPeriod?.name || 'Detail', href: `${PATH_FINANCE.payPeriods}/${payPeriodId}` },
+		{
+			title: payPeriod?.name || 'Detail',
+			href: `${PATH_FINANCE.payPeriods}/${payPeriodId}`,
+		},
 	].map((item, index) => (
 		<Anchor key={index} href={item.href}>
 			{item.title}
@@ -151,7 +173,10 @@ export default function PayPeriodDetailPage() {
 	));
 
 	const timeEntries = timeEntriesResult?.data || [];
-	const totalTimeEntryHours = timeEntries.reduce((sum, item) => sum + item.hours, 0);
+	const totalTimeEntryHours = timeEntries.reduce(
+		(sum, item) => sum + item.hours,
+		0,
+	);
 	const payRecords = payRecordsResult?.data || [];
 
 	const canEditPeriod = payPeriod?.status === 'OPEN';
@@ -223,7 +248,8 @@ export default function PayPeriodDetailPage() {
 				} catch (error) {
 					notifications.show({
 						title: 'Delete failed',
-						message: error instanceof Error ? error.message : 'Unexpected error',
+						message:
+							error instanceof Error ? error.message : 'Unexpected error',
 						color: 'red',
 					});
 				}
@@ -234,8 +260,15 @@ export default function PayPeriodDetailPage() {
 	const handleGeneratePay = () => {
 		modals.openConfirmModal({
 			title: 'Generate pay?',
-			children:
-				'This will lock the period and calculate pay for all teachers. This action cannot be undone. Continue?',
+			children: (
+				<Stack>
+					<Text fz="sm">
+						This will lock the period and calculate pay for all teachers. This
+						action cannot be undone. Continue?
+					</Text>
+					<Divider />
+				</Stack>
+			),
 			labels: { confirm: 'Generate', cancel: 'Cancel' },
 			onConfirm: async () => {
 				try {
@@ -247,9 +280,10 @@ export default function PayPeriodDetailPage() {
 					});
 				} catch (error) {
 					notifications.show({
-						title: 'Generate failed',
-						message: error instanceof Error ? error.message : 'Unexpected error',
 						color: 'red',
+						title: 'Generate failed',
+						message:
+							error instanceof Error ? error.message : 'Unexpected error',
 					});
 				}
 			},
@@ -259,7 +293,12 @@ export default function PayPeriodDetailPage() {
 	const handleMarkAsPaid = () => {
 		modals.openConfirmModal({
 			title: 'Mark as paid?',
-			children: 'This will mark the pay period as PAID.',
+			children: (
+				<Stack>
+					<Text fz="sm">This will mark the pay period as PAID.</Text>
+					<Divider />
+				</Stack>
+			),
 			labels: { confirm: 'Mark as Paid', cancel: 'Cancel' },
 			onConfirm: async () => {
 				try {
@@ -272,7 +311,8 @@ export default function PayPeriodDetailPage() {
 				} catch (error) {
 					notifications.show({
 						title: 'Update failed',
-						message: error instanceof Error ? error.message : 'Unexpected error',
+						message:
+							error instanceof Error ? error.message : 'Unexpected error',
 						color: 'red',
 					});
 				}
@@ -335,7 +375,9 @@ export default function PayPeriodDetailPage() {
 			setFormOpened(false);
 			resetFormState();
 		} catch (error) {
-			setSubmitError(error instanceof Error ? error.message : 'Unexpected error');
+			setSubmitError(
+				error instanceof Error ? error.message : 'Unexpected error',
+			);
 		}
 	};
 
@@ -354,26 +396,43 @@ export default function PayPeriodDetailPage() {
 			<title>{payPeriod.name} | Nasrullah Academy</title>
 			<Container fluid>
 				<Stack>
-					<PageHeader title={payPeriod.name} breadcrumbItems={breadcrumbItems} />
+					<PageHeader
+						title={payPeriod.name}
+						breadcrumbItems={breadcrumbItems}
+					/>
 
 					<Group justify="space-between" wrap="wrap">
 						<Group gap="sm" wrap="wrap">
-							<Badge color={PAY_PERIOD_STATUS_COLORS[payPeriod.status]} variant="light">
+							<Badge
+								color={PAY_PERIOD_STATUS_COLORS[payPeriod.status]}
+								variant="light"
+							>
 								{PAY_PERIOD_STATUS_LABELS[payPeriod.status]}
 							</Badge>
 							<Text c="dimmed">
-								{dayjs(payPeriod.startDate).format('MM/DD/YYYY')} – {dayjs(payPeriod.endDate).format('MM/DD/YYYY')}
+								{dayjs(payPeriod.startDate).format('MM/DD/YYYY')} –{' '}
+								{dayjs(payPeriod.endDate).format('MM/DD/YYYY')}
 							</Text>
 						</Group>
 
 						<Group>
 							{canEditPeriod && (
-								<Button onClick={handleGeneratePay} loading={isGenerating} color="orange">
+								<Button
+									color="orange"
+									onClick={handleGeneratePay}
+									loading={isGenerating}
+									leftSection={<IconCashBanknoteMove />}
+								>
 									Generate Pay
 								</Button>
 							)}
 							{canMarkAsPaid && (
-								<Button onClick={handleMarkAsPaid} loading={isUpdatingPayPeriod} color="teal">
+								<Button
+									onClick={handleMarkAsPaid}
+									loading={isUpdatingPayPeriod}
+									color="teal"
+									leftSection={<IconCheck size={16} />}
+								>
 									Mark as Paid
 								</Button>
 							)}
@@ -384,7 +443,8 @@ export default function PayPeriodDetailPage() {
 						<Group justify="space-between" mb="sm">
 							<Text fw={700}>Submissions Overview</Text>
 							<Text size="sm" c="dimmed">
-								{submissions?.filter((item) => item.submitted).length || 0} / {submissions?.length || 0} submitted
+								{submissions?.filter((item) => item.submitted).length || 0} /{' '}
+								{submissions?.length || 0} submitted
 							</Text>
 						</Group>
 
@@ -396,22 +456,33 @@ export default function PayPeriodDetailPage() {
 							<Table withTableBorder withColumnBorders>
 								<Table.Thead>
 									<Table.Tr>
-										<Table.Th>#</Table.Th>
+										<Table.Th ta="center" w={50}>
+											#
+										</Table.Th>
 										<Table.Th>Teacher</Table.Th>
 										<Table.Th ta="center">Classes</Table.Th>
-										<Table.Th ta="right">Total Hours</Table.Th>
-										<Table.Th>Status</Table.Th>
+										<Table.Th w={120} ta="center">
+											Total Hours
+										</Table.Th>
+										<Table.Th w={150} ta="center">
+											Status
+										</Table.Th>
 									</Table.Tr>
 								</Table.Thead>
 								<Table.Tbody>
 									{submissions?.map((item, index) => (
 										<Table.Tr key={item.teacherId}>
-											<Table.Td>{index + 1}</Table.Td>
+											<Table.Td ta="center">{index + 1}</Table.Td>
 											<Table.Td>{item.teacherName}</Table.Td>
 											<Table.Td ta="center">{item.classCount}</Table.Td>
-											<Table.Td ta="right">{item.totalHours.toFixed(2)}</Table.Td>
-											<Table.Td>
-												<Badge color={item.submitted ? 'green' : 'yellow'} variant="light">
+											<Table.Td ta="center">
+												{item.totalHours.toFixed(2)}
+											</Table.Td>
+											<Table.Td ta="center">
+												<Badge
+													color={item.submitted ? 'green' : 'yellow'}
+													variant="light"
+												>
 													{item.submitted ? 'Submitted' : 'Pending'}
 												</Badge>
 											</Table.Td>
@@ -436,7 +507,10 @@ export default function PayPeriodDetailPage() {
 									onChange={setTeacherFilter}
 								/>
 								{canEditPeriod && (
-									<Button leftSection={<IconPlus size={16} />} onClick={openCreateModal}>
+									<Button
+										leftSection={<IconPlus size={16} />}
+										onClick={openCreateModal}
+									>
 										Add Entry
 									</Button>
 								)}
@@ -451,7 +525,9 @@ export default function PayPeriodDetailPage() {
 							<Table withTableBorder withColumnBorders>
 								<Table.Thead>
 									<Table.Tr>
-										<Table.Th>#</Table.Th>
+										<Table.Th ta="center" w={50}>
+											#
+										</Table.Th>
 										<Table.Th>Teacher</Table.Th>
 										<Table.Th>Date</Table.Th>
 										<Table.Th>Class</Table.Th>
@@ -463,9 +539,11 @@ export default function PayPeriodDetailPage() {
 								<Table.Tbody>
 									{timeEntries.map((entry, index) => (
 										<Table.Tr key={entry.id}>
-											<Table.Td>{index + 1}</Table.Td>
+											<Table.Td ta="center">{index + 1}</Table.Td>
 											<Table.Td>{`${entry.teacher.firstName} ${entry.teacher.lastName}`}</Table.Td>
-											<Table.Td>{dayjs(entry.date).format('MM/DD/YYYY')}</Table.Td>
+											<Table.Td>
+												{dayjs(entry.date).format('MM/DD/YYYY')}
+											</Table.Td>
 											<Table.Td>{entry.class.name}</Table.Td>
 											<Table.Td ta="right">{entry.hours.toFixed(2)}</Table.Td>
 											<Table.Td>{entry.notes || '—'}</Table.Td>
@@ -498,6 +576,9 @@ export default function PayPeriodDetailPage() {
 											</Table.Td>
 										</Table.Tr>
 									))}
+									<Table.Tr h={0}>
+										<Table.Td colSpan={6} p={0} />
+									</Table.Tr>
 								</Table.Tbody>
 								<Table.Tfoot>
 									<Table.Tr>
@@ -528,7 +609,9 @@ export default function PayPeriodDetailPage() {
 								<Table withTableBorder withColumnBorders>
 									<Table.Thead>
 										<Table.Tr>
-											<Table.Th>#</Table.Th>
+											<Table.Th ta="center" w={50}>
+												#
+											</Table.Th>
 											<Table.Th>Teacher</Table.Th>
 											<Table.Th ta="right">Total Hours</Table.Th>
 											<Table.Th ta="right">Rate</Table.Th>
@@ -538,13 +621,23 @@ export default function PayPeriodDetailPage() {
 									<Table.Tbody>
 										{payRecords.map((record, index) => (
 											<Table.Tr key={record.id}>
-												<Table.Td>{index + 1}</Table.Td>
+												<Table.Td ta="center">{index + 1}</Table.Td>
 												<Table.Td>{`${record.teacher.firstName} ${record.teacher.lastName}`}</Table.Td>
-												<Table.Td ta="right">{record.totalHours.toFixed(2)}</Table.Td>
-												<Table.Td ta="right">{formatMoney(record.hourlyRate)}</Table.Td>
-												<Table.Td ta="right">{formatMoney(record.totalPay)}</Table.Td>
+												<Table.Td ta="right">
+													{record.totalHours.toFixed(2)}
+												</Table.Td>
+												<Table.Td ta="right">
+													{formatMoney(record.hourlyRate)}
+												</Table.Td>
+												<Table.Td ta="right">
+													{formatMoney(record.totalPay)}
+												</Table.Td>
 											</Table.Tr>
 										))}
+
+										<Table.Tr>
+											<Table.Td colSpan={5} p={0}></Table.Td>
+										</Table.Tr>
 									</Table.Tbody>
 									<Table.Tfoot>
 										<Table.Tr>
@@ -647,7 +740,10 @@ export default function PayPeriodDetailPage() {
 								>
 									Cancel
 								</Button>
-								<Button type="submit" loading={isCreatingEntry || isUpdatingEntry}>
+								<Button
+									type="submit"
+									loading={isCreatingEntry || isUpdatingEntry}
+								>
 									{editingEntry ? 'Update Entry' : 'Add Entry'}
 								</Button>
 							</Group>

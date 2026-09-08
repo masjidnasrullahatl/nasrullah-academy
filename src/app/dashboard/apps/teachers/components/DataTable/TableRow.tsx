@@ -14,8 +14,8 @@ import stickyStyles from '@styles/sticky-table.module.css';
 import {
 	IconDotsVertical,
 	IconEdit,
+	IconLink,
 	IconMailForward,
-	IconMailPlus,
 	IconPlayerPause,
 	IconPlayerPlay,
 	IconTrash,
@@ -24,8 +24,8 @@ import {
 import { useActivateTeacher } from '@hooks/react-query/teachers/useActivateTeacher';
 import { useDeactivateTeacher } from '@hooks/react-query/teachers/useDeactivateTeacher';
 import { useDeleteTeacher } from '@hooks/react-query/teachers/useDeleteTeacher';
+import { useGetInviteLink } from '@hooks/react-query/teachers/useGetInviteLink';
 import { TeacherRow } from '@hooks/react-query/teachers/useGetPagingTeachers';
-import { useInviteTeacher } from '@hooks/react-query/teachers/useInviteTeacher';
 import { useResendInvite } from '@hooks/react-query/teachers/useResendInvite';
 
 import { formatMoney } from '@utils/money';
@@ -41,10 +41,10 @@ type Props = {
 export const TableRow = ({ teacher, page, index }: Props) => {
 	const { mutateAsync: deleteTeacher, isPending: isDeleting } =
 		useDeleteTeacher();
-	const { mutateAsync: inviteTeacher, isPending: isInviting } =
-		useInviteTeacher();
 	const { mutateAsync: resendInvite, isPending: isResending } =
 		useResendInvite();
+	const { mutateAsync: getInviteLink, isPending: isCopyingLink } =
+		useGetInviteLink();
 	const { mutateAsync: deactivateTeacher, isPending: isDeactivating } =
 		useDeactivateTeacher();
 	const { mutateAsync: activateTeacher, isPending: isActivating } =
@@ -85,15 +85,59 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 		});
 	};
 
-	const handleInvite = (item: TeacherRow) => {
+	const handleResendInvite = (item: TeacherRow) => {
 		modals.openConfirmModal({
-			title: 'Create teacher account?',
-			children: `This will send an invite email to ${item.email}. Continue?`,
-			labels: { confirm: 'Send Invite', cancel: 'Cancel' },
+			title: 'Resend invite?',
+			children: `An email will be sent to ${item.email}.`,
+			labels: { confirm: 'Send', cancel: 'Cancel' },
 			onConfirm: async () => {
-				await inviteTeacher({ id: item.id });
+				try {
+					await resendInvite({ id: item.id });
+
+					notifications.show({
+						color: 'green',
+						title: 'Invite sent',
+						message: `An email was sent to ${item.email}`,
+					});
+				} catch (error) {
+					notifications.show({
+						color: 'red',
+						title: 'Could not send invite',
+						message: error instanceof Error ? error.message : 'Unknown error',
+					});
+				}
 			},
 		});
+	};
+
+	const handleCopyInviteLink = async (item: TeacherRow) => {
+		if (!navigator.clipboard) {
+			notifications.show({
+				color: 'red',
+				title: 'Clipboard unavailable',
+				message: 'Open this page over HTTPS to copy the invite link.',
+			});
+			return;
+		}
+
+		try {
+			const link = await getInviteLink({ id: item.id });
+
+			await navigator.clipboard.writeText(link);
+
+			notifications.show({
+				color: 'green',
+				title: 'Invite link copied',
+				message:
+					'One-time link, expires soon. Anyone who has it can access the account — send it privately to the teacher only.',
+			});
+		} catch (error) {
+			notifications.show({
+				color: 'red',
+				title: 'Could not copy invite link',
+				message: error instanceof Error ? error.message : 'Unknown error',
+			});
+		}
 	};
 
 	const handleDeactivate = (item: TeacherRow) => {
@@ -109,8 +153,7 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 	};
 
 	const hasAccount = Boolean(teacher.supabaseUserId);
-	const canCreateAccount = !hasAccount && Boolean(teacher.email);
-	const canResendInvite = hasAccount && teacher.status === 'ACTIVE';
+	const canResendInvite = teacher.status === 'ACTIVE' && Boolean(teacher.email);
 	const canDeactivate = hasAccount && teacher.status === 'ACTIVE';
 	const canActivate = hasAccount && teacher.status === 'INACTIVE';
 
@@ -171,23 +214,23 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 							</ActionIcon>
 						</Menu.Target>
 						<Menu.Dropdown>
-							{canCreateAccount && (
+							{canResendInvite && (
 								<Menu.Item
-									leftSection={<IconMailPlus size={14} />}
-									onClick={() => handleInvite(teacher)}
-									disabled={isInviting}
+									leftSection={<IconMailForward size={14} />}
+									onClick={() => handleResendInvite(teacher)}
+									disabled={isResending}
 								>
-									Create Account
+									Resend Invite
 								</Menu.Item>
 							)}
 
 							{canResendInvite && (
 								<Menu.Item
-									leftSection={<IconMailForward size={14} />}
-									onClick={() => resendInvite({ id: teacher.id })}
-									disabled={isResending}
+									leftSection={<IconLink size={14} />}
+									onClick={() => handleCopyInviteLink(teacher)}
+									disabled={isCopyingLink}
 								>
-									Resend Invite
+									Copy invite link
 								</Menu.Item>
 							)}
 

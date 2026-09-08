@@ -1,5 +1,3 @@
-import { notifications } from '@mantine/notifications';
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { QUERY_KEYS } from '@configs/query-key';
@@ -20,11 +18,8 @@ export const useResendInvite = () => {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TEACHERS.GET_PAGING] });
-			notifications.show({
-				title: 'Invite resent',
-				message: 'Teacher invite email resent successfully',
-				color: 'green',
+			queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.TEACHERS.GET_PAGING],
 			});
 		},
 	});
