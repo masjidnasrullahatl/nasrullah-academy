@@ -98,6 +98,7 @@ const PageHeader = (props: PageHeaderProps) => {
 					>
 						<Stack>
 							<Title order={3}>{title}</Title>
+
 							{breadcrumbItems && (
 								<Breadcrumbs {...BREADCRUMBS_PROPS}>
 									{breadcrumbItems}
