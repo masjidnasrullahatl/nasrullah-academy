@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import countBy from 'lodash/countBy';
 import filter from 'lodash/filter';
+import sortBy from 'lodash/sortBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -48,7 +49,10 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		orderBy: { name: 'asc' },
-		include: { students: true },
+		include: {
+			students: true,
+			programs: { include: { program: { select: { id: true, name: true } } } },
+		},
 		where,
 	});
 
@@ -61,6 +65,10 @@ const getPaging = async (request: AuthRequest) => {
 			studentCount: activeStudents.length,
 			boysCount: genderCounts.BOY ?? 0,
 			girlsCount: genderCounts.GIRL ?? 0,
+			programs: sortBy(
+				family.programs.map((item) => item.program),
+				'name',
+			),
 		};
 	});
 
@@ -99,6 +107,9 @@ const create = async (request: AuthRequest) => {
 				status: payload.status,
 				notes: payload.notes || null,
 				students: { create: studentsPayload },
+				programs: {
+					create: payload.programIds.map((programId) => ({ programId })),
+				},
 			},
 			include: { students: true },
 		});

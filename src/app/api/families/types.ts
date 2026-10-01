@@ -28,6 +28,7 @@ export const CreateFamilySchema = z.object({
 	address: z.string().optional().nullable(),
 	status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
 	notes: z.string().optional().nullable(),
+	programIds: z.array(z.string()).default([]),
 	students: z.array(StudentInputSchema).default([]),
 });
 

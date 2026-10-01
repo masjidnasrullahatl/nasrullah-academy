@@ -2,6 +2,7 @@ import {
 	Classes,
 	Enrollments,
 	Families,
+	Programs,
 	Students,
 	Teachers,
 } from '@prisma/client';
@@ -23,6 +24,7 @@ export type FamilyStudent = Students & {
 
 export type FamilyDetail = Families & {
 	students: FamilyStudent[];
+	programs: Pick<Programs, 'id' | 'name'>[];
 };
 
 export const useGetFamilyDetail = (id?: string) => {

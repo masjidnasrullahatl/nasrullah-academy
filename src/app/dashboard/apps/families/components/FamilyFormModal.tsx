@@ -8,6 +8,7 @@ import {
 	Divider,
 	Grid,
 	Group,
+	MultiSelect,
 	Select,
 	Stack,
 	Text,
@@ -33,6 +34,7 @@ import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useCreateFamily } from '@hooks/react-query/families/useCreateFamily';
 import { useUpdateFamily } from '@hooks/react-query/families/useUpdateFamily';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 type FamilyFormModalProps = {
 	family?: any;
@@ -58,6 +60,7 @@ type FamilyFormValue = {
 	address: string;
 	status: 'ACTIVE' | 'INACTIVE';
 	notes: string;
+	programIds: string[];
 	students: StudentFormValue[];
 };
 
@@ -96,6 +99,8 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 		error: updateError,
 	} = useUpdateFamily();
 
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
+
 	const isEdit = Boolean(family?.id);
 	const isPending = isCreating || isUpdating;
 
@@ -110,6 +115,7 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 			address: family?.address || '',
 			status: family?.status || 'ACTIVE',
 			notes: family?.notes || '',
+			programIds: family?.programs?.map((program: any) => program.id) || [],
 			students:
 				family?.students?.map((student: any) => ({
 					id: student.id,
@@ -145,6 +151,7 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 			address: values.address || null,
 			status: values.status,
 			notes: values.notes || null,
+			programIds: values.programIds,
 			students: values.students.map((student) => ({
 				id: student.id,
 				firstName: student.firstName,
@@ -250,6 +257,19 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 								label="Address"
 								placeholder="1234 Main St, Atlanta, GA"
 								{...form.getInputProps('address')}
+							/>
+						</Grid.Col>
+						<Grid.Col span={12}>
+							<MultiSelect
+								label="Programs"
+								placeholder="Select programs"
+								searchable
+								clearable
+								data={programs?.data.map((program) => ({
+									value: program.id,
+									label: program.name,
+								}))}
+								{...form.getInputProps('programIds')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={12}>

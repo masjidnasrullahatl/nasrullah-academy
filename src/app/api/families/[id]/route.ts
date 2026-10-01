@@ -1,5 +1,6 @@
 import filter from 'lodash/filter';
 import keyBy from 'lodash/keyBy';
+import sortBy from 'lodash/sortBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
@@ -32,12 +33,19 @@ const getDetail = async (
 				},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
+			programs: { include: { program: { select: { id: true, name: true } } } },
 		},
 	});
 
 	if (!family) return notFound('Family not found');
 
-	return success(family);
+	return success({
+		...family,
+		programs: sortBy(
+			family.programs.map((item) => item.program),
+			'name',
+		),
+	});
 };
 
 const update = async (
@@ -74,6 +82,17 @@ const update = async (
 					notes: payload.notes || null,
 				},
 			});
+
+			await tx.familyPrograms.deleteMany({ where: { familyId: id } });
+
+			if (payload.programIds.length) {
+				await tx.familyPrograms.createMany({
+					data: payload.programIds.map((programId) => ({
+						familyId: id,
+						programId,
+					})),
+				});
+			}
 
 			const payloadById = keyBy(filter(payload.students, 'id'), 'id');
 
