@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import countBy from 'lodash/countBy';
 import filter from 'lodash/filter';
+import flatMap from 'lodash/flatMap';
+import sortBy from 'lodash/sortBy';
+import uniqBy from 'lodash/uniqBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -48,19 +51,42 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		orderBy: { name: 'asc' },
-		include: { students: true },
+		include: {
+			students: {
+				include: {
+					enrollments: {
+						where: { status: 'ACTIVE' },
+						select: {
+							class: {
+								select: { program: { select: { id: true, name: true } } },
+							},
+						},
+					},
+				},
+			},
+		},
 		where,
 	});
 
 	const data = families.map((family) => {
 		const activeStudents = filter(family.students, { status: 'ACTIVE' });
 		const genderCounts = countBy(activeStudents, 'gender');
+		const programs = sortBy(
+			uniqBy(
+				flatMap(activeStudents, (student) =>
+					student.enrollments.map((enrollment) => enrollment.class.program),
+				),
+				'id',
+			),
+			'name',
+		);
 
 		return {
 			...family,
 			studentCount: activeStudents.length,
 			boysCount: genderCounts.BOY ?? 0,
 			girlsCount: genderCounts.GIRL ?? 0,
+			programs,
 		};
 	});
 

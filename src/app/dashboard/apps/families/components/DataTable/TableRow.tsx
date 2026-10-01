@@ -82,6 +82,22 @@ export const TableRow = ({ family, page, index }: Props) => {
 				</Stack>
 			</Table.Td>
 
+			<Table.Td>
+				{family.programs.length ? (
+					<Group gap={4}>
+						{family.programs.map((program: any) => (
+							<Badge key={program.id} variant="light">
+								{program.name}
+							</Badge>
+						))}
+					</Group>
+				) : (
+					<Text size="sm" c="dimmed">
+						—
+					</Text>
+				)}
+			</Table.Td>
+
 			<Table.Td w={100} ta="center" c="green" fw={700}>
 				{family.studentCount}
 			</Table.Td>
