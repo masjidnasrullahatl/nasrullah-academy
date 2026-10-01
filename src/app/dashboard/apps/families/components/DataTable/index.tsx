@@ -18,9 +18,11 @@ import { TableRow } from './TableRow';
 
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
-	const [filter, setFilter] = useState<{ keyword?: string; status?: string }>(
-		{},
-	);
+	const [filter, setFilter] = useState<{
+		keyword?: string;
+		programId?: string;
+		status?: string;
+	}>({});
 
 	const {
 		data: families,
@@ -31,10 +33,14 @@ export const DataTable = () => {
 		page,
 		limit: 10,
 		keyword: filter.keyword,
+		programId: filter.programId,
 		status: filter.status as any,
 	});
 
-	const handleChangeFilter = (key: 'keyword' | 'status', value: string) => {
+	const handleChangeFilter = (
+		key: 'keyword' | 'programId' | 'status',
+		value: string,
+	) => {
 		setFilter({ ...filter, [key]: value });
 		setPage(1);
 	};

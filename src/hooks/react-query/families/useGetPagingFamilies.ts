@@ -23,6 +23,7 @@ export const useGetPagingFamilies = (params: GetFamiliesQueryParams) => {
 				page: params.page.toString(),
 				limit: params.limit.toString(),
 				keyword: params.keyword || '',
+				programId: params.programId || '',
 				status: params.status || '',
 			});
 
