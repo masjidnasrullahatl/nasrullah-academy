@@ -61,6 +61,7 @@ model Programs {
 	description String?
 	status      ArchiveStatus @default(ACTIVE)
 	classes     Classes[]
+	families    FamilyPrograms[]
 
 	invoices    MonthlyInvoices[]
 
@@ -85,12 +86,27 @@ model Families {
 
 	students Students[]
 	invoices MonthlyInvoices[]
+	programs FamilyPrograms[]
 
 	createdAt DateTime @default(now()) @map("created_at")
 	updatedAt DateTime @updatedAt @map("updated_at")
 
 	@@index([name])
 	@@map("families")
+}
+
+model FamilyPrograms {
+	familyId String   @map("family_id")
+	family   Families @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+	programId String   @map("program_id")
+	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+	createdAt DateTime @default(now()) @map("created_at")
+
+	@@id([familyId, programId])
+	@@index([programId])
+	@@map("family_programs")
 }
 
 model Students {
