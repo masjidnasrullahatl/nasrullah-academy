@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Group, Table, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Group, Table, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -55,6 +55,22 @@ export const TableRow = ({ student, page, index, pageSize }: Props) => {
 			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
 
 			<Table.Td>{student.family?.name}</Table.Td>
+
+			<Table.Td>
+				{student.programs?.length ? (
+					<Group gap={4}>
+						{student.programs.map((program: any) => (
+							<Badge key={program.id} variant="light">
+								{program.name}
+							</Badge>
+						))}
+					</Group>
+				) : (
+					<Text size="sm" c="dimmed">
+						—
+					</Text>
+				)}
+			</Table.Td>
 
 			<Table.Td w={60}>{student.gender}</Table.Td>
 

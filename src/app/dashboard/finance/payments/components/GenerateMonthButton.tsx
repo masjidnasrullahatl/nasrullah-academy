@@ -18,6 +18,7 @@ import { ModalFooter } from '@components/ModalFooter';
 import { MONTH_OPTIONS } from '@configs/enums';
 
 import { useGenerateInvoices } from '@hooks/react-query/invoices/useGenerateInvoices';
+import { useGetPagingInvoices } from '@hooks/react-query/invoices/useGetPagingInvoices';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 type GenerateMonthButtonProps = {
@@ -33,12 +34,22 @@ export const GenerateMonthButton = ({
 	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { mutateAsync: generateInvoices, isPending } = useGenerateInvoices();
 
+	const { data: existingInvoices } = useGetPagingInvoices({
+		page: 1,
+		limit: 1,
+		year,
+		month,
+		programId: programId || undefined,
+	});
+
+	const isGenerated = Boolean(year && month && existingInvoices?.total);
+
 	const monthLabel = month
 		? MONTH_OPTIONS.find((item) => Number(item.value) === month)?.label || month
 		: '-';
 
 	const handleGenerate = () => {
-		if (!year || !month) return;
+		if (!year || !month || isGenerated) return;
 
 		const targetYear = year;
 		const targetMonth = month;
@@ -69,17 +80,25 @@ export const GenerateMonthButton = ({
 						<Button
 							loading={isPending}
 							onClick={async () => {
-								const result = await generateInvoices({
-									year: targetYear,
-									month: targetMonth,
-									programId,
-								});
+								try {
+									const result = await generateInvoices({
+										year: targetYear,
+										month: targetMonth,
+										programId,
+									});
 
-								notifications.show({
-									title: 'Invoices generated',
-									message: `Created ${result.created} invoices, skipped ${result.skipped} existing`,
-									color: 'green',
-								});
+									notifications.show({
+										title: 'Invoices generated',
+										message: `Created ${result.created} invoices`,
+										color: 'green',
+									});
+								} catch (error: any) {
+									notifications.show({
+										title: 'Not generated',
+										message: error.message,
+										color: 'red',
+									});
+								}
 
 								modals.closeAll();
 							}}
@@ -110,18 +129,20 @@ export const GenerateMonthButton = ({
 
 			<Tooltip
 				label={
-					year && month
-						? 'Generate invoices for selected month'
-						: 'Select year and month first'
+					!year || !month
+						? 'Select year and month first'
+						: isGenerated
+							? `${monthLabel} ${year} has already been generated`
+							: 'Generate invoices for selected month'
 				}
 			>
 				<Button
 					onClick={handleGenerate}
 					leftSection={<IconSparkles size={16} />}
 					loading={isPending}
-					disabled={!year || !month}
+					disabled={!year || !month || isGenerated}
 				>
-					Generate month
+					{isGenerated ? 'Month generated' : 'Generate month'}
 				</Button>
 			</Tooltip>
 		</Group>

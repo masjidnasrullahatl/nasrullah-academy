@@ -2,7 +2,11 @@ import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
-import { internalServerError, success } from '@app/api/utils/response';
+import {
+	badRequest,
+	internalServerError,
+	success,
+} from '@app/api/utils/response';
 import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
@@ -21,6 +25,20 @@ const generateInvoices = async (request: AuthRequest) => {
 		const data = GenerateInvoicesSchema.parse(body);
 
 		const prisma = createClient();
+
+		const alreadyGenerated = await prisma.monthlyInvoices.count({
+			where: {
+				year: data.year,
+				month: data.month,
+				...(data.programId ? { programId: data.programId } : {}),
+			},
+		});
+
+		if (alreadyGenerated) {
+			return badRequest(
+				'This month has already been generated. Use "Add payment row" for any family that is missing.',
+			);
+		}
 
 		const familyPrograms = await prisma.familyPrograms.findMany({
 			where: {

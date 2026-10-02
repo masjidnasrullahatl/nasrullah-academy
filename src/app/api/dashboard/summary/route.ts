@@ -8,12 +8,13 @@ import { createClient } from '@helpers/prisma/server';
 
 import {
 	aggregateClasses,
-	aggregateEnrollments,
 	aggregateExpenses,
+	aggregateStudentPrograms,
 	buildClassProfitLoss,
 	buildEnumBreakdown,
 	buildMonthly,
 	buildProgramSummary,
+	countEnrollmentsByClass,
 	PAY_METHOD_ORDER,
 	PAYMENT_STATUS_ORDER,
 	toNumber,
@@ -63,6 +64,7 @@ const getSummary = async (request: AuthRequest) => {
 		programRevenueGroups,
 		expenseEntries,
 		programs,
+		studentPrograms,
 	] = await Promise.all([
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
@@ -137,6 +139,16 @@ const getSummary = async (request: AuthRequest) => {
 			select: { id: true, name: true },
 			orderBy: { name: 'asc' },
 		}),
+		prisma.studentPrograms.findMany({
+			where: {
+				program: programId ? { id: programId } : { status: 'ACTIVE' },
+				student: { status: 'ACTIVE', family: { status: 'ACTIVE' } },
+			},
+			select: {
+				programId: true,
+				student: { select: { id: true, gender: true, familyId: true } },
+			},
+		}),
 	]);
 
 	const unpaidByMonth = new Map(
@@ -159,8 +171,10 @@ const getSummary = async (request: AuthRequest) => {
 		byProgram: expenseByProgram,
 	} = aggregateExpenses(expenseEntries);
 
-	const { students, families, boys, girls, countByClass, studentIdsByProgram } =
-		aggregateEnrollments(activeEnrollments);
+	const countByClass = countEnrollmentsByClass(activeEnrollments);
+
+	const { students, families, boys, girls, studentIdsByProgram } =
+		aggregateStudentPrograms(studentPrograms);
 
 	const { enrollmentsByProgram, classesByProgram } = aggregateClasses(
 		activeClasses,

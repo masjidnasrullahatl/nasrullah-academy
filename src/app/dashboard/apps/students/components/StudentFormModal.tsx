@@ -1,4 +1,12 @@
-import { Alert, Button, Grid, Select, Stack, TextInput } from '@mantine/core';
+import {
+	Alert,
+	Button,
+	Grid,
+	MultiSelect,
+	Select,
+	Stack,
+	TextInput,
+} from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
@@ -17,6 +25,7 @@ import { ModalFooter } from '@components/ModalFooter';
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 import { useCreateStudent } from '@hooks/react-query/students/useCreateStudent';
 import { useUpdateStudent } from '@hooks/react-query/students/useUpdateStudent';
 
@@ -33,6 +42,7 @@ type StudentFormValue = {
 	dateOfBirth: Date | null;
 	status: 'ACTIVE' | 'INACTIVE';
 	notes: string;
+	programIds: string[];
 };
 
 export const StudentFormModal = ({
@@ -43,6 +53,7 @@ export const StudentFormModal = ({
 		page: 1,
 		limit: 1000,
 	});
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const { mutateAsync: createStudent, isPending: isCreating, error: createError } =
 		useCreateStudent();
@@ -62,9 +73,28 @@ export const StudentFormModal = ({
 			dateOfBirth: student?.dateOfBirth ? new Date(student.dateOfBirth) : null,
 			status: student?.status || 'ACTIVE',
 			notes: student?.notes || '',
+			programIds:
+				student?.programs?.map((program: any) => program.id) ||
+				families?.data
+					.find((family) => family.id === defaultFamilyId)
+					?.programs.map((program) => program.id) ||
+				[],
 		},
 		validate: zod4Resolver(CreateStudentSchema),
 	});
+
+	const handleChangeFamily = (familyId: string | null) => {
+		form.setFieldValue('familyId', familyId || '');
+
+		if (isEdit) return;
+
+		form.setFieldValue(
+			'programIds',
+			families?.data
+				.find((family) => family.id === familyId)
+				?.programs.map((program) => program.id) || [],
+		);
+	};
 
 	const handleSubmit = async (values: StudentFormValue) => {
 		const payload: CreateStudentPayload = {
@@ -75,6 +105,7 @@ export const StudentFormModal = ({
 			dateOfBirth: values.dateOfBirth ? values.dateOfBirth.toISOString().split('T')[0] : null,
 			status: values.status,
 			notes: values.notes || null,
+			programIds: values.programIds,
 		};
 
 		if (isEdit) {
@@ -117,6 +148,7 @@ export const StudentFormModal = ({
 								searchable
 								withAsterisk
 								{...form.getInputProps('familyId')}
+								onChange={handleChangeFamily}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 3 }}>
@@ -161,6 +193,19 @@ export const StudentFormModal = ({
 								onChange={(value) =>
 									form.setFieldValue('dateOfBirth', (value as Date | null) || null)
 								}
+							/>
+						</Grid.Col>
+						<Grid.Col span={12}>
+							<MultiSelect
+								label="Programs"
+								placeholder="Select programs"
+								searchable
+								clearable
+								data={programs?.data.map((program) => ({
+									value: program.id,
+									label: program.name,
+								}))}
+								{...form.getInputProps('programIds')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>

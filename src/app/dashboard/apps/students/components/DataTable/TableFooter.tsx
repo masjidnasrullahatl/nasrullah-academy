@@ -29,7 +29,7 @@ export const TableFooter = ({
 			}}
 		>
 			<Table.Tr>
-				<Table.Td colSpan={6} fw={700} className={stickyStyles.stickyLeft}>
+				<Table.Td colSpan={7} fw={700} className={stickyStyles.stickyLeft}>
 					<TablePagination
 						total={total}
 						page={page}

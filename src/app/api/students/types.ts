@@ -23,9 +23,12 @@ export const StudentInputSchema = z.object({
 
 export const CreateStudentSchema = StudentInputSchema.extend({
 	familyId: z.string().min(1, 'Family is required'),
+	programIds: z.array(z.string()).default([]),
 });
 
-export const UpdateStudentSchema = CreateStudentSchema;
+export const UpdateStudentSchema = CreateStudentSchema.extend({
+	programIds: z.array(z.string()).optional(),
+});
 
 export type CreateStudentPayload = z.infer<typeof CreateStudentSchema>;
 export type UpdateStudentPayload = z.infer<typeof UpdateStudentSchema>;

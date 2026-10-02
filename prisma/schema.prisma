@@ -62,6 +62,7 @@ model Programs {
 	status      ArchiveStatus @default(ACTIVE)
 	classes     Classes[]
 	families    FamilyPrograms[]
+	students    StudentPrograms[]
 
 	invoices    MonthlyInvoices[]
 
@@ -112,6 +113,20 @@ model FamilyPrograms {
 	@@map("family_programs")
 }
 
+model StudentPrograms {
+	studentId String   @map("student_id")
+	student   Students @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+	programId String   @map("program_id")
+	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+	createdAt DateTime @default(now()) @map("created_at")
+
+	@@id([studentId, programId])
+	@@index([programId])
+	@@map("student_programs")
+}
+
 model Students {
 	id String @id @default(uuid())
 
@@ -127,6 +142,7 @@ model Students {
 	family   Families @relation(fields: [familyId], references: [id], onDelete: Cascade)
 
 	enrollments Enrollments[]
+	programs    StudentPrograms[]
 
 	createdAt DateTime @default(now()) @map("created_at")
 	updatedAt DateTime @updatedAt @map("updated_at")

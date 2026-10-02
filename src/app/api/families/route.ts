@@ -93,6 +93,9 @@ const create = async (request: AuthRequest) => {
 			dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth) : null,
 			status: student.status,
 			notes: student.notes || null,
+			programs: {
+				create: payload.programs.map(({ programId }) => ({ programId })),
+			},
 		}));
 
 		const family = await prisma.families.create({
