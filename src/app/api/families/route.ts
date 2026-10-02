@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import countBy from 'lodash/countBy';
 import filter from 'lodash/filter';
-import sortBy from 'lodash/sortBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -15,6 +14,7 @@ import { catchZodError } from '../utils/catchZodError';
 import { internalServerError, success } from '../utils/response';
 
 import { CreateFamilySchema } from './types';
+import { familyProgramsInclude, mapFamilyPrograms } from './utils';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -54,7 +54,7 @@ const getPaging = async (request: AuthRequest) => {
 		orderBy: { name: 'asc' },
 		include: {
 			students: true,
-			programs: { include: { program: { select: { id: true, name: true } } } },
+			programs: familyProgramsInclude,
 		},
 		where,
 	});
@@ -68,10 +68,7 @@ const getPaging = async (request: AuthRequest) => {
 			studentCount: activeStudents.length,
 			boysCount: genderCounts.BOY ?? 0,
 			girlsCount: genderCounts.GIRL ?? 0,
-			programs: sortBy(
-				family.programs.map((item) => item.program),
-				'name',
-			),
+			programs: mapFamilyPrograms(family.programs),
 		};
 	});
 
@@ -111,7 +108,7 @@ const create = async (request: AuthRequest) => {
 				notes: payload.notes || null,
 				students: { create: studentsPayload },
 				programs: {
-					create: payload.programIds.map((programId) => ({ programId })),
+					create: payload.programs,
 				},
 			},
 			include: { students: true },

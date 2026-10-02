@@ -1,7 +1,3 @@
-import { Dictionary } from 'lodash';
-import keyBy from 'lodash/keyBy';
-import map from 'lodash/map';
-import sumBy from 'lodash/sumBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -26,138 +22,74 @@ const generateInvoices = async (request: AuthRequest) => {
 
 		const prisma = createClient();
 
-		const families = await prisma.families.findMany({
+		const familyPrograms = await prisma.familyPrograms.findMany({
 			where: {
-				status: 'ACTIVE',
-				students: {
-					some: {
-						status: 'ACTIVE',
-						enrollments: {
-							some: {
-								status: 'ACTIVE',
-								class: { status: 'ACTIVE', programId: data.programId },
-							},
-						},
-					},
-				},
+				...(data.programId ? { programId: data.programId } : {}),
+				family: { status: 'ACTIVE' },
+				program: { status: 'ACTIVE' },
 			},
-			include: {
-				students: {
-					where: { status: 'ACTIVE' },
-					include: {
-						enrollments: {
-							select: { id: true },
-							where: {
-								status: 'ACTIVE',
-								class: { status: 'ACTIVE', programId: data.programId },
-							},
-						},
-					},
-				},
-			},
-			orderBy: [{ name: 'asc' }],
 		});
 
-		if (!families.length) return success({ created: 0, skipped: 0 });
-
-		const familyIds = families.map((family) => family.id);
+		if (!familyPrograms.length) return success({ created: 0, skipped: 0 });
 
 		const existingInvoices = await prisma.monthlyInvoices.findMany({
 			where: {
 				year: data.year,
 				month: data.month,
-				familyId: { in: familyIds },
-				programId: data.programId,
+				...(data.programId ? { programId: data.programId } : {}),
 			},
-			select: { familyId: true },
+			select: { familyId: true, programId: true },
 		});
 
-		const existingFamilyIds = new Set(map(existingInvoices, 'familyId'));
+		const existingKeys = new Set(
+			existingInvoices.map((invoice) => `${invoice.familyId}:${invoice.programId}`),
+		);
 
-		let previousByFamily: Dictionary<{
-			registrationFee: number;
-			tuitionFee: number;
-			bookFee: number;
-		}> = {};
+		const previousMonth = getPreviousMonth(data.year, data.month);
 
-		if (data.copyFromPreviousMonth) {
-			const previousMonth = getPreviousMonth(data.year, data.month);
+		const previousInvoices = await prisma.monthlyInvoices.findMany({
+			where: {
+				year: previousMonth.year,
+				month: previousMonth.month,
+				payMethod: { not: 'NA' },
+				...(data.programId ? { programId: data.programId } : {}),
+			},
+			select: { familyId: true, programId: true, payMethod: true },
+		});
 
-			const previousInvoices = await prisma.monthlyInvoices.findMany({
-				where: {
-					year: previousMonth.year,
-					month: previousMonth.month,
-					familyId: { in: familyIds },
-					programId: data.programId,
-				},
-				select: {
-					familyId: true,
-					registrationFee: true,
-					tuitionFee: true,
-					bookFee: true,
-				},
-			});
+		const previousPayMethods = new Map(
+			previousInvoices.map((invoice) => [
+				`${invoice.familyId}:${invoice.programId}`,
+				invoice.payMethod,
+			]),
+		);
 
-			previousByFamily = keyBy(
-				map(previousInvoices, (invoice) => ({
-					familyId: invoice.familyId,
-					registrationFee: Number(invoice.registrationFee),
-					tuitionFee: Number(invoice.tuitionFee),
-					bookFee: Number(invoice.bookFee),
-				})),
-				'familyId',
-			);
-		}
+		const toCreate = familyPrograms.filter(
+			(item) => !existingKeys.has(`${item.familyId}:${item.programId}`),
+		);
 
-		let created = 0;
-		let skipped = 0;
+		const { count } = await prisma.monthlyInvoices.createMany({
+			data: toCreate.map((item) => ({
+				familyId: item.familyId,
+				programId: item.programId,
+				year: data.year,
+				month: data.month,
+				studentCount: item.studentCount,
+				tuitionFee: item.monthlyFee,
+				totalDue: item.monthlyFee,
+				balance: item.monthlyFee,
+				payMethod:
+					previousPayMethods.get(`${item.familyId}:${item.programId}`) ||
+					'NA',
+				paymentStatus: 'UNPAID',
+			})),
+			skipDuplicates: true,
+		});
 
-		for (const family of families) {
-			if (existingFamilyIds.has(family.id)) {
-				skipped++;
-				continue;
-			}
-
-			const studentCount = sumBy(family.students, ({ enrollments }) =>
-				Number(!!enrollments.length),
-			);
-
-			const previous = previousByFamily[family.id];
-
-			await prisma.monthlyInvoices.create({
-				data: {
-					familyId: family.id,
-					programId: data.programId,
-					year: data.year,
-					month: data.month,
-					studentCount,
-					registrationFee: previous?.registrationFee || 0,
-					tuitionFee: previous?.tuitionFee || 0,
-					bookFee: previous?.bookFee || 0,
-					totalDue:
-						(previous?.registrationFee || 0) +
-						(previous?.tuitionFee || 0) +
-						(previous?.bookFee || 0),
-					paidRegistrationFee: 0,
-					paidTuitionFee: 0,
-					paidBookFee: 0,
-					extraPaid: 0,
-					totalPaid: 0,
-					balance:
-						(previous?.registrationFee || 0) +
-						(previous?.tuitionFee || 0) +
-						(previous?.bookFee || 0),
-					payMethod: 'NA',
-					paymentStatus: 'UNPAID',
-					paidAt: null,
-					notes: null,
-				},
-			});
-
-			created += 1;
-		}
-
-		return success({ created, skipped });
+		return success({
+			created: count,
+			skipped: familyPrograms.length - count,
+		});
 	} catch (error) {
 		console.log('Generate invoices error', error);
 

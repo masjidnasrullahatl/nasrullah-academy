@@ -102,6 +102,9 @@ model FamilyPrograms {
 	programId String   @map("program_id")
 	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
 
+	studentCount Int     @default(0) @map("student_count")
+	monthlyFee   Decimal @default(0) @map("monthly_fee") @db.Decimal(10, 2)
+
 	createdAt DateTime @default(now()) @map("created_at")
 
 	@@id([familyId, programId])

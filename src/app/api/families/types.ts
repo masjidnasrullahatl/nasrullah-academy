@@ -19,6 +19,12 @@ export const StudentInputSchema = z.object({
 	notes: z.string().optional().nullable(),
 });
 
+export const FamilyProgramInputSchema = z.object({
+	programId: z.string().min(1),
+	studentCount: z.number().int().min(0).default(0),
+	monthlyFee: z.number().min(0).default(0),
+});
+
 export const CreateFamilySchema = z.object({
 	name: z.string().min(1, 'Family / parent name is required'),
 	fatherName: z.string().optional().nullable(),
@@ -29,12 +35,13 @@ export const CreateFamilySchema = z.object({
 	address: z.string().optional().nullable(),
 	status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
 	notes: z.string().optional().nullable(),
-	programIds: z.array(z.string()).default([]),
+	programs: z.array(FamilyProgramInputSchema).default([]),
 	students: z.array(StudentInputSchema).default([]),
 });
 
 export const UpdateFamilySchema = CreateFamilySchema;
 
+export type FamilyProgramInput = z.infer<typeof FamilyProgramInputSchema>;
 export type StudentInput = z.infer<typeof StudentInputSchema>;
 export type CreateFamilyPayload = z.infer<typeof CreateFamilySchema>;
 export type UpdateFamilyPayload = z.infer<typeof UpdateFamilySchema>;

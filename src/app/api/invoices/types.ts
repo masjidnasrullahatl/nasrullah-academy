@@ -46,8 +46,7 @@ export const UpdateInvoiceSchema = CreateInvoiceSchema.omit({
 export const GenerateInvoicesSchema = z.object({
 	year: z.number().int(),
 	month: z.number().int().min(1).max(12),
-	programId: z.string().min(1, 'Program is required'),
-	copyFromPreviousMonth: z.boolean().default(false),
+	programId: z.string().optional().nullable(),
 });
 
 export type CreateInvoicePayload = z.infer<typeof CreateInvoiceSchema>;

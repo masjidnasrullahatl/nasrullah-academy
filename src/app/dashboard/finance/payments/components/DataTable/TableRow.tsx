@@ -4,7 +4,6 @@ import { notifications } from '@mantine/notifications';
 
 import stickyStyles from '@styles/sticky-table.module.css';
 import { IconCheck, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
-import dayjs from 'dayjs';
 
 import {
 	MONTH_OPTIONS,
@@ -15,10 +14,10 @@ import {
 
 import { useDeleteInvoice } from '@hooks/react-query/invoices/useDeleteInvoice';
 import { InvoiceRow } from '@hooks/react-query/invoices/useGetPagingInvoices';
-import { useUpdateInvoice } from '@hooks/react-query/invoices/useUpdateInvoice';
 
 import { formatMoney } from '@utils/money';
 
+import { ConfirmPaymentModal } from '../ConfirmPaymentModal';
 import { PaymentDetailModal } from '../PaymentDetailModal';
 import { PaymentFormModal } from '../PaymentFormModal';
 
@@ -32,8 +31,6 @@ type Props = {
 export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 	const { mutateAsync: deleteInvoice, isPending: isDeleting } =
 		useDeleteInvoice();
-	const { mutateAsync: updateInvoice, isPending: isUpdating } =
-		useUpdateInvoice();
 
 	const openDetail = (item: InvoiceRow) => {
 		const monthLabel = MONTH_OPTIONS.find(
@@ -71,31 +68,11 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 		});
 	};
 
-	const handleMarkAsPaid = async (item: InvoiceRow) => {
-		await updateInvoice({
-			id: item.id,
-			data: {
-				year: item.year,
-				month: item.month,
-				studentCount: item.studentCount,
-				registrationFee: item.registrationFee,
-				tuitionFee: item.tuitionFee,
-				bookFee: item.bookFee,
-				paidRegistrationFee: item.registrationFee,
-				paidTuitionFee: item.tuitionFee,
-				paidBookFee: item.bookFee,
-				extraPaid: item.extraPaid,
-				payMethod: item.payMethod,
-				paymentStatus: 'PAID',
-				paidAt: dayjs().toISOString(),
-				notes: item.notes,
-			},
-		});
-
-		notifications.show({
-			title: 'Payment updated',
-			message: 'Marked invoice as paid',
-			color: 'green',
+	const handleMarkAsPaid = (item: InvoiceRow) => {
+		modals.open({
+			title: 'Confirm payment received',
+			size: 'md',
+			children: <ConfirmPaymentModal invoice={item} />,
 		});
 	};
 
@@ -165,10 +142,10 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 						</ActionIcon>
 					</Tooltip>
 
-					<Tooltip label="Mark as paid">
+					<Tooltip label="Confirm payment received">
 						<ActionIcon
 							color="green"
-							disabled={isUpdating}
+							disabled={invoice.paymentStatus === 'PAID'}
 							onClick={() => handleMarkAsPaid(invoice)}
 						>
 							<IconCheck size={15} />
