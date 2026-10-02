@@ -14,11 +14,14 @@ import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
 import stickyStyles from '@styles/sticky-table.module.css';
+import sumBy from 'lodash/sumBy';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 import { PATH_APPS } from '@configs/routes';
 
 import { useDeleteFamily } from '@hooks/react-query/families/useDeleteFamily';
+
+import { formatMoney } from '@utils/money';
 
 import { FamilyFormModal } from '../FamilyFormModal';
 
@@ -92,6 +95,30 @@ export const TableRow = ({ family, page, index, pageSize }: Props) => {
 							</Badge>
 						))}
 					</Group>
+				) : (
+					<Text size="sm" c="dimmed">
+						—
+					</Text>
+				)}
+			</Table.Td>
+
+			<Table.Td w={160} ta="right">
+				{family.programs.length ? (
+					<Stack gap={0}>
+						{family.programs.map((program: any) => (
+							<Text key={program.id} size="sm" style={{ whiteSpace: 'nowrap' }}>
+								<Text span size="xs" c="dimmed">
+									{program.name}
+								</Text>{' '}
+								{formatMoney(program.monthlyFee)}
+							</Text>
+						))}
+						{family.programs.length > 1 && (
+							<Text size="sm" fw={700}>
+								{formatMoney(sumBy(family.programs, 'monthlyFee'))}
+							</Text>
+						)}
+					</Stack>
 				) : (
 					<Text size="sm" c="dimmed">
 						—
