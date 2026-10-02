@@ -1,16 +1,24 @@
 import { Group, Input, Select } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import { IconCircleDot, IconSearch } from '@tabler/icons-react';
+import { IconCategory, IconCircleDot, IconSearch } from '@tabler/icons-react';
 
 import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
+
 type Props = {
-	// eslint-disable-next-line no-unused-vars
-	onChangeFilter: (key: 'keyword' | 'status', value: string) => void;
+	onChangeFilter: (
+		// eslint-disable-next-line no-unused-vars
+		key: 'keyword' | 'programId' | 'status',
+		// eslint-disable-next-line no-unused-vars
+		value: string,
+	) => void;
 };
 
 export const TableFilter = ({ onChangeFilter }: Props) => {
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
+
 	const debounceChangeKeyword = useDebouncedCallback((value: string) => {
 		onChangeFilter('keyword', value);
 	}, 500);
@@ -22,6 +30,18 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 				leftSection={<IconSearch size={16} />}
 				placeholder="Search by family name, parent name, phone, email, ..."
 				onChange={(event) => debounceChangeKeyword(event.target.value)}
+			/>
+
+			<Select
+				placeholder="All Programs"
+				leftSection={<IconCategory size={16} />}
+				clearable
+				searchable
+				data={programs?.data.map((program) => ({
+					value: program.id,
+					label: program.name,
+				}))}
+				onChange={(value) => onChangeFilter('programId', value || '')}
 			/>
 
 			<Select

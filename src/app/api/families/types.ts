@@ -5,6 +5,7 @@ import { PagingQueryParams } from '@app/api/types/common';
 
 export type GetFamiliesQueryParams = PagingQueryParams & {
 	keyword?: string;
+	programId?: string;
 	status?: RecordStatus;
 };
 

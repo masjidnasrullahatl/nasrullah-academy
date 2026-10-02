@@ -23,6 +23,7 @@ const getPaging = async (request: AuthRequest) => {
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
 	const status = searchParams.get('status') || '';
+	const programId = searchParams.get('programId') || '';
 
 	const prisma = createClient();
 
@@ -31,6 +32,8 @@ const getPaging = async (request: AuthRequest) => {
 	const where: Prisma.FamiliesWhereInput = {};
 
 	if (status) where.status = status as any;
+
+	if (programId) where.programs = { some: { programId } };
 
 	if (keyword) {
 		where.OR = [
