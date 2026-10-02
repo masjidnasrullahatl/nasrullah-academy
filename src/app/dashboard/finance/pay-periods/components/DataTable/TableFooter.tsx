@@ -10,7 +10,6 @@ type Props = {
 	page: number;
 	pageSize: number;
 	setPage: (page: number) => void;
-	// eslint-disable-next-line no-unused-vars
 	setPageSize: (pageSize: number) => void;
 };
 
