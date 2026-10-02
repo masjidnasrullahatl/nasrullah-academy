@@ -171,6 +171,27 @@ export const PaymentFormModal = ({
 		);
 	};
 
+	const prefillFromFamilyProgram = (familyId: string, programId: string) => {
+		const familyProgram = families?.data
+			.find((family) => family.id === familyId)
+			?.programs.find((program) => program.id === programId);
+
+		if (!familyProgram) return;
+
+		form.setFieldValue('studentCount', familyProgram.studentCount);
+		form.setFieldValue('tuitionFee', familyProgram.monthlyFee);
+	};
+
+	const handleChangeFamily = (familyId: string | null) => {
+		form.setFieldValue('familyId', familyId || '');
+		prefillFromFamilyProgram(familyId || '', form.values.programId);
+	};
+
+	const handleChangeProgram = (programId: string | null) => {
+		form.setFieldValue('programId', programId || '');
+		prefillFromFamilyProgram(form.values.familyId, programId || '');
+	};
+
 	const handleAmountChange = (field: keyof FormValue, value: number) => {
 		form.setFieldValue(field, value as never);
 		syncPaymentStatusIfNeeded();
@@ -264,6 +285,7 @@ export const PaymentFormModal = ({
 										label: family.name,
 									}))}
 									{...form.getInputProps('familyId')}
+									onChange={handleChangeFamily}
 								/>
 							</Grid.Col>
 						)}
@@ -279,6 +301,7 @@ export const PaymentFormModal = ({
 										label: program.name,
 									}))}
 									{...form.getInputProps('programId')}
+									onChange={handleChangeProgram}
 								/>
 							</Grid.Col>
 						)}

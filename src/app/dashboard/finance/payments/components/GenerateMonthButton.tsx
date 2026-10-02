@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import {
 	Button,
-	Checkbox,
 	Group,
 	Select,
 	Stack,
@@ -30,7 +29,6 @@ export const GenerateMonthButton = ({
 	year,
 	month,
 }: GenerateMonthButtonProps) => {
-	const [copyFromPreviousMonth, setCopyFromPreviousMonth] = useState(false);
 	const [programId, setProgramId] = useState<string | null>(null);
 	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { mutateAsync: generateInvoices, isPending } = useGenerateInvoices();
@@ -40,12 +38,13 @@ export const GenerateMonthButton = ({
 		: '-';
 
 	const handleGenerate = () => {
-		if (!year || !month || !programId) return;
+		if (!year || !month) return;
 
 		const targetYear = year;
 		const targetMonth = month;
-		const targetProgram =
-			programs?.data.find((item) => item.id === programId)?.name || '-';
+		const targetProgram = programId
+			? programs?.data.find((item) => item.id === programId)?.name || '-'
+			: 'All programs';
 
 		modals.open({
 			title: 'Generate month invoices',
@@ -59,17 +58,9 @@ export const GenerateMonthButton = ({
 						Program: <b>{targetProgram}</b>
 					</Text>
 					<Text size="sm" c="dimmed">
-						Existing invoice rows are not overwritten.
+						Creates one unpaid row per family, prefilled with the kids and
+						monthly fee set on the family. Existing rows are not overwritten.
 					</Text>
-					<Group>
-						<Checkbox
-							label="Copy fee amounts from previous month"
-							checked={copyFromPreviousMonth}
-							onChange={(event) =>
-								setCopyFromPreviousMonth(event.currentTarget.checked)
-							}
-						/>
-					</Group>
 
 					<ModalFooter>
 						<Button variant="default" onClick={() => modals.closeAll()}>
@@ -82,7 +73,6 @@ export const GenerateMonthButton = ({
 									year: targetYear,
 									month: targetMonth,
 									programId,
-									copyFromPreviousMonth,
 								});
 
 								notifications.show({
@@ -105,7 +95,7 @@ export const GenerateMonthButton = ({
 	return (
 		<Group>
 			<Select
-				placeholder="Select program"
+				placeholder="All programs"
 				leftSection={<IconCategory size={16} />}
 				clearable
 				searchable
@@ -120,16 +110,16 @@ export const GenerateMonthButton = ({
 
 			<Tooltip
 				label={
-					year && month && programId
+					year && month
 						? 'Generate invoices for selected month'
-						: 'Select year, month, and program first'
+						: 'Select year and month first'
 				}
 			>
 				<Button
 					onClick={handleGenerate}
 					leftSection={<IconSparkles size={16} />}
 					loading={isPending}
-					disabled={!year || !month || !programId}
+					disabled={!year || !month}
 				>
 					Generate month
 				</Button>

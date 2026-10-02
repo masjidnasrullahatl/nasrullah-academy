@@ -1,6 +1,5 @@
 import filter from 'lodash/filter';
 import keyBy from 'lodash/keyBy';
-import sortBy from 'lodash/sortBy';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
@@ -15,6 +14,7 @@ import { withStaff } from '@app/api/utils/withStaff';
 import { createClient } from '@helpers/prisma/server';
 
 import { UpdateFamilySchema } from '../types';
+import { familyProgramsInclude, mapFamilyPrograms } from '../utils';
 
 const getDetail = async (
 	_: AuthRequest,
@@ -33,7 +33,7 @@ const getDetail = async (
 				},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
-			programs: { include: { program: { select: { id: true, name: true } } } },
+			programs: familyProgramsInclude,
 		},
 	});
 
@@ -41,10 +41,7 @@ const getDetail = async (
 
 	return success({
 		...family,
-		programs: sortBy(
-			family.programs.map((item) => item.program),
-			'name',
-		),
+		programs: mapFamilyPrograms(family.programs),
 	});
 };
 
@@ -85,11 +82,11 @@ const update = async (
 
 			await tx.familyPrograms.deleteMany({ where: { familyId: id } });
 
-			if (payload.programIds.length) {
+			if (payload.programs.length) {
 				await tx.familyPrograms.createMany({
-					data: payload.programIds.map((programId) => ({
+					data: payload.programs.map((program) => ({
+						...program,
 						familyId: id,
-						programId,
 					})),
 				});
 			}

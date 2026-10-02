@@ -22,9 +22,14 @@ export type FamilyStudent = Students & {
 	enrollments: FamilyStudentEnrollment[];
 };
 
+export type FamilyProgram = Pick<Programs, 'id' | 'name'> & {
+	studentCount: number;
+	monthlyFee: number;
+};
+
 export type FamilyDetail = Families & {
 	students: FamilyStudent[];
-	programs: Pick<Programs, 'id' | 'name'>[];
+	programs: FamilyProgram[];
 };
 
 export const useGetFamilyDetail = (id?: string) => {

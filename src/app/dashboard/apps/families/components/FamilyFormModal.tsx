@@ -9,6 +9,7 @@ import {
 	Grid,
 	Group,
 	MultiSelect,
+	NumberInput,
 	Select,
 	Stack,
 	Text,
@@ -26,6 +27,7 @@ import { zod4Resolver } from 'mantine-form-zod-resolver';
 import {
 	CreateFamilyPayload,
 	CreateFamilySchema,
+	FamilyProgramInput,
 } from '@app/api/families/types';
 
 import { ModalFooter } from '@components/ModalFooter';
@@ -60,7 +62,7 @@ type FamilyFormValue = {
 	address: string;
 	status: 'ACTIVE' | 'INACTIVE';
 	notes: string;
-	programIds: string[];
+	programs: FamilyProgramInput[];
 	students: StudentFormValue[];
 };
 
@@ -115,7 +117,12 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 			address: family?.address || '',
 			status: family?.status || 'ACTIVE',
 			notes: family?.notes || '',
-			programIds: family?.programs?.map((program: any) => program.id) || [],
+			programs:
+				family?.programs?.map((program: any) => ({
+					programId: program.id,
+					studentCount: program.studentCount ?? 0,
+					monthlyFee: program.monthlyFee ?? 0,
+				})) || [],
 			students:
 				family?.students?.map((student: any) => ({
 					id: student.id,
@@ -131,6 +138,28 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 		},
 		validate: zod4Resolver(CreateFamilySchema),
 	});
+
+	const programNames = useMemo(
+		() =>
+			Object.fromEntries(
+				programs?.data.map((program) => [program.id, program.name]) || [],
+			),
+		[programs],
+	);
+
+	const handleChangePrograms = (programIds: string[]) => {
+		form.setFieldValue(
+			'programs',
+			programIds.map(
+				(programId) =>
+					form.values.programs.find((item) => item.programId === programId) || {
+						programId,
+						studentCount: form.values.students.length,
+						monthlyFee: 0,
+					},
+			),
+		);
+	};
 
 	const submitError = useMemo(
 		() =>
@@ -151,7 +180,11 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 			address: values.address || null,
 			status: values.status,
 			notes: values.notes || null,
-			programIds: values.programIds,
+			programs: values.programs.map((program) => ({
+				programId: program.programId,
+				studentCount: Number(program.studentCount) || 0,
+				monthlyFee: Number(program.monthlyFee) || 0,
+			})),
 			students: values.students.map((student) => ({
 				id: student.id,
 				firstName: student.firstName,
@@ -269,9 +302,35 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 									value: program.id,
 									label: program.name,
 								}))}
-								{...form.getInputProps('programIds')}
+								value={form.values.programs.map((item) => item.programId)}
+								onChange={handleChangePrograms}
 							/>
 						</Grid.Col>
+						{form.values.programs.map((item, index) => (
+							<Grid.Col key={item.programId} span={12}>
+								<Group align="end" wrap="nowrap">
+									<Text size="sm" fw={600} w={140} pb={8}>
+										{programNames[item.programId] || 'Program'}
+									</Text>
+									<NumberInput
+										label="Kids"
+										min={0}
+										allowDecimal={false}
+										w={100}
+										{...form.getInputProps(`programs.${index}.studentCount`)}
+									/>
+									<NumberInput
+										label="Monthly fee"
+										min={0}
+										prefix="$"
+										decimalScale={2}
+										thousandSeparator=","
+										w={160}
+										{...form.getInputProps(`programs.${index}.monthlyFee`)}
+									/>
+								</Group>
+							</Grid.Col>
+						))}
 						<Grid.Col span={12}>
 							<Textarea
 								label="Notes"

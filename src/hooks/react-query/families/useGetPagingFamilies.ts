@@ -8,11 +8,14 @@ import { QUERY_KEYS } from '@configs/query-key';
 
 import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
+import { FamilyProgram } from './useGetFamilyDetail';
+
 type FamilyWithStats = Families & {
 	students: Students[];
 	studentCount: number;
 	boysCount: number;
 	girlsCount: number;
+	programs: FamilyProgram[];
 };
 
 export const useGetPagingFamilies = (params: GetFamiliesQueryParams) => {
