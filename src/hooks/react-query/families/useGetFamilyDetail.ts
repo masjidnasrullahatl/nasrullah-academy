@@ -20,6 +20,7 @@ export type FamilyStudentEnrollment = Enrollments & {
 
 export type FamilyStudent = Students & {
 	enrollments: FamilyStudentEnrollment[];
+	programs: Pick<Programs, 'id' | 'name'>[];
 };
 
 export type FamilyProgram = Pick<Programs, 'id' | 'name'> & {

@@ -12,6 +12,7 @@ import { withStaff } from '@app/api/utils/withStaff';
 import { createClient } from '@helpers/prisma/server';
 
 import { UpdateStudentSchema } from '../types';
+import { mapStudentPrograms, studentProgramsInclude } from '../utils';
 
 const getDetail = async (
 	_: AuthRequest,
@@ -26,12 +27,16 @@ const getDetail = async (
 		include: {
 			family: true,
 			enrollments: { include: { class: { include: { teacher: true } } } },
+			programs: studentProgramsInclude,
 		},
 	});
 
 	if (!student) return notFound('Student not found');
 
-	return success(student);
+	return success({
+		...student,
+		programs: mapStudentPrograms(student.programs),
+	});
 };
 
 const update = async (
@@ -52,6 +57,12 @@ const update = async (
 		const student = await prisma.students.update({
 			where: { id },
 			data: {
+				...(payload.programIds && {
+					programs: {
+						deleteMany: {},
+						create: payload.programIds.map((programId) => ({ programId })),
+					},
+				}),
 				familyId: payload.familyId,
 				firstName: payload.firstName,
 				lastName: payload.lastName,

@@ -2,6 +2,10 @@ import filter from 'lodash/filter';
 import keyBy from 'lodash/keyBy';
 import { ZodError } from 'zod/v4';
 
+import {
+	mapStudentPrograms,
+	studentProgramsInclude,
+} from '@app/api/students/utils';
 import { AuthRequest, ParamsRequest } from '@app/api/types/common';
 import { catchZodError } from '@app/api/utils/catchZodError';
 import {
@@ -30,6 +34,7 @@ const getDetail = async (
 			students: {
 				include: {
 					enrollments: { include: { class: { include: { teacher: true } } } },
+					programs: studentProgramsInclude,
 				},
 				orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
 			},
@@ -42,6 +47,10 @@ const getDetail = async (
 	return success({
 		...family,
 		programs: mapFamilyPrograms(family.programs),
+		students: family.students.map((student) => ({
+			...student,
+			programs: mapStudentPrograms(student.programs),
+		})),
 	});
 };
 
@@ -130,6 +139,9 @@ const update = async (
 						dateOfBirth: dOB,
 						status: student.status,
 						notes: student.notes || null,
+						programs: {
+							create: payload.programs.map(({ programId }) => ({ programId })),
+						},
 					},
 				});
 			}

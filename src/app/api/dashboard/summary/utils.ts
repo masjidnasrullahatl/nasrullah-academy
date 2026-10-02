@@ -51,6 +51,11 @@ type EnrollmentRow = {
 	student: { id: string; gender: Gender; familyId: string };
 };
 
+type StudentProgramRow = {
+	programId: string;
+	student: { id: string; gender: Gender; familyId: string };
+};
+
 type ClassRow = {
 	id: string;
 	name: string;
@@ -91,34 +96,37 @@ export const aggregateExpenses = (entries: ExpenseEntry[]) => {
 	return { byMonth, byClass, byProgram };
 };
 
-export const aggregateEnrollments = (enrollments: EnrollmentRow[]) => {
+export const countEnrollmentsByClass = (enrollments: EnrollmentRow[]) => {
+	const countByClass = new Map<string, number>();
+
+	for (const enrollment of enrollments) {
+		countByClass.set(
+			enrollment.classId,
+			(countByClass.get(enrollment.classId) || 0) + 1,
+		);
+	}
+
+	return countByClass;
+};
+
+export const aggregateStudentPrograms = (rows: StudentProgramRow[]) => {
 	const uniqueStudents = new Map<
 		string,
 		{ gender: Gender; familyId: string }
 	>();
 
-	const countByClass = new Map<string, number>();
 	const studentIdsByProgram = new Map<string, Set<string>>();
 
-	for (const enrollment of enrollments) {
-		if (!uniqueStudents.has(enrollment.student.id)) {
-			uniqueStudents.set(enrollment.student.id, {
-				gender: enrollment.student.gender,
-				familyId: enrollment.student.familyId,
-			});
+	for (const row of rows) {
+		uniqueStudents.set(row.student.id, {
+			gender: row.student.gender,
+			familyId: row.student.familyId,
+		});
+
+		if (!studentIdsByProgram.has(row.programId)) {
+			studentIdsByProgram.set(row.programId, new Set<string>());
 		}
-
-		countByClass.set(
-			enrollment.classId,
-			(countByClass.get(enrollment.classId) || 0) + 1,
-		);
-
-		const { programId } = enrollment.class;
-
-		if (!studentIdsByProgram.has(programId)) {
-			studentIdsByProgram.set(programId, new Set<string>());
-		}
-		studentIdsByProgram.get(programId)?.add(enrollment.student.id);
+		studentIdsByProgram.get(row.programId)?.add(row.student.id);
 	}
 
 	const values = Array.from(uniqueStudents.values());
@@ -127,14 +135,7 @@ export const aggregateEnrollments = (enrollments: EnrollmentRow[]) => {
 	const boys = values.filter((item) => item.gender === Gender.BOY).length;
 	const girls = students - boys;
 
-	return {
-		students,
-		families,
-		boys,
-		girls,
-		countByClass,
-		studentIdsByProgram,
-	};
+	return { students, families, boys, girls, studentIdsByProgram };
 };
 
 export const aggregateClasses = (

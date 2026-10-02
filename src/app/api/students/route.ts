@@ -12,6 +12,7 @@ import { catchZodError } from '../utils/catchZodError';
 import { internalServerError, success } from '../utils/response';
 
 import { CreateStudentSchema } from './types';
+import { mapStudentPrograms, studentProgramsInclude } from './utils';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -42,7 +43,7 @@ const getPaging = async (request: AuthRequest) => {
 
 	if (familyId) where.familyId = familyId;
 
-	if (programId) where.family = { programs: { some: { programId } } };
+	if (programId) where.programs = { some: { programId } };
 
 	if (gender) where.gender = gender as any;
 
@@ -58,12 +59,19 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
-		include: { family: true, enrollments: { include: { class: true } } },
+		include: {
+			family: true,
+			enrollments: { include: { class: true } },
+			programs: studentProgramsInclude,
+		},
 		where,
 	});
 
 	return NextResponse.json({
-		data: students,
+		data: students.map((student) => ({
+			...student,
+			programs: mapStudentPrograms(student.programs),
+		})),
 		total,
 		error: null,
 	});
@@ -85,6 +93,9 @@ const create = async (request: AuthRequest) => {
 				dateOfBirth: payload.dateOfBirth ? new Date(payload.dateOfBirth) : null,
 				status: payload.status,
 				notes: payload.notes || null,
+				programs: {
+					create: payload.programIds.map((programId) => ({ programId })),
+				},
 			},
 			include: { family: true, enrollments: { include: { class: true } } },
 		});

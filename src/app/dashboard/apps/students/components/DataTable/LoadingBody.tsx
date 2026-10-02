@@ -7,13 +7,13 @@ export const LoadingBody = () => {
 		<>
 			{Array.from({ length: 10 }).map((_, index) => (
 				<Table.Tr key={index}>
-					{Array.from({ length: 7 }).map((_, columnIndex) => (
+					{Array.from({ length: 8 }).map((_, columnIndex) => (
 						<Table.Td
 							key={columnIndex}
 							className={
 								columnIndex === 0
 									? stickyStyles.stickyLeft
-									: columnIndex === 6
+									: columnIndex === 7
 										? stickyStyles.stickyRight
 										: undefined
 							}

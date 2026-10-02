@@ -14,6 +14,8 @@ export const TableHeader = () => {
 
 				<Table.Th>Family</Table.Th>
 
+				<Table.Th>Programs</Table.Th>
+
 				<Table.Th>Gender</Table.Th>
 
 				<Table.Th>Class(es)</Table.Th>
