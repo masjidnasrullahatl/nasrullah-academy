@@ -14,8 +14,8 @@ import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
 import stickyStyles from '@styles/sticky-table.module.css';
-import sumBy from 'lodash/sumBy';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
+import sumBy from 'lodash/sumBy';
 
 import { PATH_APPS } from '@configs/routes';
 
