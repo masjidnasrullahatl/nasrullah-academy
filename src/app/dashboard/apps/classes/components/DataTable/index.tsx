@@ -5,6 +5,8 @@ import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClasses';
 
 import { ClassFormModal } from '../ClassFormModal';
@@ -16,10 +18,9 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
-const PAGE_SIZE = 20;
-
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		teacherId?: string;
@@ -34,7 +35,7 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingClasses({
 		page,
-		limit: PAGE_SIZE,
+		limit: pageSize,
 		keyword: filter.keyword,
 		teacherId: filter.teacherId,
 		programId: filter.programId,
@@ -63,7 +64,7 @@ export const DataTable = () => {
 			classItem={classItem}
 			page={page}
 			index={index}
-			pageSize={PAGE_SIZE}
+			pageSize={pageSize}
 		/>
 	));
 
@@ -106,7 +107,8 @@ export const DataTable = () => {
 						page={page}
 						setPage={setPage}
 						total={classes?.total || 0}
-						pageSize={PAGE_SIZE}
+						pageSize={pageSize}
+						setPageSize={setPageSize}
 					/>
 				</Table>
 			</Table.ScrollContainer>

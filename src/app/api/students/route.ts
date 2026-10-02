@@ -20,6 +20,7 @@ const getPaging = async (request: AuthRequest) => {
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
 	const familyId = searchParams.get('familyId') || '';
+	const programId = searchParams.get('programId') || '';
 	const classId = searchParams.get('classId') || '';
 	const gender = searchParams.get('gender') || '';
 	const status = searchParams.get('status') || '';
@@ -40,6 +41,8 @@ const getPaging = async (request: AuthRequest) => {
 	}
 
 	if (familyId) where.familyId = familyId;
+
+	if (programId) where.family = { programs: { some: { programId } } };
 
 	if (gender) where.gender = gender as any;
 

@@ -28,6 +28,7 @@ export const useGetPagingStudents = (params: GetStudentsQueryParams) => {
 				limit: params.limit.toString(),
 				keyword: params.keyword || '',
 				familyId: params.familyId || '',
+				programId: params.programId || '',
 				classId: params.classId || '',
 				gender: params.gender || '',
 				status: params.status || '',

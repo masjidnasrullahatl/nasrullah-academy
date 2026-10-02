@@ -6,6 +6,8 @@ import { modals } from '@mantine/modals';
 import { PayPeriodStatus } from '@prisma/client';
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingPayPeriods } from '@hooks/react-query/pay-periods/useGetPagingPayPeriods';
 import { useGetPagingTeachers } from '@hooks/react-query/teachers/useGetPagingTeachers';
 
@@ -18,10 +20,9 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
-const PAGE_SIZE = 10;
-
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{ keyword?: string; status?: PayPeriodStatus }>({});
 
 	const {
@@ -31,7 +32,7 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingPayPeriods({
 		page,
-		limit: PAGE_SIZE,
+		limit: pageSize,
 		keyword: filter.keyword,
 		status: filter.status,
 	});
@@ -67,7 +68,7 @@ export const DataTable = () => {
 			payPeriod={payPeriod}
 			index={index}
 			page={page}
-			pageSize={PAGE_SIZE}
+			pageSize={pageSize}
 			totalTeachersWithClasses={totalTeachersWithClasses}
 		/>
 	));
@@ -101,13 +102,14 @@ export const DataTable = () => {
 				>
 					<TableHeader />
 					<Table.Tbody>
-						{isLoading ? <LoadingBody pageSize={PAGE_SIZE} /> : rows?.length ? rows : <EmptyBody />}
+						{isLoading ? <LoadingBody pageSize={pageSize} /> : rows?.length ? rows : <EmptyBody />}
 					</Table.Tbody>
 					<TableFooter
 						total={payPeriods?.total || 0}
 						page={page}
-						pageSize={PAGE_SIZE}
+						pageSize={pageSize}
 						setPage={setPage}
+						setPageSize={setPageSize}
 					/>
 				</Table>
 			</Table.ScrollContainer>

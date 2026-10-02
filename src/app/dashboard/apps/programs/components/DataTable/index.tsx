@@ -5,6 +5,8 @@ import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 import { ProgramFormModal } from '../ProgramFormModal';
@@ -16,10 +18,9 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
-const PAGE_SIZE = 20;
-
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		status?: 'ACTIVE' | 'ARCHIVED';
@@ -32,7 +33,7 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingPrograms({
 		page,
-		limit: PAGE_SIZE,
+		limit: pageSize,
 		keyword: filter.keyword,
 		status: filter.status,
 	});
@@ -56,7 +57,7 @@ export const DataTable = () => {
 			program={program}
 			page={page}
 			index={index}
-			pageSize={PAGE_SIZE}
+			pageSize={pageSize}
 		/>
 	));
 
@@ -99,7 +100,8 @@ export const DataTable = () => {
 						total={programs?.total || 0}
 						page={page}
 						setPage={setPage}
-						pageSize={PAGE_SIZE}
+						pageSize={pageSize}
+						setPageSize={setPageSize}
 					/>
 				</Table>
 			</Table.ScrollContainer>

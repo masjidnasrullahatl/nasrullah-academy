@@ -5,6 +5,8 @@ import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
 
 import { FamilyFormModal } from '../FamilyFormModal';
@@ -18,6 +20,7 @@ import { TableRow } from './TableRow';
 
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		programId?: string;
@@ -31,7 +34,7 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingFamilies({
 		page,
-		limit: 10,
+		limit: pageSize,
 		keyword: filter.keyword,
 		programId: filter.programId,
 		status: filter.status as any,
@@ -54,7 +57,13 @@ export const DataTable = () => {
 	};
 
 	const rows = families?.data.map((family, index) => (
-		<TableRow key={family.id} family={family} page={page} index={index} />
+		<TableRow
+			key={family.id}
+			family={family}
+			page={page}
+			index={index}
+			pageSize={pageSize}
+		/>
 	));
 
 	const hasData = Boolean(families?.total);
@@ -96,6 +105,8 @@ export const DataTable = () => {
 						page={page}
 						setPage={setPage}
 						total={families?.total || 0}
+						pageSize={pageSize}
+						setPageSize={setPageSize}
 					/>
 				</Table>
 			</Table.ScrollContainer>

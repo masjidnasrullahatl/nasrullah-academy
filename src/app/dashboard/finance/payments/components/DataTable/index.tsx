@@ -5,6 +5,8 @@ import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingInvoices } from '@hooks/react-query/invoices/useGetPagingInvoices';
 
 import { GenerateMonthButton } from '../GenerateMonthButton';
@@ -18,11 +20,10 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
-const PAGE_SIZE = 20;
-
 export const DataTable = () => {
 	const currentDate = new Date();
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{
 		year?: number;
 		month?: number;
@@ -43,7 +44,7 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingInvoices({
 		page,
-		limit: PAGE_SIZE,
+		limit: pageSize,
 		year: filter.year,
 		month: filter.month,
 		programId: filter.programId,
@@ -87,7 +88,7 @@ export const DataTable = () => {
 			invoice={invoice}
 			page={page}
 			index={index}
-			pageSize={PAGE_SIZE}
+			pageSize={pageSize}
 		/>
 	));
 
@@ -129,7 +130,7 @@ export const DataTable = () => {
 
 						<Table.Tbody>
 							{isLoading ? (
-								<LoadingBody pageSize={PAGE_SIZE} />
+								<LoadingBody pageSize={pageSize} />
 							) : hasData ? (
 								rows
 							) : (
@@ -141,13 +142,14 @@ export const DataTable = () => {
 							total={invoices?.total || 0}
 							page={page}
 							setPage={setPage}
-							pageSize={PAGE_SIZE}
+							pageSize={pageSize}
 							summary={{
 								studentCount: invoices?.summary.studentCount || 0,
 								totalDue: invoices?.summary.totalDue || 0,
 								totalPaid: invoices?.summary.totalPaid || 0,
 								balance: invoices?.summary.balance || 0,
 							}}
+							setPageSize={setPageSize}
 						/>
 					</Table>
 				</Table.ScrollContainer>

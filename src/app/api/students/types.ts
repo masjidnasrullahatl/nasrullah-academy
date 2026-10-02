@@ -6,6 +6,7 @@ import { PagingQueryParams } from '@app/api/types/common';
 export type GetStudentsQueryParams = PagingQueryParams & {
 	keyword?: string;
 	familyId?: string;
+	programId?: string;
 	classId?: string;
 	gender?: Gender;
 	status?: RecordStatus;

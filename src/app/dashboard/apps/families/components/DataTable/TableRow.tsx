@@ -26,9 +26,10 @@ type Props = {
 	family: any;
 	page: number;
 	index: number;
+	pageSize: number;
 };
 
-export const TableRow = ({ family, page, index }: Props) => {
+export const TableRow = ({ family, page, index, pageSize }: Props) => {
 	const { mutateAsync: deleteFamily, isPending: isDeleting } =
 		useDeleteFamily();
 
@@ -62,7 +63,7 @@ export const TableRow = ({ family, page, index }: Props) => {
 	return (
 		<Table.Tr key={family.id}>
 			<Table.Td ta="center" w={50} className={stickyStyles.stickyLeft}>
-				{(page - 1) * 10 + index + 1}
+				{(page - 1) * pageSize + index + 1}
 			</Table.Td>
 
 			<Table.Td>
