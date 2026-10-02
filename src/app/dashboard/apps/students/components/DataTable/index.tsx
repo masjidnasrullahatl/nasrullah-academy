@@ -5,6 +5,8 @@ import { modals } from '@mantine/modals';
 
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 
+import { DEFAULT_PAGE_SIZE } from '@components/TablePagination';
+
 import { useGetPagingStudents } from '@hooks/react-query/students/useGetPagingStudents';
 
 import { StudentFormModal } from '../StudentFormModal';
@@ -18,9 +20,11 @@ import { TableRow } from './TableRow';
 
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [filter, setFilter] = useState<{
 		keyword?: string;
 		familyId?: string;
+		programId?: string;
 		classId?: string;
 		gender?: string;
 		status?: string;
@@ -33,16 +37,23 @@ export const DataTable = () => {
 		error,
 	} = useGetPagingStudents({
 		page,
-		limit: 10,
+		limit: pageSize,
 		keyword: filter.keyword,
 		familyId: filter.familyId,
+		programId: filter.programId,
 		classId: filter.classId,
 		gender: filter.gender as any,
 		status: filter.status as any,
 	});
 
 	const handleChangeFilter = (
-		key: 'keyword' | 'familyId' | 'classId' | 'gender' | 'status',
+		key:
+			| 'keyword'
+			| 'familyId'
+			| 'programId'
+			| 'classId'
+			| 'gender'
+			| 'status',
 		value: string,
 	) => {
 		setFilter({ ...filter, [key]: value });
@@ -58,7 +69,13 @@ export const DataTable = () => {
 	};
 
 	const rows = students?.data.map((student, index) => (
-		<TableRow key={student.id} student={student} page={page} index={index} />
+		<TableRow
+			key={student.id}
+			student={student}
+			page={page}
+			index={index}
+			pageSize={pageSize}
+		/>
 	));
 
 	const hasData = Boolean(students?.total);
@@ -102,6 +119,8 @@ export const DataTable = () => {
 						page={page}
 						setPage={setPage}
 						total={students?.total || 0}
+						pageSize={pageSize}
+						setPageSize={setPageSize}
 					/>
 				</Table>
 			</Table.ScrollContainer>

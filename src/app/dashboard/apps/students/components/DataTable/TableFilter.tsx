@@ -5,6 +5,7 @@ import { Group, Input, Select } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 
 import {
+	IconCategory,
 	IconCircleDot,
 	IconGenderBigender,
 	IconSchool,
@@ -16,10 +17,17 @@ import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useGetPagingClasses } from '@hooks/react-query/classes/useGetPagingClasses';
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
 type Props = {
 	onChangeFilter: (
-		key: 'keyword' | 'familyId' | 'classId' | 'gender' | 'status',
+		key:
+			| 'keyword'
+			| 'familyId'
+			| 'programId'
+			| 'classId'
+			| 'gender'
+			| 'status',
 		value: string,
 	) => void;
 };
@@ -29,6 +37,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 		page: 1,
 		limit: 1000,
 	});
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 	const { data: classes } = useGetPagingClasses({
 		page: 1,
 		limit: 1000,
@@ -64,6 +73,18 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 					label: family.name,
 				}))}
 				onChange={(value) => onChangeFilter('familyId', value || '')}
+				clearable
+				searchable
+			/>
+
+			<Select
+				placeholder="All Programs"
+				leftSection={<IconCategory size={16} />}
+				data={programs?.data.map((program) => ({
+					value: program.id,
+					label: program.name,
+				}))}
+				onChange={(value) => onChangeFilter('programId', value || '')}
 				clearable
 				searchable
 			/>

@@ -36,9 +36,10 @@ type Props = {
 	teacher: TeacherRow;
 	page: number;
 	index: number;
+	pageSize: number;
 };
 
-export const TableRow = ({ teacher, page, index }: Props) => {
+export const TableRow = ({ teacher, page, index, pageSize }: Props) => {
 	const { mutateAsync: deleteTeacher, isPending: isDeleting } =
 		useDeleteTeacher();
 	const { mutateAsync: resendInvite, isPending: isResending } =
@@ -160,7 +161,7 @@ export const TableRow = ({ teacher, page, index }: Props) => {
 	return (
 		<Table.Tr key={teacher.id}>
 			<Table.Td ta="center" className={stickyStyles.stickyLeft}>
-				{(page - 1) * 10 + index + 1}
+				{(page - 1) * pageSize + index + 1}
 			</Table.Td>
 
 			<Table.Td>{`${teacher.firstName} ${teacher.lastName}`}</Table.Td>

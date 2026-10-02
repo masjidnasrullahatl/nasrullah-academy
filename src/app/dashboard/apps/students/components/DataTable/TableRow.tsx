@@ -4,7 +4,6 @@ import { notifications } from '@mantine/notifications';
 
 import stickyStyles from '@styles/sticky-table.module.css';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
-import dayjs from 'dayjs';
 
 import { useDeleteStudent } from '@hooks/react-query/students/useDeleteStudent';
 
@@ -14,9 +13,10 @@ type Props = {
 	student: any;
 	page: number;
 	index: number;
+	pageSize: number;
 };
 
-export const TableRow = ({ student, page, index }: Props) => {
+export const TableRow = ({ student, page, index, pageSize }: Props) => {
 	const { mutateAsync: deleteStudent, isPending: isDeleting } =
 		useDeleteStudent();
 
@@ -49,7 +49,7 @@ export const TableRow = ({ student, page, index }: Props) => {
 	return (
 		<Table.Tr key={student.id}>
 			<Table.Td ta="center" w={60} className={stickyStyles.stickyLeft}>
-				{(page - 1) * 10 + index + 1}
+				{(page - 1) * pageSize + index + 1}
 			</Table.Td>
 
 			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
@@ -57,12 +57,6 @@ export const TableRow = ({ student, page, index }: Props) => {
 			<Table.Td>{student.family?.name}</Table.Td>
 
 			<Table.Td w={60}>{student.gender}</Table.Td>
-
-			<Table.Td w={130}>
-				{student.dateOfBirth
-					? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
-					: '-'}
-			</Table.Td>
 
 			<Table.Td>
 				<Group gap={4}>

@@ -1,6 +1,8 @@
-import { Group, Pagination, Table, Text } from '@mantine/core';
+import { Table, Text } from '@mantine/core';
 
 import stickyStyles from '@styles/sticky-table.module.css';
+
+import { TablePagination } from '@components/TablePagination';
 
 import { formatMoney } from '@utils/money';
 
@@ -16,6 +18,8 @@ type Props = {
 	};
 	// eslint-disable-next-line no-unused-vars
 	setPage: (page: number) => void;
+	// eslint-disable-next-line no-unused-vars
+	setPageSize: (pageSize: number) => void;
 };
 
 export const TableFooter = ({
@@ -24,9 +28,8 @@ export const TableFooter = ({
 	pageSize,
 	summary,
 	setPage,
+	setPageSize,
 }: Props) => {
-	const hasPagination = total > pageSize;
-
 	return (
 		<Table.Tfoot
 			style={{
@@ -72,17 +75,13 @@ export const TableFooter = ({
 
 			<Table.Tr>
 				<Table.Td colSpan={9} fw={700} className={stickyStyles.stickyLeft}>
-					<Group justify="space-between">
-						<Text fz="sm">Total: {total}</Text>
-
-						{hasPagination && (
-							<Pagination
-								total={Math.ceil(total / pageSize)}
-								value={page}
-								onChange={setPage}
-							/>
-						)}
-					</Group>
+					<TablePagination
+						total={total}
+						page={page}
+						pageSize={pageSize}
+						setPage={setPage}
+						setPageSize={setPageSize}
+					/>
 				</Table.Td>
 				<Table.Td className={stickyStyles.stickyRight} />
 			</Table.Tr>

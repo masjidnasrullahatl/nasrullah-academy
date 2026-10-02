@@ -16,8 +16,6 @@ export const TableHeader = () => {
 
 				<Table.Th>Gender</Table.Th>
 
-				<Table.Th>Date of Birth</Table.Th>
-
 				<Table.Th>Class(es)</Table.Th>
 
 				<Table.Th ta="center">Status</Table.Th>
