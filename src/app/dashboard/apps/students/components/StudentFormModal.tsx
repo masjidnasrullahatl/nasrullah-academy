@@ -25,8 +25,8 @@ import { ModalFooter } from '@components/ModalFooter';
 import { GENDER_OPTIONS, RECORD_STATUS_OPTIONS } from '@configs/enums';
 
 import { useGetPagingFamilies } from '@hooks/react-query/families/useGetPagingFamilies';
-import { useCreateStudent } from '@hooks/react-query/students/useCreateStudent';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
+import { useCreateStudent } from '@hooks/react-query/students/useCreateStudent';
 import { useUpdateStudent } from '@hooks/react-query/students/useUpdateStudent';
 
 type StudentFormModalProps = {
