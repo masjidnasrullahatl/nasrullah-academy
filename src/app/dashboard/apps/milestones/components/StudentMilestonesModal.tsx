@@ -11,19 +11,30 @@ import {
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
-import { IconPlus } from '@tabler/icons-react';
+import { IconFileTypePdf, IconPlus } from '@tabler/icons-react';
 
 import { useGetPagingMilestones } from '@hooks/react-query/milestones/useGetPagingMilestones';
 
+import { openPrintWindow } from '@utils/printReport';
+
+import { buildStudentReport } from '../reports';
 import { formatCompletedAt, JUZ_COUNT } from '../utils';
 
 import { MilestoneFormModal } from './MilestoneFormModal';
 
 type Props = {
-	studentId: string;
+	student: {
+		id: string;
+		firstName: string;
+		lastName: string;
+		family?: { name: string } | null;
+		programs?: Array<{ name: string }>;
+	};
 };
 
-export const StudentMilestonesModal = ({ studentId }: Props) => {
+export const StudentMilestonesModal = ({ student }: Props) => {
+	const studentId = student.id;
+
 	const { data: milestones, isLoading } = useGetPagingMilestones({
 		page: 1,
 		limit: 500,
@@ -33,6 +44,13 @@ export const StudentMilestonesModal = ({ studentId }: Props) => {
 	const juz = milestones?.data.filter((item) => item.type === 'JUZ') || [];
 	const books = milestones?.data.filter((item) => item.type === 'BOOK') || [];
 	const juzByNumber = new Map(juz.map((item) => [item.juzNumber, item]));
+
+	const handleExport = () => {
+		openPrintWindow().render(
+			`${student.firstName} ${student.lastName} Progress Report`,
+			buildStudentReport(student, milestones?.data || []),
+		);
+	};
 
 	const handleRecord = () => {
 		modals.open({
@@ -102,6 +120,14 @@ export const StudentMilestonesModal = ({ studentId }: Props) => {
 			</Stack>
 
 			<Group justify="flex-end">
+				<Button
+					variant="default"
+					leftSection={<IconFileTypePdf size={16} />}
+					disabled={isLoading}
+					onClick={handleExport}
+				>
+					Export PDF
+				</Button>
 				<Button leftSection={<IconPlus size={16} />} onClick={handleRecord}>
 					Record Milestone
 				</Button>

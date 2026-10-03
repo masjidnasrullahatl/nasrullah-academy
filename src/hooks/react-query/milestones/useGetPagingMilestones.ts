@@ -40,6 +40,8 @@ export const useGetPagingMilestones = (
 				studentId: params.studentId || '',
 				programId: params.programId || '',
 				type: params.type || '',
+				dateFrom: params.dateFrom || '',
+				dateTo: params.dateTo || '',
 			});
 
 			const response = await fetchAuth(`/api/milestones?${queryParams}`);
