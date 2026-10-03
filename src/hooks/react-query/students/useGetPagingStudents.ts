@@ -18,6 +18,8 @@ type StudentWithRelations = Students & {
 		};
 	}>;
 	programs: Array<{ id: string; name: string }>;
+	juzCount: number;
+	bookCount: number;
 };
 
 export const useGetPagingStudents = (params: GetStudentsQueryParams) => {

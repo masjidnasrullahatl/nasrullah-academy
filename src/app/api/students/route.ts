@@ -63,14 +63,17 @@ const getPaging = async (request: AuthRequest) => {
 			family: true,
 			enrollments: { include: { class: true } },
 			programs: studentProgramsInclude,
+			milestones: { select: { type: true } },
 		},
 		where,
 	});
 
 	return NextResponse.json({
-		data: students.map((student) => ({
+		data: students.map(({ milestones, ...student }) => ({
 			...student,
 			programs: mapStudentPrograms(student.programs),
+			juzCount: milestones.filter((item) => item.type === 'JUZ').length,
+			bookCount: milestones.filter((item) => item.type === 'BOOK').length,
 		})),
 		total,
 		error: null,

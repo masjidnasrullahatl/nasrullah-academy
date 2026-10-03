@@ -38,6 +38,7 @@ export const PATH_APPS = {
 	students: path(ROOT_APPS, '/students'),
 	classes: path(ROOT_APPS, '/classes'),
 	teachers: path(ROOT_APPS, '/teachers'),
+	milestones: path(ROOT_APPS, '/milestones'),
 };
 
 export const PATH_FINANCE = {

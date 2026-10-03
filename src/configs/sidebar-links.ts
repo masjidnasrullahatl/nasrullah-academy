@@ -6,6 +6,7 @@ import {
 	IconLayoutDashboard,
 	IconReceipt,
 	IconSchool,
+	IconTrophy,
 	IconUser,
 	IconUserCode,
 	IconUsersGroup,
@@ -51,6 +52,11 @@ export const SIDEBAR_LINKS = [
 				label: 'Students',
 				icon: IconUser,
 				link: PATH_APPS.students,
+			},
+			{
+				label: 'Milestones',
+				icon: IconTrophy,
+				link: PATH_APPS.milestones,
 			},
 			{
 				label: 'Teachers',

@@ -6,8 +6,8 @@ import { TablePagination } from '@components/TablePagination';
 
 type Props = {
 	total: number;
-	pageSize: number;
 	page: number;
+	pageSize: number;
 	// eslint-disable-next-line no-unused-vars
 	setPage: (page: number) => void;
 	// eslint-disable-next-line no-unused-vars
@@ -17,8 +17,8 @@ type Props = {
 export const TableFooter = ({
 	total,
 	page,
-	setPage,
 	pageSize,
+	setPage,
 	setPageSize,
 }: Props) => {
 	return (
@@ -29,7 +29,7 @@ export const TableFooter = ({
 			}}
 		>
 			<Table.Tr>
-				<Table.Td colSpan={8} fw={700} className={stickyStyles.stickyLeft}>
+				<Table.Td colSpan={7} fw={700} className={stickyStyles.stickyLeft}>
 					<TablePagination
 						total={total}
 						page={page}
