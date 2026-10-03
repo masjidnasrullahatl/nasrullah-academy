@@ -43,7 +43,7 @@ export const MilestonesChart = ({ data, year }: MilestonesChartProps) => {
 				]}
 				withLegend
 				withTooltip
-				allowDecimals={false}
+				yAxisProps={{ allowDecimals: false }}
 				tickLine="xy"
 			/>
 		</Paper>
