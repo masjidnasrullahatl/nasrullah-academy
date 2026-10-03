@@ -28,6 +28,8 @@ const getPaging = async (request: AuthRequest) => {
 	const studentId = searchParams.get('studentId') || '';
 	const programId = searchParams.get('programId') || '';
 	const type = searchParams.get('type') || '';
+	const dateFrom = searchParams.get('dateFrom') || '';
+	const dateTo = searchParams.get('dateTo') || '';
 
 	const prisma = createClient();
 	const skip = (page - 1) * limit;
@@ -37,6 +39,13 @@ const getPaging = async (request: AuthRequest) => {
 	if (studentId) where.studentId = studentId;
 
 	if (type) where.type = type as any;
+
+	if (dateFrom || dateTo) {
+		where.completedAt = {
+			...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+			...(dateTo ? { lte: new Date(dateTo) } : {}),
+		};
+	}
 
 	if (programId) where.student = { programs: { some: { programId } } };
 

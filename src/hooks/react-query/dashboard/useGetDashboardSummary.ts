@@ -45,6 +45,16 @@ export type DashboardSummary = {
 		expense: number;
 		profit: number;
 	}>;
+	milestones: {
+		monthly: Array<{ month: number; label: string; juz: number; books: number }>;
+		totals: { juz: number; books: number; students: number };
+		topHifz: Array<{
+			studentId: string;
+			name: string;
+			familyName: string;
+			juz: number;
+		}>;
+	};
 	programSummary: Array<{
 		programId: string;
 		programName: string;

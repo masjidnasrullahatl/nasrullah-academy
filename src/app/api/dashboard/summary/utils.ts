@@ -56,6 +56,12 @@ type StudentProgramRow = {
 	student: { id: string; gender: Gender; familyId: string };
 };
 
+type MilestoneSummaryRow = {
+	type: 'JUZ' | 'BOOK';
+	completedAt: Date;
+	studentId: string;
+};
+
 type ClassRow = {
 	id: string;
 	name: string;
@@ -270,3 +276,28 @@ export const buildEnumBreakdown = <K extends string, V extends string>(
 			amount: found?.amount ?? 0,
 		};
 	});
+
+export const buildMilestoneSummary = (rows: MilestoneSummaryRow[]) => {
+	const monthly = MONTH_LABELS.map((label, index) => ({
+		month: index + 1,
+		label,
+		juz: 0,
+		books: 0,
+	}));
+
+	for (const row of rows) {
+		const item = monthly[row.completedAt.getUTCMonth()];
+
+		if (row.type === 'JUZ') item.juz += 1;
+		else item.books += 1;
+	}
+
+	return {
+		monthly,
+		totals: {
+			juz: rows.filter((row) => row.type === 'JUZ').length,
+			books: rows.filter((row) => row.type === 'BOOK').length,
+			students: new Set(rows.map((row) => row.studentId)).size,
+		},
+	};
+};

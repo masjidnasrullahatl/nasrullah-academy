@@ -41,7 +41,7 @@ export const TableRow = ({ student, page, index, pageSize }: Props) => {
 		modals.open({
 			title: `Milestones: ${item.firstName} ${item.lastName}`,
 			size: 'lg',
-			children: <StudentMilestonesModal studentId={item.id} />,
+			children: <StudentMilestonesModal student={item} />,
 		});
 	};
 

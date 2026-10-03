@@ -12,6 +12,7 @@ import {
 	aggregateStudentPrograms,
 	buildClassProfitLoss,
 	buildEnumBreakdown,
+	buildMilestoneSummary,
 	buildMonthly,
 	buildProgramSummary,
 	countEnrollmentsByClass,
@@ -52,6 +53,13 @@ const getSummary = async (request: AuthRequest) => {
 		...(programId ? { class: { programId } } : {}),
 	};
 
+	const milestoneStudentWhere: Prisma.MilestonesWhereInput = {
+		student: {
+			status: 'ACTIVE',
+			...(programId ? { programs: { some: { programId } } } : {}),
+		},
+	};
+
 	const [
 		invoiceMonthly,
 		invoiceUnpaidMonthly,
@@ -65,6 +73,8 @@ const getSummary = async (request: AuthRequest) => {
 		expenseEntries,
 		programs,
 		studentPrograms,
+		yearMilestones,
+		juzLeaders,
 	] = await Promise.all([
 		prisma.monthlyInvoices.groupBy({
 			by: ['month'],
@@ -148,6 +158,24 @@ const getSummary = async (request: AuthRequest) => {
 				programId: true,
 				student: { select: { id: true, gender: true, familyId: true } },
 			},
+		}),
+		prisma.milestones.findMany({
+			where: {
+				completedAt: {
+					gte: new Date(Date.UTC(year, 0, 1)),
+					lte: new Date(Date.UTC(year, 11, 31)),
+				},
+				...milestoneStudentWhere,
+			},
+			select: { type: true, completedAt: true, studentId: true },
+		}),
+		// All-time Juz count per student, for the Hifz progress leaderboard
+		prisma.milestones.groupBy({
+			by: ['studentId'],
+			where: { type: 'JUZ', ...milestoneStudentWhere },
+			_count: { _all: true },
+			orderBy: { _count: { studentId: 'desc' } },
+			take: 10,
 		}),
 	]);
 
@@ -254,8 +282,36 @@ const getSummary = async (request: AuthRequest) => {
 		balance: toNumber(item._sum?.balance),
 	}));
 
+	const leaderStudents = juzLeaders.length
+		? await prisma.students.findMany({
+				where: { id: { in: juzLeaders.map((item) => item.studentId) } },
+				select: {
+					id: true,
+					firstName: true,
+					lastName: true,
+					family: { select: { name: true } },
+				},
+			})
+		: [];
+	const leaderStudentMap = new Map(leaderStudents.map((item) => [item.id, item]));
+
+	const milestones = {
+		...buildMilestoneSummary(yearMilestones),
+		topHifz: juzLeaders.map((item) => {
+			const student = leaderStudentMap.get(item.studentId);
+
+			return {
+				studentId: item.studentId,
+				name: student ? `${student.firstName} ${student.lastName}` : 'Unknown',
+				familyName: student?.family.name || '',
+				juz: item._count._all,
+			};
+		}),
+	};
+
 	return success({
 		totals,
+		milestones,
 		monthly,
 		genderSplit: { boys, girls },
 		paymentStatus,

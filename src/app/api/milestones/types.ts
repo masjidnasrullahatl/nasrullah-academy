@@ -8,6 +8,8 @@ export type GetMilestonesQueryParams = PagingQueryParams & {
 	studentId?: string;
 	programId?: string;
 	type?: MilestoneType;
+	dateFrom?: string;
+	dateTo?: string;
 };
 
 export const CreateMilestoneSchema = z

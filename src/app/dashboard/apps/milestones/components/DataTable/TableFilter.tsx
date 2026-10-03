@@ -1,7 +1,13 @@
 import { Group, Input, Select } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import { useDebouncedCallback } from '@mantine/hooks';
 
-import { IconCategory, IconSearch, IconTrophy } from '@tabler/icons-react';
+import {
+	IconCalendar,
+	IconCategory,
+	IconSearch,
+	IconTrophy,
+} from '@tabler/icons-react';
 
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
@@ -12,9 +18,16 @@ import type { MilestoneFilterKey } from '.';
 type Props = {
 	// eslint-disable-next-line no-unused-vars
 	onChangeFilter: (key: MilestoneFilterKey, value: string) => void;
+	dateRange: [Date | null, Date | null];
+	// eslint-disable-next-line no-unused-vars
+	onChangeDateRange: (value: [Date | null, Date | null]) => void;
 };
 
-export const TableFilter = ({ onChangeFilter }: Props) => {
+export const TableFilter = ({
+	onChangeFilter,
+	dateRange,
+	onChangeDateRange,
+}: Props) => {
 	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const debounceChangeKeyword = useDebouncedCallback((value: string) => {
@@ -48,6 +61,19 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 				data={MILESTONE_TYPE_OPTIONS}
 				onChange={(value) => onChangeFilter('type', value || '')}
 				clearable
+			/>
+
+			<DatePickerInput
+				type="range"
+				placeholder="Any date"
+				leftSection={<IconCalendar size={16} />}
+				valueFormat="MM/DD/YYYY"
+				clearable
+				miw={220}
+				value={dateRange}
+				onChange={(value) =>
+					onChangeDateRange(value as [Date | null, Date | null])
+				}
 			/>
 		</Group>
 	);
