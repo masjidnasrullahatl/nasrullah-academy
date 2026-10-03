@@ -1,11 +1,10 @@
-import { AuthRequest } from '@app/api/types/common';
 import { success } from '@app/api/utils/response';
 import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
 // Book names already recorded, offered as suggestions so spelling stays consistent
-const getBookNames = async (_: AuthRequest) => {
+const getBookNames = async () => {
 	const prisma = createClient();
 
 	const books = await prisma.milestones.findMany({
