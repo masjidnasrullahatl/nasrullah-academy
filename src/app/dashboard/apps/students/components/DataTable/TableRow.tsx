@@ -1,4 +1,12 @@
-import { ActionIcon, Badge, Group, Table, Text, Tooltip } from '@mantine/core';
+import {
+	ActionIcon,
+	Badge,
+	Group,
+	Table,
+	Text,
+	Tooltip,
+	UnstyledButton,
+} from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -7,6 +15,7 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 import { useDeleteStudent } from '@hooks/react-query/students/useDeleteStudent';
 
+import { StudentMilestonesModal } from '../../../milestones/components/StudentMilestonesModal';
 import { StudentFormModal } from '../StudentFormModal';
 
 type Props = {
@@ -25,6 +34,14 @@ export const TableRow = ({ student, page, index, pageSize }: Props) => {
 			title: 'Edit Student',
 			children: <StudentFormModal student={item} />,
 			size: 'lg',
+		});
+	};
+
+	const handleMilestones = (item: any) => {
+		modals.open({
+			title: `Milestones: ${item.firstName} ${item.lastName}`,
+			size: 'lg',
+			children: <StudentMilestonesModal studentId={item.id} />,
 		});
 	};
 
@@ -82,6 +99,25 @@ export const TableRow = ({ student, page, index, pageSize }: Props) => {
 						</Badge>
 					))}
 				</Group>
+			</Table.Td>
+
+			<Table.Td w={150}>
+				<UnstyledButton onClick={() => handleMilestones(student)}>
+					{student.juzCount || student.bookCount ? (
+						<Group gap={4} wrap="nowrap">
+							<Badge color="yellow" variant="light">
+								{student.juzCount} Juz
+							</Badge>
+							<Badge color="blue" variant="light">
+								{student.bookCount} {student.bookCount === 1 ? 'Book' : 'Books'}
+							</Badge>
+						</Group>
+					) : (
+						<Text size="sm" c="blue">
+							View / record
+						</Text>
+					)}
+				</UnstyledButton>
 			</Table.Td>
 
 			<Table.Td w={100} ta="center">

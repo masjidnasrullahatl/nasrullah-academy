@@ -48,6 +48,11 @@ enum PaymentStatus {
 	NA
 }
 
+enum MilestoneType {
+	JUZ
+	BOOK
+}
+
 enum PayPeriodStatus {
 	OPEN
 	LOCKED
@@ -127,6 +132,26 @@ model StudentPrograms {
 	@@map("student_programs")
 }
 
+model Milestones {
+	id String @id @default(uuid())
+
+	type        MilestoneType
+	juzNumber   Int?          @map("juz_number")
+	bookName    String?       @map("book_name")
+	completedAt DateTime      @map("completed_at") @db.Date
+	notes       String?
+
+	studentId String   @map("student_id")
+	student   Students @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+	createdAt DateTime @default(now()) @map("created_at")
+	updatedAt DateTime @updatedAt @map("updated_at")
+
+	@@unique([studentId, juzNumber])
+	@@index([completedAt])
+	@@map("milestones")
+}
+
 model Students {
 	id String @id @default(uuid())
 
@@ -143,6 +168,7 @@ model Students {
 
 	enrollments Enrollments[]
 	programs    StudentPrograms[]
+	milestones  Milestones[]
 
 	createdAt DateTime @default(now()) @map("created_at")
 	updatedAt DateTime @updatedAt @map("updated_at")
