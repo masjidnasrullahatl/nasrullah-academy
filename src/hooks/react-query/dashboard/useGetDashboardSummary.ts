@@ -31,7 +31,7 @@ export type DashboardSummary = {
 	genderSplit: { boys: number; girls: number };
 	paymentStatus: Array<{ status: 'PAID' | 'PARTIAL' | 'UNPAID' | 'NA'; count: number; amount: number }>;
 	payMethodSplit: Array<{
-		method: 'KEELA' | 'ZELLE' | 'CASH' | 'CASHAPP' | 'CHECK' | 'FREE' | 'OTHER' | 'NA';
+		method: 'KEELA' | 'ZELLE' | 'CASH' | 'CASHAPP' | 'CARD' | 'CHECK' | 'FREE' | 'OTHER' | 'NA';
 		count: number;
 		amount: number;
 	}>;

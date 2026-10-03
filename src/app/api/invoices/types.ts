@@ -31,7 +31,7 @@ export const CreateInvoiceSchema = z.object({
 	studentCount: z.number().int().min(0).default(0),
 	...InvoiceFeeFields,
 	payMethod: z
-		.enum(['KEELA', 'ZELLE', 'CASH', 'CASHAPP', 'SQUARE', 'CHECK', 'FREE', 'OTHER', 'NA'])
+		.enum(['KEELA', 'ZELLE', 'CASH', 'CASHAPP', 'SQUARE', 'CHECK', 'FREE', 'OTHER', 'NA', 'CARD'])
 		.default('NA'),
 	paymentStatus: z.enum(['PAID', 'PARTIAL', 'UNPAID', 'NA']).default('UNPAID'),
 	paidAt: z.union([z.string(), z.date()]).optional().nullable(),

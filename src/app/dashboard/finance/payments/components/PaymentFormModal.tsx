@@ -66,6 +66,7 @@ type FormValue = {
 		| 'ZELLE'
 		| 'CASH'
 		| 'CASHAPP'
+		| 'CARD'
 		| 'SQUARE'
 		| 'CHECK'
 		| 'FREE'

@@ -12,7 +12,7 @@ import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
-import { UpdateProgramSchema } from '../types';
+import { isUniqueError, UpdateProgramSchema } from '../types';
 
 const getDetail = async (
 	_: AuthRequest,
@@ -65,6 +65,12 @@ const update = async (
 				name: data.name,
 				description: data.description ?? null,
 				status: data.status,
+				slug: data.slug === undefined ? undefined : data.slug || null,
+				registrationOpen: data.registrationOpen,
+				registrationFee: data.registrationFee,
+				monthlyFees: data.monthlyFees,
+				classTimes: data.classTimes,
+				publicInfo: data.publicInfo,
 			},
 			include: { _count: { select: { classes: true, invoices: true } } },
 		});
@@ -74,6 +80,10 @@ const update = async (
 		console.log('Update program error', error);
 
 		if (error instanceof ZodError) return catchZodError(error);
+
+		if (isUniqueError(error)) {
+			return badRequest('That registration link is already used by another program');
+		}
 
 		return internalServerError();
 	}

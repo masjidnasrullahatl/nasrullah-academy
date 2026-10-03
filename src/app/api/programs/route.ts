@@ -11,7 +11,7 @@ import { createClient } from '@helpers/prisma/server';
 import { catchZodError } from '../utils/catchZodError';
 import { badRequest, internalServerError, success } from '../utils/response';
 
-import { CreateProgramSchema } from './types';
+import { CreateProgramSchema, isUniqueError } from './types';
 
 const getPaging = async (request: AuthRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -62,6 +62,12 @@ const create = async (request: AuthRequest) => {
 				name: data.name,
 				description: data.description || null,
 				status: data.status || 'ACTIVE',
+				slug: data.slug || null,
+				registrationOpen: data.registrationOpen,
+				registrationFee: data.registrationFee,
+				monthlyFees: data.monthlyFees,
+				classTimes: data.classTimes,
+				publicInfo: data.publicInfo ?? null,
 			},
 			include: { _count: { select: { classes: true, invoices: true } } },
 		});
@@ -71,6 +77,10 @@ const create = async (request: AuthRequest) => {
 		console.log('Create program error', error);
 
 		if (error instanceof ZodError) return catchZodError(error);
+
+		if (isUniqueError(error)) {
+			return badRequest('That registration link is already used by another program');
+		}
 
 		return internalServerError();
 	}
