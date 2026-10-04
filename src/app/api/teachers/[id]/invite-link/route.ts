@@ -49,7 +49,8 @@ const getInviteLink = async (
 			return badRequest(error?.message || 'Unable to generate invite link');
 		}
 
-		const link = `${NEXT_PUBLIC_SITE_URL}/auth/confirm?token_hash=${
+		// Opens the "Create my password" page; the token is only used on click
+		const link = `${NEXT_PUBLIC_SITE_URL}/auth/accept?token_hash=${
 			data.properties.hashed_token
 		}&type=recovery&next=${encodeURIComponent('/auth/password-reset/confirm')}`;
 
