@@ -39,6 +39,7 @@ enum PayMethod {
 	FREE
 	OTHER
 	NA
+	CARD
 }
 
 enum PaymentStatus {
@@ -46,6 +47,12 @@ enum PaymentStatus {
 	PARTIAL
 	UNPAID
 	NA
+}
+
+enum RegistrationStatus {
+	PENDING
+	APPROVED
+	REJECTED
 }
 
 enum MilestoneType {
@@ -65,7 +72,16 @@ model Programs {
 	name        String        @unique
 	description String?
 	status      ArchiveStatus @default(ACTIVE)
+
+	slug             String?   @unique
+	registrationOpen Boolean   @default(false) @map("registration_open")
+	registrationFee  Decimal   @default(0) @map("registration_fee") @db.Decimal(10, 2)
+	monthlyFees      Decimal[] @default([]) @map("monthly_fees") @db.Decimal(10, 2)
+	classTimes       String[]  @default([]) @map("class_times")
+	publicInfo       String?   @map("public_info")
+
 	classes     Classes[]
+	registrations Registrations[]
 	families    FamilyPrograms[]
 	students    StudentPrograms[]
 
@@ -93,6 +109,7 @@ model Families {
 	students Students[]
 	invoices MonthlyInvoices[]
 	programs FamilyPrograms[]
+	registrations Registrations[]
 
 	createdAt DateTime @default(now()) @map("created_at")
 	updatedAt DateTime @updatedAt @map("updated_at")
@@ -150,6 +167,50 @@ model Milestones {
 	@@unique([studentId, juzNumber])
 	@@index([completedAt])
 	@@map("milestones")
+}
+
+model Registrations {
+	id String @id @default(uuid())
+
+	status RegistrationStatus @default(PENDING)
+
+	parentFirstName String  @map("parent_first_name")
+	parentLastName  String  @map("parent_last_name")
+	email           String
+	phone           String
+	emergencyPhone  String? @map("emergency_phone")
+	address         String?
+	preferredTime   String? @map("preferred_time")
+	notes           String?
+
+	// [{ firstName, lastName, gender, dateOfBirth, notes }]
+	students     Json
+	studentCount Int  @map("student_count")
+
+	monthlyFee      Decimal @map("monthly_fee") @db.Decimal(10, 2)
+	registrationFee Decimal @map("registration_fee") @db.Decimal(10, 2)
+	amountDue       Decimal @map("amount_due") @db.Decimal(10, 2)
+
+	payByCard            Boolean       @default(false) @map("pay_by_card")
+	paymentStatus        PaymentStatus @default(UNPAID) @map("payment_status")
+	paidAt               DateTime?     @map("paid_at")
+	stripeSessionId      String?       @unique @map("stripe_session_id")
+	stripeCustomerId     String?       @map("stripe_customer_id")
+	stripeSubscriptionId String?       @map("stripe_subscription_id")
+
+	programId String   @map("program_id")
+	program   Programs @relation(fields: [programId], references: [id])
+
+	familyId String?   @map("family_id")
+	family   Families? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+	reviewedAt DateTime? @map("reviewed_at")
+
+	createdAt DateTime @default(now()) @map("created_at")
+	updatedAt DateTime @updatedAt @map("updated_at")
+
+	@@index([status])
+	@@map("registrations")
 }
 
 model Students {

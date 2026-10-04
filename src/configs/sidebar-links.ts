@@ -2,6 +2,7 @@ import {
 	IconCalendarDollar,
 	IconCategory,
 	IconChalkboard,
+	IconClipboardList,
 	IconKey,
 	IconLayoutDashboard,
 	IconReceipt,
@@ -42,6 +43,11 @@ export const SIDEBAR_LINKS = [
 				label: 'Classes',
 				icon: IconSchool,
 				link: PATH_APPS.classes,
+			},
+			{
+				label: 'Registrations',
+				icon: IconClipboardList,
+				link: PATH_APPS.registrations,
 			},
 			{
 				label: 'Families',

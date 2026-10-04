@@ -4,6 +4,10 @@ export const QUERY_KEYS = {
 	STUDENTS: { GET_PAGING: 'students.get-paging' },
 	TEACHERS: { GET_PAGING: 'teachers.get-paging' },
 	PROGRAMS: { GET_PAGING: 'programs.get-paging' },
+	REGISTRATIONS: {
+		GET_PAGING: 'registrations.get-paging',
+		GET_DETAIL: 'registrations.get-detail',
+	},
 	MILESTONES: {
 		GET_PAGING: 'milestones.get-paging',
 		BOOKS: 'milestones.books',

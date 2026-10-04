@@ -15,6 +15,9 @@ const RESET_PASSWORD_PAGE = '/auth/password-reset/confirm';
 
 const PUBLIC_PAGES = [PATH_AUTH.signin, PATH_AUTH.passwordReset];
 
+// Open to everyone, signed in or not (parents registering their children)
+const OPEN_PAGES = ['/register'];
+
 interface AuthProviderProps {
 	children: ReactNode;
 }
@@ -26,6 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const { setUser, setSession, setRole } = useAuthStore();
 
+	const isOpenPage = OPEN_PAGES.some((page) => pathname?.startsWith(page));
 	const isPublicPage = PUBLIC_PAGES.some((page) => pathname?.startsWith(page));
 	const isResetPasswordPage = pathname?.startsWith(RESET_PASSWORD_PAGE);
 	const isSigninPage = pathname?.startsWith(PATH_AUTH.signin);
@@ -33,6 +37,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	const isDashboardPath = pathname?.startsWith(PATH_DASHBOARD.root);
 
 	useEffect(() => {
+		if (isOpenPage) return;
+
 		const supabase = createClient();
 
 		// Check initial session
@@ -141,6 +147,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		};
 	}, [
 		isDashboardPath,
+		isOpenPage,
 		isPublicPage,
 		isResetPasswordPage,
 		isSigninPage,
@@ -150,6 +157,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		setSession,
 		setUser,
 	]);
+
+	if (isOpenPage) return <>{children}</>;
 
 	// Show loading while checking authentication
 	if (isLoading) return null;

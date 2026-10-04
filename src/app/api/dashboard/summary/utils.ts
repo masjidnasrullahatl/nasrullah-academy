@@ -27,6 +27,7 @@ export const PAY_METHOD_ORDER: PayMethod[] = [
 	PayMethod.ZELLE,
 	PayMethod.CASH,
 	PayMethod.CASHAPP,
+	PayMethod.CARD,
 	PayMethod.SQUARE,
 	PayMethod.CHECK,
 	PayMethod.FREE,
