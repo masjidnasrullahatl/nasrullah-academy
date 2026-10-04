@@ -7,7 +7,9 @@ import { badRequest, internalServerError } from '@app/api/utils/response';
 
 import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
 
+import { sendEmail } from '@helpers/email';
 import { createClient } from '@helpers/prisma/server';
+import { registrationReceivedEmail } from '@helpers/registrationEmails';
 import { createCheckoutSession, isStripeEnabled } from '@helpers/stripe';
 
 import { getRegistrationQuote } from '@utils/registrationPricing';
@@ -65,6 +67,19 @@ export async function POST(request: NextRequest) {
 				amountDue: quote.firstPayment,
 				payByCard,
 			},
+		});
+
+		await sendEmail({
+			to: payload.email,
+			...registrationReceivedEmail(program.name, {
+				parentFirstName: payload.parentFirstName,
+				students: payload.students,
+				preferredTime: payload.preferredTime || null,
+				payByCard,
+				registrationFee: quote.registration,
+				monthlyFee: quote.monthly,
+				amountDue: quote.firstPayment,
+			}),
 		});
 
 		if (!payByCard) {

@@ -10,9 +10,15 @@ import {
 } from '@app/api/utils/response';
 import { withStaff } from '@app/api/utils/withStaff';
 
+import { sendEmail } from '@helpers/email';
 import { createClient } from '@helpers/prisma/server';
+import { registrationApprovedEmail } from '@helpers/registrationEmails';
 
-import { ApproveRegistrationSchema } from '../../types';
+import {
+	ApproveRegistrationSchema,
+	mapRegistration,
+	registrationInclude,
+} from '../../types';
 import { approveRegistration } from '../../utils';
 
 const approve = async (
@@ -39,6 +45,34 @@ const approve = async (
 		const result = await prisma.$transaction((tx) =>
 			approveRegistration(tx, id, payload.familyId || null),
 		);
+
+		const approved = mapRegistration(
+			await prisma.registrations.findUniqueOrThrow({
+				where: { id: result.id },
+				include: registrationInclude,
+			}),
+		);
+
+		const familyProgram = approved.familyId
+			? await prisma.familyPrograms.findUnique({
+					where: {
+						familyId_programId: {
+							familyId: approved.familyId,
+							programId: approved.programId,
+						},
+					},
+				})
+			: null;
+
+		await sendEmail({
+			to: approved.email,
+			...registrationApprovedEmail(
+				approved.program.name,
+				approved,
+				Number(familyProgram?.monthlyFee ?? approved.monthlyFee),
+				approved.paymentStatus === 'PAID',
+			),
+		});
 
 		return success(result);
 	} catch (error) {
