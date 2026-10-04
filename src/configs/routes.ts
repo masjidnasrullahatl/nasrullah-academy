@@ -58,4 +58,5 @@ export const PATH_AUTH = {
 	root: ROOTS_AUTH,
 	signin: path(ROOTS_AUTH, '/signin'),
 	passwordReset: path(ROOTS_AUTH, '/password-reset'),
+	accept: path(ROOTS_AUTH, '/accept'),
 };

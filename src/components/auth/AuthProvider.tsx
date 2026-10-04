@@ -13,7 +13,11 @@ import { createClient } from '@helpers/supabase/client';
 // Pages that don't require authentication
 const RESET_PASSWORD_PAGE = '/auth/password-reset/confirm';
 
-const PUBLIC_PAGES = [PATH_AUTH.signin, PATH_AUTH.passwordReset];
+const PUBLIC_PAGES = [
+	PATH_AUTH.signin,
+	PATH_AUTH.passwordReset,
+	PATH_AUTH.accept,
+];
 
 // Open to everyone, signed in or not (parents registering their children)
 const OPEN_PAGES = ['/register'];
