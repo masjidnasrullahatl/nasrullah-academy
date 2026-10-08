@@ -38,6 +38,12 @@ const update = async (
 				email: data.email || null,
 				hourlyRate: data.hourlyRate ?? null,
 				status: data.status,
+				...(data.programIds && {
+					programs: {
+						deleteMany: {},
+						create: data.programIds.map((programId) => ({ programId })),
+					},
+				}),
 			},
 		});
 

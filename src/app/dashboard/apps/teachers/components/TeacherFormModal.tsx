@@ -2,6 +2,7 @@ import {
 	Alert,
 	Button,
 	Group,
+	MultiSelect,
 	NumberInput,
 	Select,
 	Stack,
@@ -24,6 +25,7 @@ import { ModalFooter } from '@components/ModalFooter';
 
 import { RECORD_STATUS_OPTIONS } from '@configs/enums';
 
+import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 import { useCreateTeacher } from '@hooks/react-query/teachers/useCreateTeacher';
 import { TeacherRow } from '@hooks/react-query/teachers/useGetPagingTeachers';
 import { useUpdateTeacher } from '@hooks/react-query/teachers/useUpdateTeacher';
@@ -39,10 +41,12 @@ type FormValue = {
 	email: string;
 	hourlyRate: number;
 	status: 'ACTIVE' | 'INACTIVE';
+	programIds: string[];
 };
 
 export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 	const isEdit = Boolean(teacher?.id);
+	const { data: programs } = useGetPagingPrograms({ page: 1, limit: 100 });
 
 	const {
 		mutateAsync: createTeacher,
@@ -65,6 +69,7 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 			phoneNumber: teacher?.phoneNumber || '',
 			email: teacher?.email || '',
 			hourlyRate: teacher?.hourlyRate || 0,
+			programIds: teacher?.programs?.map((program) => program.id) || [],
 			status: teacher?.status || 'ACTIVE',
 		},
 		validate: zod4Resolver(CreateTeacherSchema),
@@ -78,6 +83,7 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 				phoneNumber: values.phoneNumber || null,
 				email: values.email,
 				hourlyRate: values.hourlyRate || null,
+				programIds: values.programIds,
 				status: values.status,
 			};
 			await updateTeacher({ id: teacher.id, data: payload });
@@ -94,6 +100,7 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 				phoneNumber: values.phoneNumber || null,
 				email: values.email,
 				hourlyRate: values.hourlyRate || null,
+				programIds: values.programIds,
 				status: values.status,
 			};
 			const created = await createTeacher(payload);
@@ -165,6 +172,17 @@ export const TeacherFormModal = ({ teacher }: TeacherFormModalProps) => {
 						fixedDecimalScale
 						min={0}
 						{...form.getInputProps('hourlyRate')}
+					/>
+
+					<MultiSelect
+						label="Programs taught"
+						description="The teacher enters hours for each of these programs"
+						placeholder="Select programs"
+						data={programs?.data.map((program) => ({
+							value: program.id,
+							label: program.name,
+						}))}
+						{...form.getInputProps('programIds')}
 					/>
 
 					<Select

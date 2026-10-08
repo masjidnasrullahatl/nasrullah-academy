@@ -176,6 +176,16 @@ export const TableRow = ({ teacher, page, index, pageSize }: Props) => {
 
 			<Table.Td>
 				<Group gap={4}>
+					{teacher.programs.map((program) => (
+						<Badge key={program.id} variant="light" color="grape">
+							{program.name}
+						</Badge>
+					))}
+				</Group>
+			</Table.Td>
+
+			<Table.Td>
+				<Group gap={4}>
 					{teacher.classes.map((classItem) => (
 						<Badge key={classItem.id} variant="light">
 							{classItem.name}

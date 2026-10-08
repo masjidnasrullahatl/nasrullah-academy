@@ -23,9 +23,8 @@ export const useGeneratePay = () => {
 				queryKey: [QUERY_KEYS.PAY_PERIODS.GET_ONE, variables.payPeriodId],
 			});
 			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.PAY_PERIODS.GET_SUBMISSIONS, variables.payPeriodId],
+				queryKey: [QUERY_KEYS.PAY_PERIODS.GET_TIMESHEETS, variables.payPeriodId],
 			});
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TIME_ENTRIES.GET_PAGING] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PAY_RECORDS.GET_PAGING] });
 		},
 	});

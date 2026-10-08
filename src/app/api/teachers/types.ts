@@ -15,6 +15,7 @@ export const CreateTeacherSchema = z.object({
 	email: z.string().min(1, 'Email is required').email('Invalid email'),
 	hourlyRate: z.coerce.number().min(0).optional().nullable(),
 	status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
+	programIds: z.array(z.string()).optional(),
 });
 
 export const UpdateTeacherSchema = CreateTeacherSchema;

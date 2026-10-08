@@ -16,7 +16,7 @@ export type TeacherPayPeriod = {
 
 export const useGetTeacherPayPeriods = () => {
 	return useQuery({
-		queryKey: [QUERY_KEYS.TEACHER.MY_TIME_ENTRIES, 'pay-periods'],
+		queryKey: [QUERY_KEYS.TEACHER.MY_PAY_PERIODS],
 		queryFn: async () => {
 			const response = await fetchAuth('/api/teacher/me/pay-periods');
 			const data: ApiResponse<TeacherPayPeriod[]> = await response.json();

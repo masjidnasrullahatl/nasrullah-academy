@@ -44,7 +44,7 @@ export const DataTable = () => {
 	});
 
 	const totalTeachersWithClasses =
-		teachers?.data.filter((teacher) => teacher._count.classes > 0).length || 0;
+		teachers?.data.filter((teacher) => teacher.programs.length > 0).length || 0;
 
 	const handleChangeFilter = (key: 'keyword' | 'status', value: string) => {
 		setFilter((prev) => ({

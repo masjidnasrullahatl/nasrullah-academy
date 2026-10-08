@@ -50,7 +50,7 @@ const getSummary = async (request: AuthRequest) => {
 	const expenseEntriesWhere: Prisma.TimeEntriesWhereInput = {
 		date: { gte: yearStart, lte: yearEnd },
 		payPeriod: { status: { in: ['LOCKED', 'PAID'] } },
-		...(programId ? { class: { programId } } : {}),
+		...(programId ? { programId } : {}),
 	};
 
 	const milestoneStudentWhere: Prisma.MilestonesWhereInput = {
@@ -139,9 +139,8 @@ const getSummary = async (request: AuthRequest) => {
 			select: {
 				date: true,
 				hours: true,
-				classId: true,
+				programId: true,
 				teacher: { select: { hourlyRate: true } },
-				class: { select: { programId: true } },
 			},
 		}),
 		prisma.programs.findMany({
@@ -193,11 +192,8 @@ const getSummary = async (request: AuthRequest) => {
 		]),
 	);
 
-	const {
-		byMonth: expenseByMonth,
-		byClass: expenseByClass,
-		byProgram: expenseByProgram,
-	} = aggregateExpenses(expenseEntries);
+	const { byMonth: expenseByMonth, byProgram: expenseByProgram } =
+		aggregateExpenses(expenseEntries);
 
 	const countByClass = countEnrollmentsByClass(activeEnrollments);
 
@@ -216,7 +212,7 @@ const getSummary = async (request: AuthRequest) => {
 		countByClass,
 		enrollmentsByProgram,
 		programRevenueMap,
-		expenseByClass,
+		expenseByProgram,
 	);
 
 	const programSummary = buildProgramSummary(

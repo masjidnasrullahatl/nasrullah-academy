@@ -18,7 +18,7 @@ export const TEACHER_SIDEBAR_LINKS = [
 				link: PATH_TEACHER_APPS.classes,
 			},
 			{
-				label: 'Time Entry',
+				label: 'Timesheet',
 				icon: IconClock,
 				link: PATH_TEACHER_APPS.timeEntries,
 			},
