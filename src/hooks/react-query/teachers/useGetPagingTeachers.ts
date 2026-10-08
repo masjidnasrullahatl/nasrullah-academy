@@ -22,6 +22,7 @@ export type TeacherRow = {
 	hasAccount: boolean;
 	classes: Classes[];
 	_count: { classes: number };
+	programs: Array<{ id: string; name: string }>;
 };
 
 export const useGetPagingTeachers = (params: GetTeachersQueryParams) => {

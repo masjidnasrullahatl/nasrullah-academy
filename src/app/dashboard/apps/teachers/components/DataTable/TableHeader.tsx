@@ -18,6 +18,8 @@ export const TableHeader = () => {
 
 				<Table.Th ta="right">Rate</Table.Th>
 
+				<Table.Th>Programs</Table.Th>
+
 				<Table.Th>Classes</Table.Th>
 
 				<Table.Th ta="center">Status</Table.Th>

@@ -41,9 +41,8 @@ export const toNumber = (value: Prisma.Decimal | number | null | undefined) =>
 type ExpenseEntry = {
 	date: Date;
 	hours: Prisma.Decimal;
-	classId: string;
+	programId: string;
 	teacher: { hourlyRate: Prisma.Decimal | null };
-	class: { programId: string };
 };
 
 type EnrollmentRow = {
@@ -85,7 +84,6 @@ type EnumBreakdownRow<V extends string> = {
 
 export const aggregateExpenses = (entries: ExpenseEntry[]) => {
 	const byMonth = new Map<number, number>();
-	const byClass = new Map<string, number>();
 	const byProgram = new Map<string, number>();
 
 	for (const entry of entries) {
@@ -93,14 +91,13 @@ export const aggregateExpenses = (entries: ExpenseEntry[]) => {
 		const expense = toNumber(entry.hours) * toNumber(entry.teacher.hourlyRate);
 
 		byMonth.set(month, (byMonth.get(month) || 0) + expense);
-		byClass.set(entry.classId, (byClass.get(entry.classId) || 0) + expense);
 		byProgram.set(
-			entry.class.programId,
-			(byProgram.get(entry.class.programId) || 0) + expense,
+			entry.programId,
+			(byProgram.get(entry.programId) || 0) + expense,
 		);
 	}
 
-	return { byMonth, byClass, byProgram };
+	return { byMonth, byProgram };
 };
 
 export const countEnrollmentsByClass = (enrollments: EnrollmentRow[]) => {
@@ -205,7 +202,7 @@ export const buildClassProfitLoss = (
 	countByClass: Map<string, number>,
 	enrollmentsByProgram: Map<string, number>,
 	programRevenueMap: Map<string, number>,
-	expenseByClass: Map<string, number>,
+	expenseByProgram: Map<string, number>,
 ) =>
 	classes
 		.map((classItem) => {
@@ -216,12 +213,16 @@ export const buildClassProfitLoss = (
 
 			const programRevenue = programRevenueMap.get(classItem.programId) || 0;
 
-			const revenue =
+			// Teachers log hours per program, so both revenue and teaching cost
+			// are shared out to classes by their share of the program's students
+			const share =
 				totalProgramEnrollments > 0
-					? (programRevenue * enrollmentCount) / totalProgramEnrollments
+					? enrollmentCount / totalProgramEnrollments
 					: 0;
 
-			const expense = expenseByClass.get(classItem.id) || 0;
+			const revenue = programRevenue * share;
+			const expense =
+				(expenseByProgram.get(classItem.programId) || 0) * share;
 
 			return {
 				classId: classItem.id,

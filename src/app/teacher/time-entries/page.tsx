@@ -6,11 +6,11 @@ import PageHeader from '@components/PageHeader';
 
 import { PATH_TEACHER, PATH_TEACHER_APPS } from '@configs/routes';
 
-import { DataTable } from './components/DataTable';
+import { TimesheetForm } from './components/TimesheetForm';
 
 const items = [
 	{ title: 'Teacher', href: PATH_TEACHER.default },
-	{ title: 'Time Entry', href: PATH_TEACHER_APPS.timeEntries },
+	{ title: 'Timesheet', href: PATH_TEACHER_APPS.timeEntries },
 ].map((item, index) => (
 	<Anchor href={item.href} key={index}>
 		{item.title}
@@ -20,12 +20,12 @@ const items = [
 export default function TeacherTimeEntriesPage() {
 	return (
 		<>
-			<title>Time Entry | Nasrullah Academy</title>
+			<title>Timesheet | Nasrullah Academy</title>
 
 			<Container fluid>
 				<Stack>
-					<PageHeader title="Time Entry" breadcrumbItems={items} />
-					<DataTable />
+					<PageHeader title="Timesheet" breadcrumbItems={items} />
+					<TimesheetForm />
 				</Stack>
 			</Container>
 		</>

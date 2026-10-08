@@ -46,11 +46,16 @@ const getPaging = async (request: AuthRequest) => {
 		skip,
 		take: limit,
 		orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
-		include: { classes: true, _count: { select: { classes: true } } },
+		include: {
+			classes: true,
+			programs: { select: { program: { select: { id: true, name: true } } } },
+			_count: { select: { classes: true } },
+		},
 	});
 
 	const data = teachers.map((teacher) => ({
 		...teacher,
+		programs: teacher.programs.map((item) => item.program),
 		hourlyRate: teacher.hourlyRate === null ? null : Number(teacher.hourlyRate),
 		hasAccount: Boolean(teacher.supabaseUserId),
 	}));
@@ -79,6 +84,9 @@ const create = async (request: AuthRequest) => {
 				email: data.email,
 				hourlyRate: data.hourlyRate ?? null,
 				status: data.status,
+				programs: {
+					create: (data.programIds || []).map((programId) => ({ programId })),
+				},
 			},
 		});
 

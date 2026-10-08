@@ -84,6 +84,8 @@ model Programs {
 	registrations Registrations[]
 	families    FamilyPrograms[]
 	students    StudentPrograms[]
+	teachers    TeacherPrograms[]
+	timeEntries TimeEntries[]
 
 	invoices    MonthlyInvoices[]
 
@@ -238,6 +240,20 @@ model Students {
 	@@map("students")
 }
 
+model TeacherPrograms {
+	teacherId String   @map("teacher_id")
+	teacher   Teachers @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+	programId String   @map("program_id")
+	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+	createdAt DateTime @default(now()) @map("created_at")
+
+	@@id([teacherId, programId])
+	@@index([programId])
+	@@map("teacher_programs")
+}
+
 model Teachers {
 	id String @id @default(uuid())
 
@@ -250,6 +266,7 @@ model Teachers {
 	status         RecordStatus @default(ACTIVE)
 
 	classes     Classes[]
+	programs    TeacherPrograms[]
 	timeEntries TimeEntries[]
 	payRecords  PayRecords[]
 	submissions TeacherSubmissions[]
@@ -366,8 +383,11 @@ model TimeEntries {
 	teacherId String   @map("teacher_id")
 	teacher   Teachers @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
-	classId String  @map("class_id")
-	class   Classes @relation(fields: [classId], references: [id], onDelete: Cascade)
+	classId String?  @map("class_id")
+	class   Classes? @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+	programId String   @map("program_id")
+	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
 
 	payPeriodId String     @map("pay_period_id")
 	payPeriod   PayPeriods @relation(fields: [payPeriodId], references: [id], onDelete: Cascade)
@@ -377,6 +397,7 @@ model TimeEntries {
 
 	@@index([teacherId, payPeriodId])
 	@@index([payPeriodId])
+	@@index([programId])
 	@@map("time_entries")
 }
 
