@@ -23,6 +23,8 @@ export const FamilyProgramInputSchema = z.object({
 	programId: z.string().min(1),
 	studentCount: z.number().int().min(0).default(0),
 	monthlyFee: z.number().min(0).default(0),
+	discount: z.number().min(0).default(0),
+	discountNote: z.string().trim().optional().nullable(),
 });
 
 export const CreateFamilySchema = z.object({

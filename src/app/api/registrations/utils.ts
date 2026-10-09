@@ -2,7 +2,9 @@ import { Prisma, PrismaClient } from '@prisma/client';
 
 import { RegistrationStudent } from '@app/api/public/registrations/types';
 
-import { tuitionForKids } from '@utils/registrationPricing';
+import { chargedFee, tuitionForKids } from '@utils/registrationPricing';
+
+import { ApprovalOptions } from './types';
 
 type Tx = Prisma.TransactionClient | PrismaClient;
 
@@ -84,8 +86,10 @@ const paidFields = (invoice: {
 export const approveRegistration = async (
 	tx: Prisma.TransactionClient,
 	registrationId: string,
-	familyId: string | null,
+	options: ApprovalOptions,
 ) => {
+	const { familyId, discount, discountNote, waiveRegistrationFee } = options;
+
 	const registration = await tx.registrations.findUniqueOrThrow({
 		where: { id: registrationId },
 		include: { program: true },
@@ -162,11 +166,21 @@ export const approveRegistration = async (
 		kids,
 	);
 
+	const discountData = { discount, discountNote: discount > 0 ? discountNote : null };
+
 	await tx.familyPrograms.upsert({
 		where: { familyId_programId: { familyId: family.id, programId } },
-		create: { familyId: family.id, programId, studentCount: kids, monthlyFee },
-		update: { studentCount: kids, monthlyFee },
+		create: {
+			familyId: family.id,
+			programId,
+			studentCount: kids,
+			monthlyFee,
+			...discountData,
+		},
+		update: { studentCount: kids, monthlyFee, ...discountData },
 	});
+
+	const charged = chargedFee(monthlyFee, discount);
 
 	const { year, month } = currentPeriod();
 	const invoiceKey = {
@@ -184,10 +198,8 @@ export const approveRegistration = async (
 
 	const registrationFee =
 		Number(existingInvoice?.registrationFee || 0) +
-		Number(registration.registrationFee);
-	const tuitionFee = existingInvoice
-		? Number(existingInvoice.tuitionFee)
-		: monthlyFee;
+		(waiveRegistrationFee ? 0 : Number(registration.registrationFee));
+	const tuitionFee = existingInvoice ? Number(existingInvoice.tuitionFee) : charged;
 	const bookFee = Number(existingInvoice?.bookFee || 0);
 	const totalDue = registrationFee + tuitionFee + bookFee;
 	const alreadyPaid = Number(existingInvoice?.totalPaid || 0);
@@ -199,7 +211,14 @@ export const approveRegistration = async (
 		bookFee,
 		totalDue,
 		balance: totalDue - alreadyPaid,
-		notes: existingInvoice?.notes || 'Online registration',
+		notes: [
+			existingInvoice?.notes || 'Online registration',
+			waiveRegistrationFee && 'registration fee waived',
+			discount > 0 &&
+				`discount ${discount.toFixed(2)}${discountNote ? ` (${discountNote})` : ''}`,
+		]
+			.filter(Boolean)
+			.join('; '),
 	};
 
 	const invoice = existingInvoice
@@ -253,9 +272,18 @@ export const markMonthPaidByCard = async (
 				year,
 				month,
 				studentCount: familyProgram.studentCount,
-				tuitionFee: familyProgram.monthlyFee,
-				totalDue: familyProgram.monthlyFee,
-				balance: familyProgram.monthlyFee,
+				tuitionFee: chargedFee(
+					Number(familyProgram.monthlyFee),
+					Number(familyProgram.discount),
+				),
+				totalDue: chargedFee(
+					Number(familyProgram.monthlyFee),
+					Number(familyProgram.discount),
+				),
+				balance: chargedFee(
+					Number(familyProgram.monthlyFee),
+					Number(familyProgram.discount),
+				),
 			},
 		});
 	}

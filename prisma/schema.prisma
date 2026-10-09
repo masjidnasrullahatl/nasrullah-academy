@@ -128,7 +128,10 @@ model FamilyPrograms {
 	program   Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
 
 	studentCount Int     @default(0) @map("student_count")
+	// standard monthly tuition; the family is charged monthlyFee - discount
 	monthlyFee   Decimal @default(0) @map("monthly_fee") @db.Decimal(10, 2)
+	discount     Decimal @default(0) @db.Decimal(10, 2)
+	discountNote String? @map("discount_note")
 
 	createdAt DateTime @default(now()) @map("created_at")
 

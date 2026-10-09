@@ -26,6 +26,9 @@ export type FamilyStudent = Students & {
 export type FamilyProgram = Pick<Programs, 'id' | 'name'> & {
 	studentCount: number;
 	monthlyFee: number;
+	discount: number;
+	discountNote: string | null;
+	chargedFee: number;
 };
 
 export type FamilyDetail = Families & {

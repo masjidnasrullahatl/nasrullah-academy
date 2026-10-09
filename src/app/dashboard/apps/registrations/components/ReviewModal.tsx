@@ -4,15 +4,18 @@ import {
 	Alert,
 	Badge,
 	Button,
+	Checkbox,
 	Divider,
 	Grid,
 	Group,
 	Loader,
+	NumberInput,
 	Radio,
 	Select,
 	Stack,
 	Table,
 	Text,
+	TextInput,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
@@ -50,6 +53,9 @@ export const ReviewModal = ({ id }: Props) => {
 
 	const [target, setTarget] = useState<'new' | 'existing'>('new');
 	const [familyId, setFamilyId] = useState<string | null>(null);
+	const [discount, setDiscount] = useState<number | string>(0);
+	const [discountNote, setDiscountNote] = useState('');
+	const [waiveRegistrationFee, setWaiveRegistrationFee] = useState(false);
 
 	useEffect(() => {
 		if (registration?.matchedFamily) {
@@ -67,6 +73,9 @@ export const ReviewModal = ({ id }: Props) => {
 			id,
 			action: 'approve',
 			familyId: target === 'existing' ? familyId : null,
+			discount: Number(discount) || 0,
+			discountNote: discountNote || null,
+			waiveRegistrationFee,
 		});
 
 		notifications.show({
@@ -240,6 +249,42 @@ export const ReviewModal = ({ id }: Props) => {
 							/>
 						</Stack>
 					</Radio.Group>
+
+					<Divider label="Fees" labelPosition="left" />
+
+					<Group align="end" wrap="wrap">
+						<NumberInput
+							label="Monthly tuition discount"
+							min={0}
+							prefix="$"
+							decimalScale={2}
+							w={180}
+							value={discount}
+							onChange={setDiscount}
+						/>
+						<TextInput
+							label="Reason"
+							placeholder="e.g. sibling, financial hardship"
+							flex={1}
+							miw={200}
+							value={discountNote}
+							onChange={(event) => setDiscountNote(event.currentTarget.value)}
+						/>
+					</Group>
+					<Checkbox
+						label={`Waive the registration fee (${formatMoney(registration.registrationFee)})`}
+						checked={waiveRegistrationFee}
+						onChange={(event) =>
+							setWaiveRegistrationFee(event.currentTarget.checked)
+						}
+					/>
+					{registration.paymentStatus === 'PAID' &&
+						(Number(discount) > 0 || waiveRegistrationFee) && (
+							<Text size="xs" c="orange.8">
+								This family already paid by card at the full price. Refund or
+								adjust the difference in Stripe.
+							</Text>
+						)}
 
 					<Text size="xs" c="dimmed">
 						Approving adds the students to the family with this program, sets the

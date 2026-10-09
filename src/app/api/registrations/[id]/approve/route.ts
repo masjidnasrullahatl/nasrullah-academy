@@ -14,6 +14,8 @@ import { sendEmail } from '@helpers/email';
 import { createClient } from '@helpers/prisma/server';
 import { registrationApprovedEmail } from '@helpers/registrationEmails';
 
+import { chargedFee } from '@utils/registrationPricing';
+
 import {
 	ApproveRegistrationSchema,
 	mapRegistration,
@@ -43,7 +45,12 @@ const approve = async (
 		}
 
 		const result = await prisma.$transaction((tx) =>
-			approveRegistration(tx, id, payload.familyId || null),
+			approveRegistration(tx, id, {
+				familyId: payload.familyId || null,
+				discount: payload.discount,
+				discountNote: payload.discountNote || null,
+				waiveRegistrationFee: payload.waiveRegistrationFee,
+			}),
 		);
 
 		const approved = mapRegistration(
@@ -69,7 +76,12 @@ const approve = async (
 			...registrationApprovedEmail(
 				approved.program.name,
 				approved,
-				Number(familyProgram?.monthlyFee ?? approved.monthlyFee),
+				familyProgram
+					? chargedFee(
+							Number(familyProgram.monthlyFee),
+							Number(familyProgram.discount),
+						)
+					: approved.monthlyFee,
 				approved.paymentStatus === 'PAID',
 			),
 		});

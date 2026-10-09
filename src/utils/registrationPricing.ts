@@ -21,6 +21,10 @@ export const tuitionForKids = (monthlyFees: number[], kids: number) => {
 	return round2(last + step * (kids - monthlyFees.length));
 };
 
+/** Monthly amount actually charged after a family's discount. */
+export const chargedFee = (monthlyFee: number, discount = 0) =>
+	Math.max(round2(Number(monthlyFee) - Number(discount)), 0);
+
 export const withCardFee = (amount: number) =>
 	amount > 0 ? round2(amount * (1 + CARD_FEE_PERCENT) + CARD_FEE_FIXED) : 0;
 

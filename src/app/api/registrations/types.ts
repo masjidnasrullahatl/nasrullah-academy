@@ -6,7 +6,18 @@ import { RegistrationStudent } from '@app/api/public/registrations/types';
 export const ApproveRegistrationSchema = z.object({
 	// existing family to add the students to; null creates a new family
 	familyId: z.string().optional().nullable(),
+	// monthly tuition discount and registration fee waiver set by staff
+	discount: z.number().min(0).default(0),
+	discountNote: z.string().trim().optional().nullable(),
+	waiveRegistrationFee: z.boolean().default(false),
 });
+
+export type ApprovalOptions = {
+	familyId: string | null;
+	discount: number;
+	discountNote: string | null;
+	waiveRegistrationFee: boolean;
+};
 
 export const registrationInclude = {
 	program: { select: { id: true, name: true } },

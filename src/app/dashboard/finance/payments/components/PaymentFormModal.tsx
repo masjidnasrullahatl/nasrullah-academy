@@ -180,7 +180,7 @@ export const PaymentFormModal = ({
 		if (!familyProgram) return;
 
 		form.setFieldValue('studentCount', familyProgram.studentCount);
-		form.setFieldValue('tuitionFee', familyProgram.monthlyFee);
+		form.setFieldValue('tuitionFee', familyProgram.chargedFee);
 	};
 
 	const handleChangeFamily = (familyId: string | null) => {

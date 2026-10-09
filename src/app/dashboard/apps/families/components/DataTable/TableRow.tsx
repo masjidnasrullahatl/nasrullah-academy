@@ -110,12 +110,18 @@ export const TableRow = ({ family, page, index, pageSize }: Props) => {
 								<Text span size="xs" c="dimmed">
 									{program.name}
 								</Text>{' '}
-								{formatMoney(program.monthlyFee)}
+								{formatMoney(program.chargedFee)}
+								{program.discount > 0 && (
+									<Text span size="xs" c="green.8">
+										{' '}
+										(−{formatMoney(program.discount)})
+									</Text>
+								)}
 							</Text>
 						))}
 						{family.programs.length > 1 && (
 							<Text size="sm" fw={700}>
-								{formatMoney(sumBy(family.programs, 'monthlyFee'))}
+								{formatMoney(sumBy(family.programs, 'chargedFee'))}
 							</Text>
 						)}
 					</Stack>

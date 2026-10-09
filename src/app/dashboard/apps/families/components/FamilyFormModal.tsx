@@ -38,6 +38,9 @@ import { useCreateFamily } from '@hooks/react-query/families/useCreateFamily';
 import { useUpdateFamily } from '@hooks/react-query/families/useUpdateFamily';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
+import { formatMoney } from '@utils/money';
+import { chargedFee, tuitionForKids } from '@utils/registrationPricing';
+
 type FamilyFormModalProps = {
 	family?: any;
 };
@@ -122,6 +125,8 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 					programId: program.id,
 					studentCount: program.studentCount ?? 0,
 					monthlyFee: program.monthlyFee ?? 0,
+					discount: program.discount ?? 0,
+					discountNote: program.discountNote || '',
 				})) || [],
 			students:
 				family?.students?.map((student: any) => ({
@@ -147,6 +152,13 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 		[programs],
 	);
 
+	// Standard tuition for a number of kids, from the program's price list
+	const standardFee = (programId: string, kids: number) => {
+		const program = programs?.data.find((item) => item.id === programId);
+
+		return tuitionForKids((program?.monthlyFees || []).map(Number), kids);
+	};
+
 	const handleChangePrograms = (programIds: string[]) => {
 		form.setFieldValue(
 			'programs',
@@ -155,10 +167,21 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 					form.values.programs.find((item) => item.programId === programId) || {
 						programId,
 						studentCount: form.values.students.length,
-						monthlyFee: 0,
+						monthlyFee: standardFee(programId, form.values.students.length),
+						discount: 0,
+						discountNote: '',
 					},
 			),
 		);
+	};
+
+	const handleChangeKids = (index: number, kids: number | string) => {
+		const item = form.values.programs[index];
+		const fee = standardFee(item.programId, Number(kids) || 0);
+
+		form.setFieldValue(`programs.${index}.studentCount`, kids as number);
+
+		if (fee) form.setFieldValue(`programs.${index}.monthlyFee`, fee);
 	};
 
 	const submitError = useMemo(
@@ -184,6 +207,8 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 				programId: program.programId,
 				studentCount: Number(program.studentCount) || 0,
 				monthlyFee: Number(program.monthlyFee) || 0,
+				discount: Number(program.discount) || 0,
+				discountNote: program.discountNote || null,
 			})),
 			students: values.students.map((student) => ({
 				id: student.id,
@@ -308,27 +333,54 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 						</Grid.Col>
 						{form.values.programs.map((item, index) => (
 							<Grid.Col key={item.programId} span={12}>
-								<Group align="end" wrap="nowrap">
-									<Text size="sm" fw={600} w={140} pb={8}>
+								<Stack gap={6} p="sm" bd="1px solid #e9ecef">
+									<Text size="sm" fw={600}>
 										{programNames[item.programId] || 'Program'}
 									</Text>
-									<NumberInput
-										label="Kids"
-										min={0}
-										allowDecimal={false}
-										w={100}
-										{...form.getInputProps(`programs.${index}.studentCount`)}
-									/>
-									<NumberInput
-										label="Monthly fee"
-										min={0}
-										prefix="$"
-										decimalScale={2}
-										thousandSeparator=","
-										w={160}
-										{...form.getInputProps(`programs.${index}.monthlyFee`)}
-									/>
-								</Group>
+									<Group align="end" wrap="wrap">
+										<NumberInput
+											label="Kids"
+											min={0}
+											allowDecimal={false}
+											w={90}
+											{...form.getInputProps(`programs.${index}.studentCount`)}
+											onChange={(value) => handleChangeKids(index, value)}
+										/>
+										<NumberInput
+											label="Standard fee"
+											min={0}
+											prefix="$"
+											decimalScale={2}
+											thousandSeparator=","
+											w={130}
+											{...form.getInputProps(`programs.${index}.monthlyFee`)}
+										/>
+										<NumberInput
+											label="Discount"
+											min={0}
+											prefix="$"
+											decimalScale={2}
+											thousandSeparator=","
+											w={120}
+											{...form.getInputProps(`programs.${index}.discount`)}
+										/>
+										<TextInput
+											label="Discount reason"
+											placeholder="e.g. sibling, financial hardship"
+											flex={1}
+											miw={180}
+											{...form.getInputProps(`programs.${index}.discountNote`)}
+										/>
+									</Group>
+									<Text size="sm">
+										Charged each month:{' '}
+										<b>
+											{formatMoney(
+												chargedFee(Number(item.monthlyFee), Number(item.discount)),
+											)}
+										</b>
+									</Text>
+								</Stack>
 							</Grid.Col>
 						))}
 						<Grid.Col span={12}>

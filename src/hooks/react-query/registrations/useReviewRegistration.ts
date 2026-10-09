@@ -5,7 +5,14 @@ import { QUERY_KEYS } from '@configs/query-key';
 import { fetchAuth } from '@helpers/supabase/fetchAuth';
 
 type ReviewParams =
-	| { id: string; action: 'approve'; familyId: string | null }
+	| {
+			id: string;
+			action: 'approve';
+			familyId: string | null;
+			discount: number;
+			discountNote: string | null;
+			waiveRegistrationFee: boolean;
+	  }
 	| { id: string; action: 'reject' };
 
 // Approving creates families, students and payment rows, so refresh those too
@@ -17,7 +24,14 @@ export const useReviewRegistration = () => {
 			return fetchAuth(`/api/registrations/${params.id}/${params.action}`, {
 				method: 'POST',
 				body: JSON.stringify(
-					params.action === 'approve' ? { familyId: params.familyId } : {},
+					params.action === 'approve'
+						? {
+								familyId: params.familyId,
+								discount: params.discount,
+								discountNote: params.discountNote,
+								waiveRegistrationFee: params.waiveRegistrationFee,
+							}
+						: {},
 				),
 			});
 		},

@@ -11,6 +11,8 @@ import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
+import { chargedFee } from '@utils/registrationPricing';
+
 import { GenerateInvoicesSchema } from './types';
 
 const getPreviousMonth = (year: number, month: number) => {
@@ -93,9 +95,13 @@ const generateInvoices = async (request: AuthRequest) => {
 				year: data.year,
 				month: data.month,
 				studentCount: item.studentCount,
-				tuitionFee: item.monthlyFee,
-				totalDue: item.monthlyFee,
-				balance: item.monthlyFee,
+				tuitionFee: chargedFee(Number(item.monthlyFee), Number(item.discount)),
+				totalDue: chargedFee(Number(item.monthlyFee), Number(item.discount)),
+				balance: chargedFee(Number(item.monthlyFee), Number(item.discount)),
+				notes:
+					Number(item.discount) > 0
+						? `Discount ${Number(item.discount).toFixed(2)}${item.discountNote ? ` (${item.discountNote})` : ''}`
+						: null,
 				payMethod:
 					previousPayMethods.get(`${item.familyId}:${item.programId}`) ||
 					'NA',
