@@ -53,12 +53,12 @@ export async function POST(request: NextRequest) {
 		const registration = await prisma.registrations.create({
 			data: {
 				programId: program.id,
-				familyName: payload.familyName,
-				fatherName: payload.fatherName || null,
-				motherName: payload.motherName || null,
+				familyName: payload.fatherName,
+				fatherName: payload.fatherName,
+				motherName: payload.motherName,
 				email: payload.email,
 				phone: payload.phone,
-				secondaryPhone: payload.secondaryPhone || null,
+				secondaryPhone: payload.secondaryPhone,
 				address: payload.address,
 				preferredTime: payload.preferredTime || null,
 				notes: payload.notes || null,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 		await sendEmail({
 			to: payload.email,
 			...registrationReceivedEmail(program.name, {
-				familyName: payload.familyName,
+				familyName: payload.fatherName,
 				students: payload.students,
 				preferredTime: payload.preferredTime || null,
 				payByCard,

@@ -13,12 +13,12 @@ export const RegistrationStudentSchema = z.object({
 
 export const SubmitRegistrationSchema = z.object({
 	programSlug: z.string().min(1),
-	familyName: z.string().trim().min(1, 'Family / parent name is required'),
-	fatherName: z.string().trim().optional().nullable(),
-	motherName: z.string().trim().optional().nullable(),
+	// The father's name is used as the family / parent name
+	fatherName: z.string().trim().min(1, "Father's name is required"),
+	motherName: z.string().trim().min(1, "Mother's name is required"),
 	email: z.string().trim().email('Enter a valid email'),
 	phone: z.string().trim().min(7, 'Phone number is required'),
-	secondaryPhone: z.string().trim().optional().nullable(),
+	secondaryPhone: z.string().trim().min(7, 'Secondary phone is required'),
 	address: z.string().trim().min(1, 'Address is required'),
 	preferredTime: z.string().optional().nullable(),
 	notes: z.string().trim().optional().nullable(),

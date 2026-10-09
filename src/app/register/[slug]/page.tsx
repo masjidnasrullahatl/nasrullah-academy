@@ -55,7 +55,6 @@ type StudentValue = {
 };
 
 type FormValue = {
-	familyName: string;
 	fatherName: string;
 	motherName: string;
 	email: string;
@@ -106,7 +105,6 @@ export default function ProgramRegistrationPage() {
 
 	const form = useForm<FormValue>({
 		initialValues: {
-			familyName: '',
 			fatherName: '',
 			motherName: '',
 			email: '',
@@ -122,7 +120,12 @@ export default function ProgramRegistrationPage() {
 			website: '',
 		},
 		validate: {
-			familyName: required('Family / parent name'),
+			fatherName: required("Father's name"),
+			motherName: required("Mother's name"),
+			secondaryPhone: (value) =>
+				value.replace(/\D/g, '').length >= 10
+					? null
+					: 'Enter a 10-digit phone number',
 			email: (value) =>
 				/^\S+@\S+\.\S+$/.test(value.trim()) ? null : 'Enter a valid email',
 			phone: (value) =>
@@ -173,12 +176,11 @@ export default function ProgramRegistrationPage() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					programSlug: slug,
-					familyName: values.familyName,
-					fatherName: values.fatherName || null,
-					motherName: values.motherName || null,
+					fatherName: values.fatherName,
+					motherName: values.motherName,
 					email: values.email,
 					phone: values.phone,
-					secondaryPhone: values.secondaryPhone || null,
+					secondaryPhone: values.secondaryPhone,
 					address: values.address,
 					preferredTime: values.preferredTime || null,
 					notes: values.notes || null,
@@ -265,19 +267,22 @@ export default function ProgramRegistrationPage() {
 						Parent / Guardian
 					</Text>
 					<Grid>
-						<Grid.Col span={12}>
+						<Grid.Col span={{ base: 12, sm: 6 }}>
 							<TextInput
-								label="Family / Parent name"
+								label="Father name"
+								description="Used as the family name"
 								placeholder="e.g. Ibrahima Alpha Diallo"
 								withAsterisk
-								{...form.getInputProps('familyName')}
+								{...form.getInputProps('fatherName')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<TextInput label="Father name" {...form.getInputProps('fatherName')} />
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<TextInput label="Mother name" {...form.getInputProps('motherName')} />
+							<TextInput
+								label="Mother name"
+								description="Full name"
+								withAsterisk
+								{...form.getInputProps('motherName')}
+							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
 							<TextInput
@@ -293,6 +298,8 @@ export default function ProgramRegistrationPage() {
 								label="Secondary phone"
 								type="tel"
 								description="Other parent or emergency contact"
+								placeholder="404-555-1234"
+								withAsterisk
 								{...form.getInputProps('secondaryPhone')}
 							/>
 						</Grid.Col>
