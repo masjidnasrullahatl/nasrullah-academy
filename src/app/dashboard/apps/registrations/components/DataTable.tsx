@@ -64,7 +64,7 @@ export const DataTable = () => {
 
 	const handleReview = (registration: RegistrationRow) => {
 		modals.open({
-			title: `Registration: ${registration.parentFirstName} ${registration.parentLastName}`,
+			title: `Registration: ${registration.familyName}`,
 			size: 'xl',
 			children: <ReviewModal id={registration.id} />,
 		});
@@ -162,7 +162,7 @@ export const DataTable = () => {
 									</Table.Td>
 									<Table.Td>
 										<Anchor component="button" size="sm">
-											{registration.parentFirstName} {registration.parentLastName}
+											{registration.familyName}
 										</Anchor>
 										{registration.family && (
 											<Text size="xs" c="dimmed">

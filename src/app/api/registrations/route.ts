@@ -29,8 +29,9 @@ const getPaging = async (request: AuthRequest) => {
 
 	if (keyword) {
 		where.OR = [
-			{ parentFirstName: { contains: keyword, mode: 'insensitive' } },
-			{ parentLastName: { contains: keyword, mode: 'insensitive' } },
+			{ familyName: { contains: keyword, mode: 'insensitive' } },
+			{ fatherName: { contains: keyword, mode: 'insensitive' } },
+			{ motherName: { contains: keyword, mode: 'insensitive' } },
 			{ email: { contains: keyword, mode: 'insensitive' } },
 			{ phone: { contains: keyword, mode: 'insensitive' } },
 		];

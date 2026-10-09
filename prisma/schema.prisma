@@ -176,12 +176,13 @@ model Registrations {
 
 	status RegistrationStatus @default(PENDING)
 
-	parentFirstName String  @map("parent_first_name")
-	parentLastName  String  @map("parent_last_name")
-	email           String
-	phone           String
-	emergencyPhone  String? @map("emergency_phone")
-	address         String?
+	familyName     String  @map("family_name")
+	fatherName     String? @map("father_name")
+	motherName     String? @map("mother_name")
+	email          String
+	phone          String
+	secondaryPhone String? @map("secondary_phone")
+	address        String?
 	preferredTime   String? @map("preferred_time")
 	notes           String?
 
@@ -205,6 +206,10 @@ model Registrations {
 
 	familyId String?   @map("family_id")
 	family   Families? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+	rulesAcceptedAt DateTime? @map("rules_accepted_at")
+	rulesSignature  String?   @map("rules_signature")
+	rulesVersion    String?   @map("rules_version")
 
 	reviewedAt DateTime? @map("reviewed_at")
 

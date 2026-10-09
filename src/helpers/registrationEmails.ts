@@ -6,7 +6,7 @@ import { escapeHtml } from '@utils/printReport';
 const CONTACT = 'Questions? Call 470-253-9391 or reply to this email.';
 
 type RegistrationInfo = {
-	parentFirstName: string;
+	familyName: string;
 	students: RegistrationStudent[];
 	preferredTime: string | null;
 	payByCard: boolean;
@@ -47,13 +47,13 @@ export const registrationReceivedEmail = (
 	html: layout(
 		`${programName} registration received`,
 		`
-		<p>Assalamu alaikum ${escapeHtml(registration.parentFirstName)},</p>
+		<p>Assalamu alaikum ${escapeHtml(registration.familyName)},</p>
 		<p>Thank you for registering with Nasrullah Academy. We received your registration for:</p>
 		${studentList(registration.students)}
 		${registration.preferredTime ? `<p>Preferred class time: <b>${escapeHtml(registration.preferredTime)}</b></p>` : ''}
 		${amountRows([
-			['Registration fee', formatMoney(registration.registrationFee)],
-			['Monthly tuition', formatMoney(registration.monthlyFee)],
+			['Registration fee (one-time)', formatMoney(registration.registrationFee)],
+			['Monthly tuition (recurring)', formatMoney(registration.monthlyFee)],
 			['Due to start', formatMoney(registration.amountDue)],
 		])}
 		<p>${
@@ -75,7 +75,7 @@ export const registrationApprovedEmail = (
 	html: layout(
 		'Your registration is approved',
 		`
-		<p>Assalamu alaikum ${escapeHtml(registration.parentFirstName)},</p>
+		<p>Assalamu alaikum ${escapeHtml(registration.familyName)},</p>
 		<p>Alhamdulillah, your ${escapeHtml(programName)} registration has been approved. We look forward to welcoming:</p>
 		${studentList(registration.students)}
 		${registration.preferredTime ? `<p>Class time: <b>${escapeHtml(registration.preferredTime)}</b></p>` : ''}

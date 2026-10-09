@@ -5,16 +5,20 @@ export const RegistrationStudentSchema = z.object({
 	lastName: z.string().trim().min(1, 'Last name is required'),
 	gender: z.enum(['BOY', 'GIRL'], 'Select boy or girl'),
 	dateOfBirth: z.string().min(1, 'Date of birth is required'),
+	allergies: z.string().trim().optional().nullable(),
+	medicalConditions: z.string().trim().optional().nullable(),
+	medications: z.string().trim().optional().nullable(),
 	notes: z.string().trim().optional().nullable(),
 });
 
 export const SubmitRegistrationSchema = z.object({
 	programSlug: z.string().min(1),
-	parentFirstName: z.string().trim().min(1, 'First name is required'),
-	parentLastName: z.string().trim().min(1, 'Last name is required'),
+	familyName: z.string().trim().min(1, 'Family / parent name is required'),
+	fatherName: z.string().trim().optional().nullable(),
+	motherName: z.string().trim().optional().nullable(),
 	email: z.string().trim().email('Enter a valid email'),
 	phone: z.string().trim().min(7, 'Phone number is required'),
-	emergencyPhone: z.string().trim().optional().nullable(),
+	secondaryPhone: z.string().trim().optional().nullable(),
 	address: z.string().trim().min(1, 'Address is required'),
 	preferredTime: z.string().optional().nullable(),
 	notes: z.string().trim().optional().nullable(),
@@ -23,6 +27,8 @@ export const SubmitRegistrationSchema = z.object({
 		.min(1, 'Add at least one student')
 		.max(10),
 	payByCard: z.boolean().default(false),
+	rulesAccepted: z.literal(true, 'Please accept the school rules'),
+	rulesSignature: z.string().trim().min(3, 'Type your full name to sign'),
 	// hidden field; real people leave it empty, bots fill it in
 	website: z.string().optional().nullable(),
 });

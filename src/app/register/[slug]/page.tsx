@@ -11,11 +11,13 @@ import {
 	Box,
 	Button,
 	Card,
+	Checkbox,
 	Divider,
 	Grid,
 	Group,
 	Loader,
 	Radio,
+	ScrollArea,
 	SegmentedControl,
 	Stack,
 	Text,
@@ -36,6 +38,8 @@ import dayjs from 'dayjs';
 
 import { PublicProgram } from '@app/api/public/registrations/types';
 
+import { RULES_ACKNOWLEDGEMENT, SCHOOL_RULES } from '@configs/schoolRules';
+
 import { formatMoney } from '@utils/money';
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
@@ -44,20 +48,26 @@ type StudentValue = {
 	lastName: string;
 	gender: 'BOY' | 'GIRL' | '';
 	dateOfBirth: Date | null;
+	allergies: string;
+	medicalConditions: string;
+	medications: string;
 	notes: string;
 };
 
 type FormValue = {
-	parentFirstName: string;
-	parentLastName: string;
+	familyName: string;
+	fatherName: string;
+	motherName: string;
 	email: string;
 	phone: string;
-	emergencyPhone: string;
+	secondaryPhone: string;
 	address: string;
 	preferredTime: string;
 	notes: string;
 	students: StudentValue[];
 	payByCard: 'card' | 'later';
+	rulesAccepted: boolean;
+	rulesSignature: string;
 	website: string;
 };
 
@@ -66,6 +76,9 @@ const emptyStudent = (lastName = ''): StudentValue => ({
 	lastName,
 	gender: '',
 	dateOfBirth: null,
+	allergies: '',
+	medicalConditions: '',
+	medications: '',
 	notes: '',
 });
 
@@ -93,21 +106,23 @@ export default function ProgramRegistrationPage() {
 
 	const form = useForm<FormValue>({
 		initialValues: {
-			parentFirstName: '',
-			parentLastName: '',
+			familyName: '',
+			fatherName: '',
+			motherName: '',
 			email: '',
 			phone: '',
-			emergencyPhone: '',
+			secondaryPhone: '',
 			address: '',
 			preferredTime: '',
 			notes: '',
 			students: [emptyStudent()],
 			payByCard: 'later',
+			rulesAccepted: false,
+			rulesSignature: '',
 			website: '',
 		},
 		validate: {
-			parentFirstName: required('First name'),
-			parentLastName: required('Last name'),
+			familyName: required('Family / parent name'),
 			email: (value) =>
 				/^\S+@\S+\.\S+$/.test(value.trim()) ? null : 'Enter a valid email',
 			phone: (value) =>
@@ -115,6 +130,10 @@ export default function ProgramRegistrationPage() {
 					? null
 					: 'Enter a 10-digit phone number',
 			address: required('Address'),
+			rulesAccepted: (value) =>
+				value ? null : 'Please read and accept the school rules',
+			rulesSignature: (value) =>
+				value.trim().length >= 3 ? null : 'Type your full name to sign',
 			preferredTime: (value) =>
 				program?.classTimes.length && !value ? 'Choose a class time' : null,
 			students: {
@@ -154,21 +173,27 @@ export default function ProgramRegistrationPage() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					programSlug: slug,
-					parentFirstName: values.parentFirstName,
-					parentLastName: values.parentLastName,
+					familyName: values.familyName,
+					fatherName: values.fatherName || null,
+					motherName: values.motherName || null,
 					email: values.email,
 					phone: values.phone,
-					emergencyPhone: values.emergencyPhone || null,
+					secondaryPhone: values.secondaryPhone || null,
 					address: values.address,
 					preferredTime: values.preferredTime || null,
 					notes: values.notes || null,
 					payByCard: values.payByCard === 'card',
+					rulesAccepted: values.rulesAccepted,
+					rulesSignature: values.rulesSignature,
 					website: values.website,
 					students: values.students.map((student) => ({
 						firstName: student.firstName,
 						lastName: student.lastName,
 						gender: student.gender,
 						dateOfBirth: dayjs(student.dateOfBirth).format('YYYY-MM-DD'),
+						allergies: student.allergies || null,
+						medicalConditions: student.medicalConditions || null,
+						medications: student.medications || null,
 						notes: student.notes || null,
 					})),
 				}),
@@ -240,31 +265,23 @@ export default function ProgramRegistrationPage() {
 						Parent / Guardian
 					</Text>
 					<Grid>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
+						<Grid.Col span={12}>
 							<TextInput
-								label="First name"
+								label="Family / Parent name"
+								placeholder="e.g. Ibrahima Alpha Diallo"
 								withAsterisk
-								{...form.getInputProps('parentFirstName')}
+								{...form.getInputProps('familyName')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<TextInput
-								label="Last name"
-								withAsterisk
-								{...form.getInputProps('parentLastName')}
-							/>
+							<TextInput label="Father name" {...form.getInputProps('fatherName')} />
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, sm: 6 }}>
+							<TextInput label="Mother name" {...form.getInputProps('motherName')} />
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
 							<TextInput
-								label="Email"
-								type="email"
-								withAsterisk
-								{...form.getInputProps('email')}
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<TextInput
-								label="Phone"
+								label="Primary phone"
 								type="tel"
 								placeholder="404-555-1234"
 								withAsterisk
@@ -273,10 +290,18 @@ export default function ProgramRegistrationPage() {
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
 							<TextInput
-								label="Emergency phone"
+								label="Secondary phone"
 								type="tel"
-								description="Another parent or relative"
-								{...form.getInputProps('emergencyPhone')}
+								description="Other parent or emergency contact"
+								{...form.getInputProps('secondaryPhone')}
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, sm: 6 }}>
+							<TextInput
+								label="Email"
+								type="email"
+								withAsterisk
+								{...form.getInputProps('email')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6 }}>
@@ -379,10 +404,30 @@ export default function ProgramRegistrationPage() {
 											{...form.getInputProps(`students.${index}.dateOfBirth`)}
 										/>
 									</Grid.Col>
+									<Grid.Col span={{ base: 12, sm: 6 }}>
+										<TextInput
+											label="Food allergies"
+											placeholder="None, or please specify"
+											{...form.getInputProps(`students.${index}.allergies`)}
+										/>
+									</Grid.Col>
+									<Grid.Col span={{ base: 12, sm: 6 }}>
+										<TextInput
+											label="Medical conditions"
+											placeholder="None, or please specify"
+											{...form.getInputProps(`students.${index}.medicalConditions`)}
+										/>
+									</Grid.Col>
+									<Grid.Col span={12}>
+										<TextInput
+											label="Medications or other health information we should know"
+											{...form.getInputProps(`students.${index}.medications`)}
+										/>
+									</Grid.Col>
 									<Grid.Col span={12}>
 										<TextInput
 											label="Notes"
-											placeholder="Allergies, medical needs, Quran level so far…"
+											placeholder="Quran level so far, anything else…"
 											{...form.getInputProps(`students.${index}.notes`)}
 										/>
 									</Grid.Col>
@@ -397,7 +442,7 @@ export default function ProgramRegistrationPage() {
 								onClick={() =>
 									form.insertListItem(
 										'students',
-										emptyStudent(form.values.parentLastName),
+										emptyStudent(form.values.students[0]?.lastName),
 									)
 								}
 							>
@@ -433,6 +478,51 @@ export default function ProgramRegistrationPage() {
 				</Card>
 
 				<Card withBorder padding="lg">
+					<Text fw={700} mb="xs">
+						Nasrullah Academy School Rules
+					</Text>
+					<Text size="sm" c="dimmed" mb="sm">
+						Please read the rules carefully. Parents must accept them to register.
+					</Text>
+
+					<ScrollArea h={320} type="auto" offsetScrollbars>
+						<Stack gap="md" pr="sm">
+							{SCHOOL_RULES.map((section, sectionIndex) => (
+								<div key={section.title}>
+									<Text fw={600} size="sm" mb={4}>
+										{sectionIndex + 1}. {section.title}
+									</Text>
+									<Stack gap={4}>
+										{section.items.map((item, itemIndex) => (
+											<Text key={itemIndex} size="sm">
+												• {item}
+											</Text>
+										))}
+									</Stack>
+								</div>
+							))}
+						</Stack>
+					</ScrollArea>
+
+					<Divider my="md" />
+
+					<Stack gap="sm">
+						<Checkbox
+							label={RULES_ACKNOWLEDGEMENT}
+							{...form.getInputProps('rulesAccepted', { type: 'checkbox' })}
+						/>
+						<TextInput
+							label="Parent signature (type your full name)"
+							withAsterisk
+							{...form.getInputProps('rulesSignature')}
+						/>
+						<Text size="xs" c="dimmed">
+							Signed on {dayjs().format('MM/DD/YYYY')}
+						</Text>
+					</Stack>
+				</Card>
+
+				<Card withBorder padding="lg">
 					<Text fw={700} mb="sm">
 						Payment
 					</Text>
@@ -440,13 +530,15 @@ export default function ProgramRegistrationPage() {
 					<Stack gap={4} mb="md">
 						<Group justify="space-between">
 							<Text size="sm">
-								Registration fee ({kids} × {formatMoney(program.registrationFee)})
+								Registration fee, one-time ({kids} ×{' '}
+								{formatMoney(program.registrationFee)})
 							</Text>
 							<Text size="sm">{formatMoney(quote.registration)}</Text>
 						</Group>
 						<Group justify="space-between">
 							<Text size="sm">
-								First month tuition ({kids} {kids === 1 ? 'child' : 'children'})
+								First month tuition ({kids}{' '}
+								{kids === 1 ? 'child' : 'children'})
 							</Text>
 							<Text size="sm">{formatMoney(quote.monthly)}</Text>
 						</Group>
@@ -460,9 +552,9 @@ export default function ProgramRegistrationPage() {
 							</Text>
 						</Group>
 						<Text size="xs" c="dimmed">
-							Then{' '}
-							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} per
-							month.
+							The registration fee is paid once. After that, tuition of{' '}
+							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} is
+							due on the 1st of every month.
 							{payByCard && ' Card payments include the processing fee (2.2% + $0.30).'}
 						</Text>
 					</Stack>
