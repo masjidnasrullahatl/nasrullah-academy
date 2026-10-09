@@ -66,6 +66,14 @@ export const ConfirmPaymentModal = ({ invoice }: Props) => {
 				<b>{invoice.family.name}</b> for <b>{invoice.program.name}</b>.
 			</Text>
 
+			{invoice.registrationFee > 0 && (
+				<Text size="sm" c="dimmed">
+					Includes the one-time registration fee of{' '}
+					{formatMoney(invoice.registrationFee)} and tuition of{' '}
+					{formatMoney(invoice.tuitionFee)}. Both are recorded as paid.
+				</Text>
+			)}
+
 			<Group grow>
 				<Select
 					label="Pay method"

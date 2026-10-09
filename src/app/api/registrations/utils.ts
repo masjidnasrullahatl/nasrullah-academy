@@ -12,9 +12,9 @@ const digits = (value: string | null | undefined) =>
 /** Existing family with the same phone (either number) or email, if any. */
 export const findMatchingFamily = async (
 	prisma: Tx,
-	registration: { phone: string; emergencyPhone: string | null; email: string },
+	registration: { phone: string; secondaryPhone: string | null; email: string },
 ) => {
-	const phones = [registration.phone, registration.emergencyPhone]
+	const phones = [registration.phone, registration.secondaryPhone]
 		.map(digits)
 		.filter((phone) => phone.length >= 7);
 
@@ -40,6 +40,18 @@ export const findMatchingFamily = async (
 		null
 	);
 };
+
+// Health details from the form are kept in the student's notes
+const studentNotes = (student: RegistrationStudent) =>
+	[
+		student.allergies && `Food allergies: ${student.allergies}`,
+		student.medicalConditions &&
+			`Medical conditions: ${student.medicalConditions}`,
+		student.medications && `Medications/health: ${student.medications}`,
+		student.notes,
+	]
+		.filter(Boolean)
+		.join('\n') || null;
 
 const currentPeriod = () => {
 	const now = new Date();
@@ -86,9 +98,11 @@ export const approveRegistration = async (
 			})
 		: await tx.families.create({
 				data: {
-					name: `${registration.parentFirstName} ${registration.parentLastName}`,
+					name: registration.familyName,
+					fatherName: registration.fatherName,
+					motherName: registration.motherName,
 					primaryPhone: registration.phone,
-					secondaryPhone: registration.emergencyPhone,
+					secondaryPhone: registration.secondaryPhone,
 					email: registration.email,
 					address: registration.address,
 					notes: registration.notes,
@@ -132,7 +146,7 @@ export const approveRegistration = async (
 				gender: student.gender,
 				dateOfBirth: new Date(student.dateOfBirth),
 				enrolledAt: new Date(),
-				notes: student.notes || null,
+				notes: studentNotes(student),
 				programs: { create: { programId } },
 			},
 		});

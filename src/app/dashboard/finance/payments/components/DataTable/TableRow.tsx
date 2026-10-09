@@ -97,7 +97,24 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 
 			<Table.Td ta="center">{invoice.studentCount}</Table.Td>
 
-			<Table.Td ta="right">{formatMoney(invoice.totalDue)}</Table.Td>
+			<Table.Td ta="right">
+				{formatMoney(invoice.totalDue)}
+				{invoice.registrationFee > 0 && (
+					<Text
+						size="xs"
+						c={
+							invoice.paidRegistrationFee >= invoice.registrationFee
+								? 'green.8'
+								: 'red.7'
+						}
+					>
+						incl. {formatMoney(invoice.registrationFee)} registration ·{' '}
+						{invoice.paidRegistrationFee >= invoice.registrationFee
+							? 'Paid'
+							: 'Due'}
+					</Text>
+				)}
+			</Table.Td>
 
 			<Table.Td ta="right">{formatMoney(invoice.totalPaid)}</Table.Td>
 

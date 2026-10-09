@@ -120,16 +120,19 @@ export const ReviewModal = ({ id }: Props) => {
 
 			<Grid>
 				<Grid.Col span={{ base: 6, md: 4 }}>
-					<Field
-						label="Parent"
-						value={`${registration.parentFirstName} ${registration.parentLastName}`}
-					/>
+					<Field label="Family / Parent name" value={registration.familyName} />
 				</Grid.Col>
 				<Grid.Col span={{ base: 6, md: 4 }}>
-					<Field label="Phone" value={registration.phone} />
+					<Field label="Father name" value={registration.fatherName} />
 				</Grid.Col>
 				<Grid.Col span={{ base: 6, md: 4 }}>
-					<Field label="Emergency phone" value={registration.emergencyPhone} />
+					<Field label="Mother name" value={registration.motherName} />
+				</Grid.Col>
+				<Grid.Col span={{ base: 6, md: 4 }}>
+					<Field label="Primary phone" value={registration.phone} />
+				</Grid.Col>
+				<Grid.Col span={{ base: 6, md: 4 }}>
+					<Field label="Secondary phone" value={registration.secondaryPhone} />
 				</Grid.Col>
 				<Grid.Col span={{ base: 6, md: 4 }}>
 					<Field label="Email" value={registration.email} />
@@ -155,6 +158,7 @@ export const ReviewModal = ({ id }: Props) => {
 						<Table.Th>Student</Table.Th>
 						<Table.Th>Gender</Table.Th>
 						<Table.Th>Date of birth</Table.Th>
+						<Table.Th>Health</Table.Th>
 						<Table.Th>Notes</Table.Th>
 					</Table.Tr>
 				</Table.Thead>
@@ -167,6 +171,16 @@ export const ReviewModal = ({ id }: Props) => {
 							<Table.Td>{student.gender === 'BOY' ? 'Boy' : 'Girl'}</Table.Td>
 							<Table.Td>
 								{dayjs(student.dateOfBirth.slice(0, 10)).format('MM/DD/YYYY')}
+							</Table.Td>
+							<Table.Td>
+								{[
+									student.allergies && `Allergies: ${student.allergies}`,
+									student.medicalConditions &&
+										`Medical: ${student.medicalConditions}`,
+									student.medications && `Other: ${student.medications}`,
+								]
+									.filter(Boolean)
+									.join(' · ') || 'None'}
 							</Table.Td>
 							<Table.Td>{student.notes || '-'}</Table.Td>
 						</Table.Tr>
@@ -183,6 +197,12 @@ export const ReviewModal = ({ id }: Props) => {
 				<Field label="Due now" value={formatMoney(registration.amountDue)} />
 				<Field label="Payment" value={paymentLabel(registration)} />
 			</Group>
+
+			<Text size="sm" c={registration.rulesAcceptedAt ? 'green.8' : 'red'}>
+				{registration.rulesAcceptedAt
+					? `School rules accepted and signed by "${registration.rulesSignature}" on ${dayjs(registration.rulesAcceptedAt).format('MM/DD/YYYY')}`
+					: 'School rules were not accepted on this registration'}
+			</Text>
 
 			{canReview ? (
 				<>
@@ -216,7 +236,7 @@ export const ReviewModal = ({ id }: Props) => {
 							)}
 							<Radio
 								value="new"
-								label={`New family: ${registration.parentFirstName} ${registration.parentLastName}`}
+								label={`New family: ${registration.familyName}`}
 							/>
 						</Stack>
 					</Radio.Group>

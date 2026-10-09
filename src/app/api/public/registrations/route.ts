@@ -6,6 +6,7 @@ import { catchZodError } from '@app/api/utils/catchZodError';
 import { badRequest, internalServerError } from '@app/api/utils/response';
 
 import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
+import { RULES_VERSION } from '@configs/schoolRules';
 
 import { sendEmail } from '@helpers/email';
 import { createClient } from '@helpers/prisma/server';
@@ -52,11 +53,12 @@ export async function POST(request: NextRequest) {
 		const registration = await prisma.registrations.create({
 			data: {
 				programId: program.id,
-				parentFirstName: payload.parentFirstName,
-				parentLastName: payload.parentLastName,
+				familyName: payload.familyName,
+				fatherName: payload.fatherName || null,
+				motherName: payload.motherName || null,
 				email: payload.email,
 				phone: payload.phone,
-				emergencyPhone: payload.emergencyPhone || null,
+				secondaryPhone: payload.secondaryPhone || null,
 				address: payload.address,
 				preferredTime: payload.preferredTime || null,
 				notes: payload.notes || null,
@@ -66,13 +68,16 @@ export async function POST(request: NextRequest) {
 				registrationFee: quote.registration,
 				amountDue: quote.firstPayment,
 				payByCard,
+				rulesAcceptedAt: new Date(),
+				rulesSignature: payload.rulesSignature,
+				rulesVersion: RULES_VERSION,
 			},
 		});
 
 		await sendEmail({
 			to: payload.email,
 			...registrationReceivedEmail(program.name, {
-				parentFirstName: payload.parentFirstName,
+				familyName: payload.familyName,
 				students: payload.students,
 				preferredTime: payload.preferredTime || null,
 				payByCard,
