@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
 			monthlyFees: program.monthlyFees.map(Number),
 			registrationFee: Number(program.registrationFee),
 			kids: payload.students.length,
+			customMonthly: payload.customMonthlyFee,
 		});
 
 		const payByCard =

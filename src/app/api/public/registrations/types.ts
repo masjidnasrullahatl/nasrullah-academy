@@ -27,6 +27,13 @@ export const SubmitRegistrationSchema = z.object({
 		.min(1, 'Add at least one student')
 		.max(10),
 	payByCard: z.boolean().default(false),
+	// "Other amount" for monthly tuition, agreed with the Academy office
+	customMonthlyFee: z
+		.number()
+		.positive('Enter the monthly amount')
+		.max(10000)
+		.optional()
+		.nullable(),
 	rulesAccepted: z.literal(true, 'Please accept the school rules'),
 	rulesSignature: z.string().trim().min(3, 'Type your full name to sign'),
 	// hidden field; real people leave it empty, bots fill it in

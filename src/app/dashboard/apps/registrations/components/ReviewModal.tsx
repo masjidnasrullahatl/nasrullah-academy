@@ -193,7 +193,14 @@ export const ReviewModal = ({ id }: Props) => {
 					label="Registration fee"
 					value={formatMoney(registration.registrationFee)}
 				/>
-				<Field label="Monthly tuition" value={formatMoney(registration.monthlyFee)} />
+				<Field
+					label="Monthly tuition"
+					value={
+						registration.monthlyFee === registration.standardMonthlyFee
+							? formatMoney(registration.monthlyFee)
+							: `${formatMoney(registration.monthlyFee)} (other amount; standard ${formatMoney(registration.standardMonthlyFee)})`
+					}
+				/>
 				<Field label="Due now" value={formatMoney(registration.amountDue)} />
 				<Field label="Payment" value={paymentLabel(registration)} />
 			</Group>

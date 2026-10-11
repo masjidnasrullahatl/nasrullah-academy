@@ -16,6 +16,7 @@ import {
 	Grid,
 	Group,
 	Loader,
+	NumberInput,
 	Radio,
 	ScrollArea,
 	SegmentedControl,
@@ -65,6 +66,8 @@ type FormValue = {
 	notes: string;
 	students: StudentValue[];
 	payByCard: 'card' | 'later';
+	tuitionChoice: 'standard' | 'other';
+	customMonthlyFee: number | string;
 	rulesAccepted: boolean;
 	rulesSignature: string;
 	website: string;
@@ -115,6 +118,8 @@ export default function ProgramRegistrationPage() {
 			notes: '',
 			students: [emptyStudent()],
 			payByCard: 'later',
+			tuitionChoice: 'standard',
+			customMonthlyFee: '',
 			rulesAccepted: false,
 			rulesSignature: '',
 			website: '',
@@ -137,6 +142,10 @@ export default function ProgramRegistrationPage() {
 				value ? null : 'Please read and accept the school rules',
 			rulesSignature: (value) =>
 				value.trim().length >= 3 ? null : 'Type your full name to sign',
+			customMonthlyFee: (value, values) =>
+				values.tuitionChoice === 'other' && !(Number(value) > 0)
+					? 'Enter the monthly amount'
+					: null,
 			preferredTime: (value) =>
 				program?.classTimes.length && !value ? 'Choose a class time' : null,
 			students: {
@@ -163,6 +172,10 @@ export default function ProgramRegistrationPage() {
 		monthlyFees: program.monthlyFees,
 		registrationFee: program.registrationFee,
 		kids,
+		customMonthly:
+			form.values.tuitionChoice === 'other'
+				? Number(form.values.customMonthlyFee) || null
+				: null,
 	});
 	const payByCard = form.values.payByCard === 'card';
 
@@ -185,6 +198,10 @@ export default function ProgramRegistrationPage() {
 					preferredTime: values.preferredTime || null,
 					notes: values.notes || null,
 					payByCard: values.payByCard === 'card',
+					customMonthlyFee:
+						values.tuitionChoice === 'other'
+							? Number(values.customMonthlyFee)
+							: null,
 					rulesAccepted: values.rulesAccepted,
 					rulesSignature: values.rulesSignature,
 					website: values.website,
@@ -533,6 +550,37 @@ export default function ProgramRegistrationPage() {
 					<Text fw={700} mb="sm">
 						Payment
 					</Text>
+
+					<Radio.Group
+						label="Monthly tuition"
+						mb="md"
+						{...form.getInputProps('tuitionChoice')}
+					>
+						<Stack mt="xs" gap="sm">
+							<Radio
+								value="standard"
+								label={`Standard tuition: ${formatMoney(quote.standardMonthly)} per month`}
+							/>
+							<Radio
+								value="other"
+								label="Other amount"
+								description="Only if you have agreed a different amount with the Academy office."
+							/>
+							{form.values.tuitionChoice === 'other' && (
+								<NumberInput
+									label="Monthly amount"
+									placeholder="0.00"
+									prefix="$"
+									min={1}
+									decimalScale={2}
+									thousandSeparator=","
+									maw={220}
+									withAsterisk
+									{...form.getInputProps('customMonthlyFee')}
+								/>
+							)}
+						</Stack>
+					</Radio.Group>
 
 					<Stack gap={4} mb="md">
 						<Group justify="space-between">
