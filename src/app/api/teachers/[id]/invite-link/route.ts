@@ -12,7 +12,11 @@ import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
 import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
-import { ensureTeacherRole, inviteTeacherAccount } from '../../utils';
+import {
+	ensureTeacherRole,
+	inviteTeacherAccount,
+	repairTeacherLink,
+} from '../../utils';
 
 const getInviteLink = async (
 	_: AuthRequest,
@@ -29,12 +33,14 @@ const getInviteLink = async (
 		if (!teacher.email) return badRequest('Teacher email is required');
 
 		// Chưa có tài khoản → tạo trước (helper S26, đã có rollback)
-		if (!teacher.supabaseUserId) {
+		const supabaseUserId = await repairTeacherLink(teacher);
+
+		if (!supabaseUserId) {
 			const invite = await inviteTeacherAccount(teacher);
 
 			if ('error' in invite) return badRequest(invite.error);
 		} else {
-			await ensureTeacherRole(teacher.supabaseUserId);
+			await ensureTeacherRole(supabaseUserId);
 		}
 
 		// generateLink KHÔNG gửi email, chỉ sinh token. Lấy hashed_token rồi tự dựng link

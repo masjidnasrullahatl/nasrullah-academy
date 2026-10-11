@@ -17,7 +17,7 @@ import { getCurrentTeacher } from '../utils';
 import { UpdateTeacherProfileSchema } from './types';
 
 const getMyProfile = async (request: AuthRequest) => {
-	const teacher = await getCurrentTeacher(request.user.id);
+	const teacher = await getCurrentTeacher(request.user);
 
 	if (!teacher) return notFound('Teacher profile not found');
 
@@ -33,7 +33,7 @@ const getMyProfile = async (request: AuthRequest) => {
 
 const updateMyProfile = async (request: AuthRequest) => {
 	try {
-		const teacher = await getCurrentTeacher(request.user.id);
+		const teacher = await getCurrentTeacher(request.user);
 
 		if (!teacher) return notFound('Teacher profile not found');
 

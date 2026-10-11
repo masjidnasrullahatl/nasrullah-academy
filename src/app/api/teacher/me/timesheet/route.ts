@@ -27,7 +27,7 @@ const SaveTimesheetSchema = z.object({
 
 // The signed-in teacher's hours for one pay period, by program
 const getMyTimesheet = async (request: AuthRequest) => {
-	const teacher = await getCurrentTeacher(request.user.id);
+	const teacher = await getCurrentTeacher(request.user);
 
 	if (!teacher) return notFound('Teacher profile not found');
 
@@ -48,7 +48,7 @@ const getMyTimesheet = async (request: AuthRequest) => {
 
 const saveMyTimesheet = async (request: AuthRequest) => {
 	try {
-		const teacher = await getCurrentTeacher(request.user.id);
+		const teacher = await getCurrentTeacher(request.user);
 
 		if (!teacher) return notFound('Teacher profile not found');
 
