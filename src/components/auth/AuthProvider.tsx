@@ -62,7 +62,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					return;
 				}
 
-				if (!session) {
+				// The stored session may be revoked or predate a role change,
+				// so confirm it with the server and use its current role
+				const {
+					data: { user: verifiedUser },
+				} = session ? await supabase.auth.getUser() : { data: { user: null } };
+
+				if (!session || !verifiedUser) {
+					if (session) await supabase.auth.signOut({ scope: 'local' });
+
 					setUser(null);
 					setSession(null);
 					setRole('none');
@@ -73,13 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					return;
 				}
 
-				let role = getAppRole(session.user);
-
-				// The stored session can predate a role change; ask the server
-				if (role === 'none') {
-					const { data } = await supabase.auth.refreshSession();
-					role = getAppRole(data.session?.user);
-				}
+				const role = getAppRole(verifiedUser);
 
 				if (role === 'none') {
 					await supabase.auth.signOut();
