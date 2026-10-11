@@ -157,10 +157,13 @@ export const approveRegistration = async (
 		where: { programId, student: { familyId: family.id, status: 'ACTIVE' } },
 	});
 
-	const monthlyFee = tuitionForKids(
-		registration.program.monthlyFees.map(Number),
-		kids,
-	);
+	const monthlyFees = registration.program.monthlyFees.map(Number);
+	const registeredFee = Number(registration.monthlyFee);
+	// The parent entered an "other amount" when it differs from the standard
+	const isCustom =
+		registeredFee !== tuitionForKids(monthlyFees, registration.studentCount);
+
+	const monthlyFee = isCustom ? registeredFee : tuitionForKids(monthlyFees, kids);
 
 	await tx.familyPrograms.upsert({
 		where: { familyId_programId: { familyId: family.id, programId } },

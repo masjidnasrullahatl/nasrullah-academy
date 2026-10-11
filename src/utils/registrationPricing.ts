@@ -28,17 +28,23 @@ export const getRegistrationQuote = ({
 	monthlyFees,
 	registrationFee,
 	kids,
+	customMonthly,
 }: {
 	monthlyFees: number[];
 	registrationFee: number;
 	kids: number;
+	// amount the parent agreed with the office, instead of the standard price
+	customMonthly?: number | null;
 }) => {
-	const monthly = tuitionForKids(monthlyFees, kids);
+	const standardMonthly = tuitionForKids(monthlyFees, kids);
+	const monthly = customMonthly ? round2(customMonthly) : standardMonthly;
 	const registration = round2(registrationFee * kids);
 	const firstPayment = round2(monthly + registration);
 
 	return {
 		monthly,
+		standardMonthly,
+		isCustom: Boolean(customMonthly) && monthly !== standardMonthly,
 		registration,
 		firstPayment,
 		card: {
