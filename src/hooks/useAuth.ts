@@ -10,6 +10,7 @@ import { PATH_AUTH } from '@configs/routes';
 import { useAuthStore } from '@stores/auth';
 
 import { createClient } from '@helpers/supabase/client';
+import { getAppRole } from '@helpers/supabase/role';
 
 export const useAuth = () => {
 	const router = useRouter();
@@ -34,7 +35,7 @@ export const useAuth = () => {
 
 			setUser(session?.user ?? null);
 			setSession(session);
-			setRole(session?.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff');
+			setRole(getAppRole(session?.user));
 			setIsFetched(true);
 		};
 
@@ -46,9 +47,7 @@ export const useAuth = () => {
 		} = supabase.auth.onAuthStateChange(async (event, session) => {
 			setUser(session?.user ?? null);
 			setSession(session);
-			setRole(
-				session?.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff',
-			);
+			setRole(getAppRole(session?.user));
 		});
 
 		return () => {

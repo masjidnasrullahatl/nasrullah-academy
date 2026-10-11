@@ -9,6 +9,7 @@ import { PATH_AUTH, PATH_DASHBOARD, PATH_TEACHER } from '@configs/routes';
 import { useAuthStore } from '@stores/auth';
 
 import { createClient } from '@helpers/supabase/client';
+import { getAppRole } from '@helpers/supabase/role';
 
 // Pages that don't require authentication
 const RESET_PASSWORD_PAGE = '/auth/password-reset/confirm';
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				if (!session) {
 					setUser(null);
 					setSession(null);
-					setRole('staff');
+					setRole('none');
 
 					if (!isPublicPage) {
 						router.push(PATH_AUTH.signin);
@@ -72,8 +73,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					return;
 				}
 
-				const role =
-					session.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff';
+				const role = getAppRole(session.user);
+
+				if (role === 'none') {
+					await supabase.auth.signOut();
+					setUser(null);
+					setSession(null);
+					setRole('none');
+					router.push(`${PATH_AUTH.signin}?error=no_access`);
+					return;
+				}
 
 				setUser(session.user);
 				setSession(session);
@@ -116,14 +125,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			if (event === 'SIGNED_OUT' || !session) {
 				setUser(null);
 				setSession(null);
-				setRole('staff');
+				setRole('none');
 				setIsAuthenticated(false);
 				if (!isPublicPage) {
 					router.push(PATH_AUTH.signin);
 				}
 			} else if (event === 'SIGNED_IN') {
-				const role =
-					session.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff';
+				const role = getAppRole(session.user);
+
+				if (role === 'none') {
+					await supabase.auth.signOut();
+					router.push(`${PATH_AUTH.signin}?error=no_access`);
+					return;
+				}
 
 				setUser(session.user);
 				setSession(session);

@@ -8,6 +8,8 @@ import { PATH_DASHBOARD, PATH_TEACHER } from '@configs/routes';
 
 import { useAuth } from '@hooks/useAuth';
 
+import { getAppRole } from '@helpers/supabase/role';
+
 export const useSignIn = () => {
 	const router = useRouter();
 
@@ -18,8 +20,10 @@ export const useSignIn = () => {
 			return login(data.email, data.password);
 		},
 		onSuccess: (data) => {
-			const role =
-				data.user?.app_metadata?.role === 'teacher' ? 'teacher' : 'staff';
+			const role = getAppRole(data.user);
+
+			// A login with no role is signed out by the AuthProvider
+			if (role === 'none') return;
 
 			router.push(
 				role === 'teacher' ? PATH_TEACHER.default : PATH_DASHBOARD.default,

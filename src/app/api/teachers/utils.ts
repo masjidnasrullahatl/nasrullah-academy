@@ -7,6 +7,27 @@ import { createAdminClient } from '@helpers/supabase/admin';
 
 type InviteResult = { supabaseUserId: string } | { error: string };
 
+/**
+ * Marks an existing login as a teacher unless it's already staff, so a
+ * teacher account can never end up without a role.
+ */
+export const ensureTeacherRole = async (supabaseUserId: string) => {
+	const adminClient = createAdminClient();
+
+	const { data, error } =
+		await adminClient.auth.admin.getUserById(supabaseUserId);
+
+	if (error || !data.user) return;
+
+	const role = data.user.app_metadata?.role;
+
+	if (role === 'teacher' || role === 'staff') return;
+
+	await adminClient.auth.admin.updateUserById(supabaseUserId, {
+		app_metadata: { role: 'teacher' },
+	});
+};
+
 export const inviteTeacherAccount = async (
 	teacher: Pick<Teachers, 'id' | 'email' | 'firstName' | 'lastName'>,
 ): Promise<InviteResult> => {

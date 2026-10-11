@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAppRole } from '@helpers/supabase/role';
+
 import { withAuth } from './withAuth';
 
 export function withStaff(
@@ -8,9 +10,7 @@ export function withStaff(
 ) {
 	return withAuth(
 		async (req: NextRequest & { user?: any }, ...args: any[]): Promise<NextResponse> => {
-			const role = req.user?.app_metadata?.role;
-
-			if (role === 'teacher') {
+			if (getAppRole(req.user) !== 'staff') {
 				return NextResponse.json(
 					{ error: 'Forbidden: staff access required', data: null },
 					{ status: 403 },

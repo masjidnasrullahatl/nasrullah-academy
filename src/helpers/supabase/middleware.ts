@@ -4,6 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@configs/_constant';
 
+import { getAppRole } from './role';
+
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
 		request,
@@ -52,15 +54,24 @@ export async function updateSession(request: NextRequest) {
 	}
 
 	if (user) {
-		const role = user.app_metadata?.role;
-		const isTeacher = role === 'teacher';
+		const role = getAppRole(user);
 		const pathname = request.nextUrl.pathname;
+		const isDashboard = pathname.startsWith('/dashboard');
+		const isTeacherArea = pathname.startsWith('/teacher');
 
-		if (isTeacher && pathname.startsWith('/dashboard')) {
+		// Signed in but never granted a role: no access to either portal
+		if (role === 'none' && (isDashboard || isTeacherArea)) {
+			const url = request.nextUrl.clone();
+			url.pathname = '/auth/signin';
+			url.search = '?error=no_access';
+			return NextResponse.redirect(url);
+		}
+
+		if (role === 'teacher' && isDashboard) {
 			return NextResponse.redirect(new URL('/teacher', request.url));
 		}
 
-		if (!isTeacher && pathname.startsWith('/teacher')) {
+		if (role === 'staff' && isTeacherArea) {
 			return NextResponse.redirect(new URL('/dashboard', request.url));
 		}
 	}
