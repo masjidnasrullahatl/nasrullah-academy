@@ -7,7 +7,7 @@ import { createClient } from '@helpers/prisma/server';
 import { getCurrentTeacher } from '../../utils';
 
 const getMyPayRecords = async (request: AuthRequest) => {
-	const teacher = await getCurrentTeacher(request.user.id);
+	const teacher = await getCurrentTeacher(request.user);
 
 	if (!teacher) return notFound('Teacher profile not found');
 

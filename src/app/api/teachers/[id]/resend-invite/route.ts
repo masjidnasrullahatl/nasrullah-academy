@@ -12,7 +12,11 @@ import { NEXT_PUBLIC_SITE_URL } from '@configs/_constant';
 import { createClient } from '@helpers/prisma/server';
 import { createAdminClient } from '@helpers/supabase/admin';
 
-import { ensureTeacherRole, inviteTeacherAccount } from '../../utils';
+import {
+	ensureTeacherRole,
+	inviteTeacherAccount,
+	repairTeacherLink,
+} from '../../utils';
 
 const resendTeacherInvite = async (
 	_: AuthRequest,
@@ -31,8 +35,11 @@ const resendTeacherInvite = async (
 			return badRequest('Teacher email is required to resend invite');
 		}
 
-		// Chưa có tài khoản (tạo giáo viên xong nhưng invite hỏng) → tạo mới
-		if (!teacher.supabaseUserId) {
+		// The linked login may have been deleted; relink by email or clear it
+		const supabaseUserId = await repairTeacherLink(teacher);
+
+		// No login yet → create one and send the invite
+		if (!supabaseUserId) {
 			const invite = await inviteTeacherAccount(teacher);
 
 			if ('error' in invite) return badRequest(invite.error);
@@ -40,12 +47,12 @@ const resendTeacherInvite = async (
 			return success(teacher);
 		}
 
-		await ensureTeacherRole(teacher.supabaseUserId);
+		await ensureTeacherRole(supabaseUserId);
 
 		const redirectTo = `${NEXT_PUBLIC_SITE_URL}/auth/password-reset/confirm`;
 
 		const { data: existing, error: getUserError } =
-			await adminClient.auth.admin.getUserById(teacher.supabaseUserId);
+			await adminClient.auth.admin.getUserById(supabaseUserId);
 
 		if (getUserError || !existing.user) {
 			return badRequest(getUserError?.message || 'Teacher account not found');
