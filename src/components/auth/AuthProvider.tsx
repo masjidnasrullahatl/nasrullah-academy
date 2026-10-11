@@ -73,7 +73,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					return;
 				}
 
-				const role = getAppRole(session.user);
+				let role = getAppRole(session.user);
+
+				// The stored session can predate a role change; ask the server
+				if (role === 'none') {
+					const { data } = await supabase.auth.refreshSession();
+					role = getAppRole(data.session?.user);
+				}
 
 				if (role === 'none') {
 					await supabase.auth.signOut();
