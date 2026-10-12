@@ -39,7 +39,8 @@ type StudentFormValue = {
 	firstName: string;
 	lastName: string;
 	gender: 'BOY' | 'GIRL';
-	dateOfBirth: Date | null;
+	// YYYY-MM-DD, as the date picker gives it
+	dateOfBirth: string | null;
 	status: 'ACTIVE' | 'INACTIVE';
 	notes: string;
 	programIds: string[];
@@ -70,7 +71,9 @@ export const StudentFormModal = ({
 			firstName: student?.firstName || '',
 			lastName: student?.lastName || '',
 			gender: student?.gender || 'BOY',
-			dateOfBirth: student?.dateOfBirth ? new Date(student.dateOfBirth) : null,
+			dateOfBirth: student?.dateOfBirth
+				? new Date(student.dateOfBirth).toISOString().slice(0, 10)
+				: null,
 			status: student?.status || 'ACTIVE',
 			notes: student?.notes || '',
 			programIds:
@@ -102,7 +105,7 @@ export const StudentFormModal = ({
 			firstName: values.firstName,
 			lastName: values.lastName,
 			gender: values.gender,
-			dateOfBirth: values.dateOfBirth ? values.dateOfBirth.toISOString().split('T')[0] : null,
+			dateOfBirth: values.dateOfBirth || null,
 			status: values.status,
 			notes: values.notes || null,
 			programIds: values.programIds,
@@ -189,10 +192,9 @@ export const StudentFormModal = ({
 							<DateInput
 								label="Date of birth"
 								placeholder="MM/DD/YYYY"
-								value={form.values.dateOfBirth}
-								onChange={(value) =>
-									form.setFieldValue('dateOfBirth', (value as Date | null) || null)
-								}
+								valueFormat="MM/DD/YYYY"
+								clearable
+								{...form.getInputProps('dateOfBirth')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={12}>
