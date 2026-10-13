@@ -23,6 +23,10 @@ export const useCreateStudent = () => {
 			queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.FAMILIES.GET_PAGING],
 			});
+			// the family page shows its students
+			queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.FAMILIES.GET_DETAIL],
+			});
 			queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.FAMILIES.GET_DETAIL],
 			});
