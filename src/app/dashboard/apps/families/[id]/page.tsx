@@ -38,12 +38,14 @@ import { formatMoney } from '@utils/money';
 import { StudentFormModal } from '../../students/components/StudentFormModal';
 import { FamilyFormModal } from '../components/FamilyFormModal';
 
+// Birthdays are stored as midnight UTC; use the date part so the local
+// timezone doesn't shift them to the day before
 const calcAge = (dateOfBirth?: string | null) => {
 	if (!dateOfBirth) {
 		return '-';
 	}
 
-	return dayjs().diff(dayjs(dateOfBirth), 'year');
+	return dayjs().diff(dayjs(dateOfBirth.slice(0, 10)), 'year');
 };
 
 export default function FamilyDetailPage() {
@@ -203,7 +205,7 @@ export default function FamilyDetailPage() {
 											<Table.Td>{student.gender}</Table.Td>
 											<Table.Td>
 												{student.dateOfBirth
-													? dayjs(student.dateOfBirth).format('MM/DD/YYYY')
+													? dayjs(student.dateOfBirth.slice(0, 10)).format('MM/DD/YYYY')
 													: '-'}
 											</Table.Td>
 											<Table.Td>{calcAge(student.dateOfBirth)}</Table.Td>
