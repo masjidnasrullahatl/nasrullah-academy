@@ -7,7 +7,6 @@ import {
 	Stack,
 	TextInput,
 } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
@@ -189,12 +188,19 @@ export const StudentFormModal = ({
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
-							<DateInput
+							{/* Built-in date field: picking and typing both work */}
+							<TextInput
+								type="date"
 								label="Date of birth"
-								placeholder="MM/DD/YYYY"
-								valueFormat="MM/DD/YYYY"
-								clearable
-								{...form.getInputProps('dateOfBirth')}
+								max={new Date().toISOString().slice(0, 10)}
+								value={form.values.dateOfBirth || ''}
+								error={form.errors.dateOfBirth}
+								onChange={(event) =>
+									form.setFieldValue(
+										'dateOfBirth',
+										event.currentTarget.value || null,
+									)
+								}
 							/>
 						</Grid.Col>
 						<Grid.Col span={12}>

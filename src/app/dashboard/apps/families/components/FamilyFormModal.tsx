@@ -16,7 +16,6 @@ import {
 	Textarea,
 	TextInput,
 } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
@@ -47,7 +46,8 @@ type StudentFormValue = {
 	firstName: string;
 	lastName: string;
 	gender: 'BOY' | 'GIRL';
-	dateOfBirth: Date | null;
+	// YYYY-MM-DD
+	dateOfBirth: string | null;
 	status: 'ACTIVE' | 'INACTIVE';
 	notes: string;
 };
@@ -130,7 +130,7 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 					lastName: student.lastName,
 					gender: student.gender,
 					dateOfBirth: student.dateOfBirth
-						? new Date(student.dateOfBirth)
+						? new Date(student.dateOfBirth).toISOString().slice(0, 10)
 						: null,
 					status: student.status,
 					notes: student.notes || '',
@@ -402,14 +402,15 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 											/>
 										</Grid.Col>
 										<Grid.Col span={{ base: 12, md: 4 }}>
-											<DateInput
+											<TextInput
+												type="date"
 												label="Date of birth"
-												placeholder="MM/DD/YYYY"
-												value={form.values.students[index].dateOfBirth}
-												onChange={(value) =>
+												max={new Date().toISOString().slice(0, 10)}
+												value={form.values.students[index].dateOfBirth || ''}
+												onChange={(event) =>
 													form.setFieldValue(
 														`students.${index}.dateOfBirth`,
-														(value as Date | null) || null,
+														event.currentTarget.value || null,
 													)
 												}
 											/>
