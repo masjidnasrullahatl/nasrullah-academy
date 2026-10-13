@@ -26,7 +26,6 @@ import {
 	TextInput,
 	Title,
 } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 
 import {
@@ -48,7 +47,8 @@ type StudentValue = {
 	firstName: string;
 	lastName: string;
 	gender: 'BOY' | 'GIRL' | '';
-	dateOfBirth: Date | null;
+	// YYYY-MM-DD
+	dateOfBirth: string | null;
 	allergies: string;
 	medicalConditions: string;
 	medications: string;
@@ -209,7 +209,7 @@ export default function ProgramRegistrationPage() {
 						firstName: student.firstName,
 						lastName: student.lastName,
 						gender: student.gender,
-						dateOfBirth: dayjs(student.dateOfBirth).format('YYYY-MM-DD'),
+						dateOfBirth: student.dateOfBirth,
 						allergies: student.allergies || null,
 						medicalConditions: student.medicalConditions || null,
 						medications: student.medications || null,
@@ -419,13 +419,19 @@ export default function ProgramRegistrationPage() {
 										)}
 									</Grid.Col>
 									<Grid.Col span={{ base: 12, sm: 6 }}>
-										<DateInput
+										<TextInput
+											type="date"
 											label="Date of birth"
-											placeholder="MM/DD/YYYY"
-											valueFormat="MM/DD/YYYY"
-											maxDate={new Date()}
+											max={dayjs().format('YYYY-MM-DD')}
 											withAsterisk
-											{...form.getInputProps(`students.${index}.dateOfBirth`)}
+											value={form.values.students[index].dateOfBirth || ''}
+											error={form.errors[`students.${index}.dateOfBirth`]}
+											onChange={(event) =>
+												form.setFieldValue(
+													`students.${index}.dateOfBirth`,
+													event.currentTarget.value || null,
+												)
+											}
 										/>
 									</Grid.Col>
 									<Grid.Col span={{ base: 12, sm: 6 }}>
