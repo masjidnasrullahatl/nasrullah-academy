@@ -91,7 +91,16 @@ export const TableRow = ({ invoice, page, index, pageSize }: Props) => {
 				{(page - 1) * pageSize + index + 1}
 			</Table.Td>
 
-			<Table.Td>{invoice.family.name}</Table.Td>
+			<Table.Td>
+				{invoice.family.name}
+				{invoice.family.status === 'INACTIVE' && (
+					<Tooltip label="Not counted in totals unless a payment is received">
+						<Badge ml={6} size="xs" color="gray" variant="light">
+							Inactive
+						</Badge>
+					</Tooltip>
+				)}
+			</Table.Td>
 
 			<Table.Td>{invoice.program.name}</Table.Td>
 

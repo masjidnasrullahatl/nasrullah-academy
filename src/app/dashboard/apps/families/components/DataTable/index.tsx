@@ -25,7 +25,7 @@ export const DataTable = () => {
 		keyword?: string;
 		programId?: string;
 		status?: string;
-	}>({});
+	}>({ status: 'ACTIVE' }); // open on active families
 
 	const {
 		data: families,

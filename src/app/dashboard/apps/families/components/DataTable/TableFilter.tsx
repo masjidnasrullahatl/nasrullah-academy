@@ -48,6 +48,7 @@ export const TableFilter = ({ onChangeFilter }: Props) => {
 				placeholder="Filter by status"
 				leftSection={<IconCircleDot size={16} />}
 				data={RECORD_STATUS_OPTIONS}
+				defaultValue="ACTIVE"
 				onChange={(value) => onChangeFilter('status', value || '')}
 				clearable
 			/>
