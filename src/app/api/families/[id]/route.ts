@@ -145,6 +145,14 @@ const update = async (
 					},
 				});
 			}
+
+			// An inactive family has no active students
+			if (payload.status === 'INACTIVE') {
+				await tx.students.updateMany({
+					where: { familyId: id },
+					data: { status: 'INACTIVE' },
+				});
+			}
 		});
 
 		const family = await prisma.families.findUnique({

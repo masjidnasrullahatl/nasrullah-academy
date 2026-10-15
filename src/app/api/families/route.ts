@@ -91,7 +91,8 @@ const create = async (request: AuthRequest) => {
 			lastName: student.lastName,
 			gender: student.gender,
 			dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth) : null,
-			status: student.status,
+			// An inactive family has no active students
+			status: payload.status === 'INACTIVE' ? 'INACTIVE' : student.status,
 			notes: student.notes || null,
 			programs: {
 				create: payload.programs.map(({ programId }) => ({ programId })),

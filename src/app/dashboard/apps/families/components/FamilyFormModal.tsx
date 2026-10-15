@@ -247,6 +247,20 @@ export const FamilyFormModal = ({ family }: FamilyFormModalProps) => {
 								data={RECORD_STATUS_OPTIONS}
 								withAsterisk
 								{...form.getInputProps('status')}
+								onChange={(value) => {
+									form.setFieldValue('status', value as 'ACTIVE' | 'INACTIVE');
+
+									// Making the family inactive makes its students inactive too
+									if (value === 'INACTIVE') {
+										form.setFieldValue(
+											'students',
+											form.values.students.map((student) => ({
+												...student,
+												status: 'INACTIVE' as const,
+											})),
+										);
+									}
+								}}
 							/>
 						</Grid.Col>
 						<Grid.Col span={{ base: 12, md: 6 }}>
