@@ -12,7 +12,12 @@ import { catchZodError } from '../utils/catchZodError';
 import { badRequest, internalServerError, success } from '../utils/response';
 
 import { CreateInvoiceSchema } from './types';
-import { calcTotals, mapInvoice, toNumber } from './utils';
+import {
+	calcTotals,
+	countedInvoiceWhere,
+	mapInvoice,
+	toNumber,
+} from './utils';
 
 const buildWhere = (
 	searchParams: URLSearchParams,
@@ -67,7 +72,7 @@ const getPaging = async (request: AuthRequest) => {
 			include: { family: true, program: { select: { id: true, name: true } } },
 		}),
 		prisma.monthlyInvoices.aggregate({
-			where,
+			where: { AND: [where, countedInvoiceWhere] },
 			_sum: {
 				studentCount: true,
 				registrationFee: true,

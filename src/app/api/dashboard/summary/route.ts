@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 
+import { countedInvoiceWhere } from '@app/api/invoices/utils';
 import { AuthRequest } from '@app/api/types/common';
 import { success } from '@app/api/utils/response';
 import { withStaff } from '@app/api/utils/withStaff';
@@ -32,7 +33,10 @@ const getSummary = async (request: AuthRequest) => {
 
 	const prisma = createClient();
 
-	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = { year };
+	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
+		year,
+		...countedInvoiceWhere,
+	};
 
 	if (programId) invoiceWhere.programId = programId;
 

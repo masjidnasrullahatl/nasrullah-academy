@@ -3,6 +3,14 @@ import { Prisma } from '@prisma/client';
 export const toNumber = (value: Prisma.Decimal | number | null | undefined) =>
 	Number(value ?? 0);
 
+/**
+ * Payment rows that count in money totals: the family is active, or a
+ * payment was received. Unpaid rows of inactive families are left out.
+ */
+export const countedInvoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
+	OR: [{ family: { status: 'ACTIVE' } }, { totalPaid: { gt: 0 } }],
+};
+
 export type InvoiceTotalsPayload = {
 	registrationFee: number;
 	tuitionFee: number;
