@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PublicProgram } from '@app/api/public/registrations/types';
 
 import { createClient } from '@helpers/prisma/server';
-import { isStripeEnabled } from '@helpers/stripe';
+import { isRegistrationCardEnabled } from '@helpers/stripe';
 
 export async function GET(
 	_: NextRequest,
@@ -31,7 +31,7 @@ export async function GET(
 		registrationFee: Number(program.registrationFee),
 		monthlyFees: program.monthlyFees.map(Number),
 		classTimes: program.classTimes,
-		cardEnabled: isStripeEnabled(),
+		cardEnabled: isRegistrationCardEnabled(),
 	};
 
 	return NextResponse.json({ data, error: null });

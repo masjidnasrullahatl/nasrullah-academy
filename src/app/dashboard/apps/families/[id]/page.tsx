@@ -38,6 +38,8 @@ import { formatMoney } from '@utils/money';
 import { StudentFormModal } from '../../students/components/StudentFormModal';
 import { FamilyFormModal } from '../components/FamilyFormModal';
 
+import { RecurringPayments } from './components/RecurringPayments';
+
 // Birthdays are stored as midnight UTC; use the date part so the local
 // timezone doesn't shift them to the day before
 const calcAge = (dateOfBirth?: string | null) => {
@@ -257,6 +259,18 @@ export default function FamilyDetailPage() {
 							</Table>
 						</Table.ScrollContainer>
 					</Paper>
+
+					{familyId && (
+						<RecurringPayments
+							familyId={familyId}
+							programs={
+								family?.programs.map((program) => ({
+									id: program.id,
+									name: program.name,
+								})) || []
+							}
+						/>
+					)}
 
 					<Paper p="md">
 						<Text fw={700} mb="xs">

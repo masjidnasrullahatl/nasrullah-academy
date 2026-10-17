@@ -4,20 +4,54 @@ import crypto from 'crypto';
 // switches on as soon as STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are set
 // in the hosting environment.
 const STRIPE_API = 'https://api.stripe.com/v1';
+// Pinned so response shapes don't change with the account's default version
+const STRIPE_VERSION = '2024-06-20';
 
 const getSecretKey = () => process.env.STRIPE_SECRET_KEY || '';
 
 export const isStripeEnabled = () => Boolean(getSecretKey());
 
-const stripePost = async <T>(path: string, params: Record<string, string>) => {
-	const response = await fetch(`${STRIPE_API}${path}`, {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${getSecretKey()}`,
-			'Content-Type': 'application/x-www-form-urlencoded',
+// Paying by card on the public registration forms is switched on separately
+// (STRIPE_REGISTRATION_CARD=on), so connecting Stripe for recurring payments
+// doesn't turn it on by itself.
+export const isRegistrationCardEnabled = () =>
+	isStripeEnabled() && process.env.STRIPE_REGISTRATION_CARD === 'on';
+
+type StripeParams = Record<string, string | string[]>;
+
+const toSearchParams = (params: StripeParams = {}) => {
+	const search = new URLSearchParams();
+
+	for (const [key, value] of Object.entries(params)) {
+		for (const item of Array.isArray(value) ? value : [value]) {
+			search.append(key, item);
+		}
+	}
+
+	return search;
+};
+
+const stripeRequest = async <T>(
+	method: 'GET' | 'POST' | 'DELETE',
+	path: string,
+	params?: StripeParams,
+) => {
+	const search = toSearchParams(params);
+	const isGet = method === 'GET';
+
+	const response = await fetch(
+		`${STRIPE_API}${path}${isGet && params ? `?${search}` : ''}`,
+		{
+			method,
+			headers: {
+				Authorization: `Bearer ${getSecretKey()}`,
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Stripe-Version': STRIPE_VERSION,
+			},
+			body: isGet ? undefined : search,
+			cache: 'no-store',
 		},
-		body: new URLSearchParams(params),
-	});
+	);
 
 	const data = await response.json();
 
@@ -27,6 +61,12 @@ const stripePost = async <T>(path: string, params: Record<string, string>) => {
 
 	return data as T;
 };
+
+const stripePost = <T>(path: string, params: StripeParams) =>
+	stripeRequest<T>('POST', path, params);
+
+const stripeGet = <T>(path: string, params?: StripeParams) =>
+	stripeRequest<T>('GET', path, params);
 
 const toCents = (amount: number) => Math.round(amount * 100);
 
@@ -85,6 +125,314 @@ export const createCheckoutSession = async (params: CheckoutParams) => {
 	}
 
 	return stripePost<{ id: string; url: string }>('/checkout/sessions', body);
+};
+
+/* ---------------------------------------------------------------------------
+ * Recurring payments (subscriptions)
+ * ------------------------------------------------------------------------- */
+
+type StripeCard = {
+	brand: string;
+	last4: string;
+	exp_month: number;
+	exp_year: number;
+};
+
+type StripePaymentMethod = { id: string; card?: StripeCard } | null;
+
+type StripeSubscription = {
+	id: string;
+	status: string;
+	start_date: number;
+	current_period_end: number;
+	cancel_at_period_end: boolean;
+	cancel_at: number | null;
+	canceled_at: number | null;
+	trial_end: number | null;
+	default_payment_method: StripePaymentMethod | string;
+	customer: {
+		id: string;
+		name: string | null;
+		email: string | null;
+		phone: string | null;
+		invoice_settings?: {
+			default_payment_method: StripePaymentMethod | string;
+		};
+	};
+	items: {
+		data: {
+			id: string;
+			quantity: number;
+			price: {
+				unit_amount: number;
+				product: string;
+				recurring: { interval: string; interval_count: number };
+			};
+		}[];
+	};
+};
+
+export type SubscriptionCard = {
+	brand: string;
+	last4: string;
+	expMonth: number;
+	expYear: number;
+};
+
+export type SubscriptionSummary = {
+	id: string;
+	status: string;
+	amount: number;
+	interval: string;
+	intervalCount: number;
+	startedAt: number;
+	nextPaymentAt: number | null;
+	trialEnd: number | null;
+	cancelAtPeriodEnd: boolean;
+	cancelAt: number | null;
+	canceledAt: number | null;
+	card: SubscriptionCard | null;
+	customer: {
+		id: string;
+		name: string | null;
+		email: string | null;
+		phone: string | null;
+	};
+};
+
+const toCard = (
+	paymentMethod: StripePaymentMethod | string | undefined,
+): SubscriptionCard | null =>
+	paymentMethod && typeof paymentMethod === 'object' && paymentMethod.card
+		? {
+				brand: paymentMethod.card.brand,
+				last4: paymentMethod.card.last4,
+				expMonth: paymentMethod.card.exp_month,
+				expYear: paymentMethod.card.exp_year,
+			}
+		: null;
+
+const getRawSubscription = (subscriptionId: string) =>
+	stripeGet<StripeSubscription>(`/subscriptions/${subscriptionId}`, {
+		'expand[]': [
+			'default_payment_method',
+			'customer',
+			'customer.invoice_settings.default_payment_method',
+		],
+	});
+
+/** The subscription's amount, status, card and dates, as shown to staff. */
+export const getSubscriptionSummary = async (
+	subscriptionId: string,
+): Promise<SubscriptionSummary> => {
+	const subscription = await getRawSubscription(subscriptionId);
+	const item = subscription.items.data[0];
+	const isLive = ['active', 'trialing', 'past_due'].includes(
+		subscription.status,
+	);
+
+	return {
+		id: subscription.id,
+		status: subscription.status,
+		amount: item ? (item.price.unit_amount * (item.quantity || 1)) / 100 : 0,
+		interval: item?.price.recurring?.interval || 'month',
+		intervalCount: item?.price.recurring?.interval_count || 1,
+		startedAt: subscription.start_date,
+		nextPaymentAt:
+			isLive && !subscription.cancel_at_period_end
+				? subscription.current_period_end
+				: null,
+		trialEnd:
+			subscription.status === 'trialing' ? subscription.trial_end : null,
+		cancelAtPeriodEnd: subscription.cancel_at_period_end,
+		cancelAt: subscription.cancel_at,
+		canceledAt: subscription.canceled_at,
+		// Keela charges a specific card; fall back to the customer's default
+		card:
+			toCard(subscription.default_payment_method) ||
+			toCard(subscription.customer.invoice_settings?.default_payment_method),
+		customer: {
+			id: subscription.customer.id,
+			name: subscription.customer.name,
+			email: subscription.customer.email,
+			phone: subscription.customer.phone,
+		},
+	};
+};
+
+export type SubscriptionPayment = {
+	id: string;
+	number: string | null;
+	amount: number;
+	paidAt: number;
+	receiptUrl: string | null;
+	pdfUrl: string | null;
+};
+
+type StripeInvoice = {
+	id: string;
+	number: string | null;
+	amount_paid: number;
+	created: number;
+	status_transitions: { paid_at: number | null };
+	hosted_invoice_url: string | null;
+	invoice_pdf: string | null;
+};
+
+/** Paid charges of a subscription, newest first (free trial invoices left out). */
+export const listSubscriptionPayments = async (subscriptionId: string) => {
+	const invoices = await stripeGet<{ data: StripeInvoice[] }>('/invoices', {
+		subscription: subscriptionId,
+		status: 'paid',
+		limit: '100',
+	});
+
+	return invoices.data
+		.filter((invoice) => invoice.amount_paid > 0)
+		.map(
+			(invoice): SubscriptionPayment => ({
+				id: invoice.id,
+				number: invoice.number,
+				amount: invoice.amount_paid / 100,
+				paidAt: invoice.status_transitions.paid_at || invoice.created,
+				receiptUrl: invoice.hosted_invoice_url,
+				pdfUrl: invoice.invoice_pdf,
+			}),
+		);
+};
+
+/**
+ * Changes the monthly amount from the next charge on. Nothing is charged or
+ * refunded now (no proration).
+ */
+export const updateSubscriptionAmount = async (
+	subscriptionId: string,
+	amount: number,
+) => {
+	const subscription = await getRawSubscription(subscriptionId);
+	const item = subscription.items.data[0];
+
+	if (!item) throw new Error('This subscription has no price to change');
+
+	await stripePost(`/subscriptions/${subscriptionId}`, {
+		'items[0][id]': item.id,
+		'items[0][quantity]': '1',
+		'items[0][price_data][currency]': 'usd',
+		'items[0][price_data][product]': item.price.product,
+		'items[0][price_data][unit_amount]': String(toCents(amount)),
+		'items[0][price_data][recurring][interval]':
+			item.price.recurring?.interval || 'month',
+		'items[0][price_data][recurring][interval_count]': String(
+			item.price.recurring?.interval_count || 1,
+		),
+		proration_behavior: 'none',
+	});
+};
+
+/**
+ * 'period_end': stops after the month already paid for (like Keela's
+ * Pre-Cancelled); 'now': stops immediately; 'resume': undoes a pending stop.
+ */
+export const setSubscriptionCancellation = async (
+	subscriptionId: string,
+	when: 'period_end' | 'now' | 'resume',
+) => {
+	if (when === 'now') {
+		await stripeRequest('DELETE', `/subscriptions/${subscriptionId}`);
+		return;
+	}
+
+	await stripePost(`/subscriptions/${subscriptionId}`, {
+		cancel_at_period_end: when === 'period_end' ? 'true' : 'false',
+	});
+};
+
+/**
+ * A Stripe-hosted page where the parent enters a new card. The card details
+ * never pass through this app; the new card is put on the subscription once
+ * the page is completed (see applyCardUpdate). The customer isn't passed to
+ * the page so their email isn't prefilled, which would make Stripe Link text
+ * the parent a sign-in code.
+ */
+export const createCardUpdateSession = async ({
+	subscriptionId,
+	customerId,
+	successUrl,
+	cancelUrl,
+}: {
+	subscriptionId: string;
+	customerId: string;
+	successUrl: string;
+	cancelUrl: string;
+}) =>
+	stripePost<{ id: string; url: string; expires_at: number }>(
+		'/checkout/sessions',
+		{
+			mode: 'setup',
+			currency: 'usd',
+			'payment_method_types[0]': 'card',
+			'metadata[purpose]': 'card_update',
+			'metadata[subscriptionId]': subscriptionId,
+			'metadata[customerId]': customerId,
+			'setup_intent_data[metadata][subscriptionId]': subscriptionId,
+			success_url: successUrl,
+			cancel_url: cancelUrl,
+		},
+	);
+
+type StripeSetupSession = {
+	id: string;
+	mode: string;
+	status: string;
+	metadata: Record<string, string>;
+	setup_intent: { payment_method: string | null } | null;
+};
+
+/**
+ * Puts the card from a completed card-update page on its subscription.
+ * Safe to call more than once. Returns the subscription id, or null when the
+ * page wasn't a completed card update.
+ */
+export const applyCardUpdate = async (sessionId: string) => {
+	const session = await stripeGet<StripeSetupSession>(
+		`/checkout/sessions/${sessionId}`,
+		{ 'expand[]': ['setup_intent'] },
+	);
+
+	const subscriptionId = session.metadata?.subscriptionId;
+	const customerId = session.metadata?.customerId;
+	const paymentMethod = session.setup_intent?.payment_method;
+
+	if (
+		session.mode !== 'setup' ||
+		session.status !== 'complete' ||
+		session.metadata?.purpose !== 'card_update' ||
+		!subscriptionId ||
+		!customerId ||
+		!paymentMethod
+	) {
+		return null;
+	}
+
+	// The card was saved without a customer; give it to the subscription's
+	// customer (already attached the second time round)
+	const card = await stripeGet<{ customer: string | null }>(
+		`/payment_methods/${paymentMethod}`,
+	);
+
+	if (!card.customer) {
+		await stripePost(`/payment_methods/${paymentMethod}/attach`, {
+			customer: customerId,
+		});
+	} else if (card.customer !== customerId) {
+		return null;
+	}
+
+	await stripePost(`/subscriptions/${subscriptionId}`, {
+		default_payment_method: paymentMethod,
+	});
+
+	return subscriptionId;
 };
 
 /** Verifies the Stripe-Signature header of a webhook call. */

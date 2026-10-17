@@ -17,6 +17,7 @@ export const QUERY_KEYS = {
 		GET_AVAILABLE_STUDENTS: 'classes.get-available-students',
 	},
 	INVOICES: { GET_PAGING: 'invoices.get-paging', GET_DETAIL: 'invoices.get-detail' },
+	SUBSCRIPTIONS: { FAMILY: 'subscriptions.family' },
 	DASHBOARD: { SUMMARY: 'dashboard.summary', YEARS: 'dashboard.years' },
 	TEACHER: {
 		MY_CLASSES: 'teacher.my-classes',

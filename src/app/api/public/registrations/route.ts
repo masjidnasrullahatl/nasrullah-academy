@@ -11,7 +11,10 @@ import { RULES_VERSION } from '@configs/schoolRules';
 import { sendEmail } from '@helpers/email';
 import { createClient } from '@helpers/prisma/server';
 import { registrationReceivedEmail } from '@helpers/registrationEmails';
-import { createCheckoutSession, isStripeEnabled } from '@helpers/stripe';
+import {
+	createCheckoutSession,
+	isRegistrationCardEnabled,
+} from '@helpers/stripe';
 
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		const payByCard =
-			payload.payByCard && isStripeEnabled() && quote.firstPayment > 0;
+			payload.payByCard && isRegistrationCardEnabled() && quote.firstPayment > 0;
 
 		const registration = await prisma.registrations.create({
 			data: {
