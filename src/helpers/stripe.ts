@@ -11,6 +11,12 @@ const getSecretKey = () => process.env.STRIPE_SECRET_KEY || '';
 
 export const isStripeEnabled = () => Boolean(getSecretKey());
 
+// Paying by card on the public registration forms is switched on separately
+// (STRIPE_REGISTRATION_CARD=on), so connecting Stripe for recurring payments
+// doesn't turn it on by itself.
+export const isRegistrationCardEnabled = () =>
+	isStripeEnabled() && process.env.STRIPE_REGISTRATION_CARD === 'on';
+
 type StripeParams = Record<string, string | string[]>;
 
 const toSearchParams = (params: StripeParams = {}) => {
