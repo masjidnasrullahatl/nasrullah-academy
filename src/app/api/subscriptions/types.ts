@@ -24,14 +24,15 @@ export type SubscriptionLink = {
 	familyName: string;
 	programId: string | null;
 	programName: string | null;
+	isPayer: boolean;
 };
 
 export type FamilySubscriptionView = {
 	stripeSubscriptionId: string;
 	// links of this family to the subscription (one per program)
 	links: SubscriptionLink[];
-	// other families paid by the same subscription
-	otherFamilies: { id: string; name: string }[];
+	// other families on the same subscription (isPayer: they pay it)
+	otherFamilies: { id: string; name: string; isPayer: boolean }[];
 	summary: SubscriptionSummary | null;
 	payments: SubscriptionPayment[];
 	error: string | null;

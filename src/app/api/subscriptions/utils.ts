@@ -17,6 +17,7 @@ type LinkRow = {
 	familyId: string;
 	programId: string | null;
 	stripeSubscriptionId: string;
+	isPayer: boolean;
 	family: { id: string; name: string };
 	program: { id: string; name: string } | null;
 };
@@ -27,6 +28,7 @@ const toLink = (row: LinkRow): SubscriptionLink => ({
 	familyName: row.family.name,
 	programId: row.programId,
 	programName: row.program?.name || null,
+	isPayer: row.isPayer,
 });
 
 /**
@@ -64,7 +66,7 @@ export const getFamilySubscriptions = async (
 		include: linkInclude,
 	});
 
-	return Promise.all(
+	const views = await Promise.all(
 		subscriptionIds.map(async (stripeSubscriptionId) => {
 			const links = familyLinks
 				.filter((link) => link.stripeSubscriptionId === stripeSubscriptionId)
@@ -78,7 +80,10 @@ export const getFamilySubscriptions = async (
 								link.stripeSubscriptionId === stripeSubscriptionId &&
 								link.familyId !== familyId,
 						)
-						.map((link) => [link.familyId, link.family]),
+						.map((link) => [
+							link.familyId,
+							{ ...link.family, isPayer: link.isPayer },
+						]),
 				).values(),
 			];
 
@@ -110,5 +115,15 @@ export const getFamilySubscriptions = async (
 				};
 			}
 		}),
+	);
+
+	// Current payments first, then past (cancelled) ones, newest first
+	const isPast = (view: FamilySubscriptionView) =>
+		['canceled', 'incomplete_expired'].includes(view.summary?.status || '');
+
+	return views.sort(
+		(a, b) =>
+			Number(isPast(a)) - Number(isPast(b)) ||
+			(b.summary?.startedAt || 0) - (a.summary?.startedAt || 0),
 	);
 };

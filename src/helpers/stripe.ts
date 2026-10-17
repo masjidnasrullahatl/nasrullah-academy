@@ -350,7 +350,9 @@ export const setSubscriptionCancellation = async (
 /**
  * A Stripe-hosted page where the parent enters a new card. The card details
  * never pass through this app; the new card is put on the subscription once
- * the page is completed (see applyCardUpdate).
+ * the page is completed (see applyCardUpdate). The customer isn't passed to
+ * the page so their email isn't prefilled, which would make Stripe Link text
+ * the parent a sign-in code.
  */
 export const createCardUpdateSession = async ({
 	subscriptionId,
@@ -367,11 +369,11 @@ export const createCardUpdateSession = async ({
 		'/checkout/sessions',
 		{
 			mode: 'setup',
-			customer: customerId,
 			currency: 'usd',
 			'payment_method_types[0]': 'card',
 			'metadata[purpose]': 'card_update',
 			'metadata[subscriptionId]': subscriptionId,
+			'metadata[customerId]': customerId,
 			'setup_intent_data[metadata][subscriptionId]': subscriptionId,
 			success_url: successUrl,
 			cancel_url: cancelUrl,
@@ -398,6 +400,7 @@ export const applyCardUpdate = async (sessionId: string) => {
 	);
 
 	const subscriptionId = session.metadata?.subscriptionId;
+	const customerId = session.metadata?.customerId;
 	const paymentMethod = session.setup_intent?.payment_method;
 
 	if (
@@ -405,8 +408,23 @@ export const applyCardUpdate = async (sessionId: string) => {
 		session.status !== 'complete' ||
 		session.metadata?.purpose !== 'card_update' ||
 		!subscriptionId ||
+		!customerId ||
 		!paymentMethod
 	) {
+		return null;
+	}
+
+	// The card was saved without a customer; give it to the subscription's
+	// customer (already attached the second time round)
+	const card = await stripeGet<{ customer: string | null }>(
+		`/payment_methods/${paymentMethod}`,
+	);
+
+	if (!card.customer) {
+		await stripePost(`/payment_methods/${paymentMethod}/attach`, {
+			customer: customerId,
+		});
+	} else if (card.customer !== customerId) {
 		return null;
 	}
 

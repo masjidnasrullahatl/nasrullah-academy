@@ -137,6 +137,8 @@ model FamilySubscriptions {
 	stripeSubscriptionId String  @map("stripe_subscription_id")
 	// the Keela recurring it came from, for reference
 	keelaRecurringId     String? @map("keela_recurring_id")
+	// false when another family pays this subscription for them
+	isPayer              Boolean @default(true) @map("is_payer")
 
 	createdAt DateTime @default(now()) @map("created_at")
 

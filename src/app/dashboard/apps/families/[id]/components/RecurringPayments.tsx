@@ -6,6 +6,7 @@ import {
 	Anchor,
 	Badge,
 	Button,
+	Collapse,
 	CopyButton,
 	Grid,
 	Group,
@@ -27,6 +28,7 @@ import { notifications } from '@mantine/notifications';
 import {
 	IconAlertCircle,
 	IconCheck,
+	IconChevronDown,
 	IconCopy,
 	IconCreditCard,
 	IconDots,
@@ -65,6 +67,14 @@ const statusBadge = (view: FamilySubscriptionView) => {
 		return (
 			<Badge color="orange">
 				Cancels {dayjs.unix(summary.cancelAt || 0).format('MMM D')}
+			</Badge>
+		);
+	}
+
+	if (summary.status === 'canceled' && summary.canceledAt) {
+		return (
+			<Badge color="gray">
+				Cancelled {dayjs.unix(summary.canceledAt).format('MMM D, YYYY')}
 			</Badge>
 		);
 	}
@@ -382,6 +392,11 @@ const SubscriptionCard = ({
 	const { mutateAsync: unlink } = useUnlinkSubscription();
 	const summary = view.summary;
 	const isCancelled = summary?.status === 'canceled';
+	// Another family pays this one for them: changes are made from the payer
+	const isPayer = view.links.some((link) => link.isPayer);
+	const payers = view.otherFamilies.filter((family) => family.isPayer);
+	const covered = view.otherFamilies.filter((family) => !family.isPayer);
+	const canManage = Boolean(summary) && !isCancelled && isPayer;
 
 	const openCardUpdate = () =>
 		modals.open({
@@ -397,7 +412,7 @@ const SubscriptionCard = ({
 				<EditAmountModal
 					subscriptionId={view.stripeSubscriptionId}
 					amount={summary.amount}
-					otherFamilies={view.otherFamilies}
+					otherFamilies={covered}
 				/>
 			),
 		});
@@ -409,7 +424,7 @@ const SubscriptionCard = ({
 				<CancelModal
 					subscriptionId={view.stripeSubscriptionId}
 					nextPaymentAt={summary?.nextPaymentAt || null}
-					otherFamilies={view.otherFamilies}
+					otherFamilies={covered}
 				/>
 			),
 		});
@@ -480,26 +495,18 @@ const SubscriptionCard = ({
 							</ActionIcon>
 						</Menu.Target>
 						<Menu.Dropdown>
-							<Menu.Item
-								disabled={!summary || isCancelled}
-								onClick={openEditAmount}
-							>
+							<Menu.Item disabled={!canManage} onClick={openEditAmount}>
 								Edit amount
 							</Menu.Item>
-							<Menu.Item
-								disabled={!summary || isCancelled}
-								onClick={openCardUpdate}
-							>
+							<Menu.Item disabled={!canManage} onClick={openCardUpdate}>
 								Update credit card
 							</Menu.Item>
 							{summary?.cancelAtPeriodEnd ? (
-								<Menu.Item onClick={handleResume}>Undo cancellation</Menu.Item>
+								<Menu.Item disabled={!isPayer} onClick={handleResume}>
+									Undo cancellation
+								</Menu.Item>
 							) : (
-								<Menu.Item
-									color="red"
-									disabled={!summary || isCancelled}
-									onClick={openCancel}
-								>
+								<Menu.Item color="red" disabled={!canManage} onClick={openCancel}>
 									Cancel recurring
 								</Menu.Item>
 							)}
@@ -517,10 +524,16 @@ const SubscriptionCard = ({
 					</Alert>
 				)}
 
-				{view.otherFamilies.length > 0 && (
+				{!isPayer && payers.length > 0 && (
 					<Text size="sm" c="dimmed">
-						Also pays for:{' '}
-						{view.otherFamilies.map((family) => family.name).join(', ')}
+						Paid by {payers.map((family) => family.name).join(', ')}. Changes
+						are made from their page.
+					</Text>
+				)}
+
+				{isPayer && covered.length > 0 && (
+					<Text size="sm" c="dimmed">
+						Also pays for: {covered.map((family) => family.name).join(', ')}
 					</Text>
 				)}
 
@@ -666,6 +679,12 @@ export const RecurringPayments = ({
 	programs: ProgramOption[];
 }) => {
 	const { data, isLoading, error } = useGetFamilySubscriptions(familyId);
+	const [showPast, setShowPast] = useState(false);
+
+	const isPast = (view: FamilySubscriptionView) =>
+		['canceled', 'incomplete_expired'].includes(view.summary?.status || '');
+	const current = data?.subscriptions.filter((view) => !isPast(view)) || [];
+	const past = data?.subscriptions.filter(isPast) || [];
 
 	const openLink = () =>
 		modals.open({
@@ -707,19 +726,52 @@ export const RecurringPayments = ({
 					</Text>
 				)}
 
-				{data?.stripeEnabled && !data.subscriptions.length && (
+				{data?.stripeEnabled && !current.length && (
 					<Text size="sm" c="dimmed">
-						No recurring card payment for this family.
+						No active recurring card payment for this family.
 					</Text>
 				)}
 
-				{data?.subscriptions.map((view) => (
+				{current.map((view) => (
 					<SubscriptionCard
 						key={view.stripeSubscriptionId}
 						view={view}
 						familyId={familyId}
 					/>
 				))}
+
+				{past.length > 0 && (
+					<Stack gap="sm">
+						<Button
+							variant="subtle"
+							color="gray"
+							size="xs"
+							w="fit-content"
+							rightSection={
+								<IconChevronDown
+									size={14}
+									style={{
+										transform: showPast ? 'rotate(180deg)' : undefined,
+									}}
+								/>
+							}
+							onClick={() => setShowPast((value) => !value)}
+						>
+							Previous recurring payments ({past.length})
+						</Button>
+						<Collapse in={showPast}>
+							<Stack>
+								{past.map((view) => (
+									<SubscriptionCard
+										key={view.stripeSubscriptionId}
+										view={view}
+										familyId={familyId}
+									/>
+								))}
+							</Stack>
+						</Collapse>
+					</Stack>
+				)}
 			</Stack>
 		</Paper>
 	);
