@@ -88,6 +88,7 @@ model Programs {
 	timeEntries TimeEntries[]
 
 	invoices    MonthlyInvoices[]
+	subscriptions FamilySubscriptions[]
 
 	createdAt   DateTime      @default(now()) @map("created_at")
 	updatedAt   DateTime      @updatedAt @map("updated_at")
@@ -112,12 +113,36 @@ model Families {
 	invoices MonthlyInvoices[]
 	programs FamilyPrograms[]
 	registrations Registrations[]
+	subscriptions FamilySubscriptions[]
 
 	createdAt DateTime @default(now()) @map("created_at")
 	updatedAt DateTime @updatedAt @map("updated_at")
 
 	@@index([name])
 	@@map("families")
+}
+
+// Links a family (and the program it pays for) to a Stripe subscription.
+// One subscription can cover several families or programs (e.g. siblings'
+// families paying together), so a subscription may have several rows.
+model FamilySubscriptions {
+	id String @id @default(uuid())
+
+	familyId String   @map("family_id")
+	family   Families @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+	programId String?   @map("program_id")
+	program   Programs? @relation(fields: [programId], references: [id], onDelete: SetNull)
+
+	stripeSubscriptionId String  @map("stripe_subscription_id")
+	// the Keela recurring it came from, for reference
+	keelaRecurringId     String? @map("keela_recurring_id")
+
+	createdAt DateTime @default(now()) @map("created_at")
+
+	@@unique([familyId, programId, stripeSubscriptionId])
+	@@index([stripeSubscriptionId])
+	@@map("family_subscriptions")
 }
 
 model FamilyPrograms {
