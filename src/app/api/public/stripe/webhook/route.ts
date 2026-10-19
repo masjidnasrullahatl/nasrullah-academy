@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { markMonthPaidByCard } from '@app/api/registrations/utils';
 
 import { createClient } from '@helpers/prisma/server';
-import { verifyStripeWebhook } from '@helpers/stripe';
+import { applyCardUpdate, verifyStripeWebhook } from '@helpers/stripe';
 
 type StripeEvent = {
 	type: string;
@@ -13,7 +13,10 @@ type StripeEvent = {
 /**
  * Stripe calls this after card payments.
  * - checkout.session.completed: the registration's first payment went through.
- * - invoice.paid (monthly renewals): marks that month's payment row as paid.
+ * - invoice.paid (monthly renewals): marks that month's payment row as paid,
+ *   for registrations and for families linked to the subscription.
+ * - checkout.session.completed for a card update: puts the new card on the
+ *   subscription (the return page does this too; doing it twice is harmless).
  */
 export async function POST(request: NextRequest) {
 	const payload = await request.text();
@@ -27,6 +30,15 @@ export async function POST(request: NextRequest) {
 	const prisma = createClient();
 
 	try {
+		if (
+			event.type === 'checkout.session.completed' &&
+			object.metadata?.purpose === 'card_update'
+		) {
+			await applyCardUpdate(String(object.id));
+
+			return NextResponse.json({ received: true });
+		}
+
 		if (event.type === 'checkout.session.completed') {
 			const registrationId =
 				object.metadata?.registrationId || object.client_reference_id;
@@ -57,13 +69,19 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
+		// newer API versions moved the subscription under parent
+		const subscriptionId =
+			object.subscription ||
+			object.parent?.subscription_details?.subscription ||
+			null;
+
 		if (
 			event.type === 'invoice.paid' &&
 			object.billing_reason === 'subscription_cycle' &&
-			object.subscription
+			subscriptionId
 		) {
 			const registration = await prisma.registrations.findFirst({
-				where: { stripeSubscriptionId: String(object.subscription) },
+				where: { stripeSubscriptionId: String(subscriptionId) },
 			});
 
 			if (registration?.familyId) {
@@ -75,6 +93,30 @@ export async function POST(request: NextRequest) {
 					registration.programId,
 					paidAt.getFullYear(),
 					paidAt.getMonth() + 1,
+				);
+			}
+
+			// Families linked to the subscription (recurring payments moved
+			// over from Keela). The month is the one the charge pays for.
+			const links = await prisma.familySubscriptions.findMany({
+				where: { stripeSubscriptionId: String(subscriptionId) },
+			});
+
+			const periodStart =
+				object.lines?.data?.[0]?.period?.start ||
+				object.created ||
+				Date.now() / 1000;
+			const period = new Date(periodStart * 1000);
+
+			for (const link of links) {
+				if (!link.programId) continue;
+
+				await markMonthPaidByCard(
+					prisma,
+					link.familyId,
+					link.programId,
+					period.getUTCFullYear(),
+					period.getUTCMonth() + 1,
 				);
 			}
 		}
