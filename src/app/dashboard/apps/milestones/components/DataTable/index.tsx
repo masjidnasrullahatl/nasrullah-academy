@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, Box, Button, Group, Paper, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 
-import { MilestoneType } from '@prisma/client';
+import { MilestoneType, RecordStatus } from '@prisma/client';
 import {
 	IconAlertCircle,
 	IconFileTypePdf,
@@ -24,8 +24,13 @@ import { fetchAuth } from '@helpers/supabase/fetchAuth';
 import { openPrintWindow } from '@utils/printReport';
 
 import { buildMilestonesReport } from '../../reports';
-import { MILESTONE_TYPE_OPTIONS } from '../../utils';
+import {
+	MILESTONE_TYPE_OPTIONS,
+	STUDENT_STATUS_OPTIONS,
+	summarizeMilestones,
+} from '../../utils';
 import { MilestoneFormModal } from '../MilestoneFormModal';
+import { MilestoneSummary } from '../MilestoneSummary';
 
 import { EmptyBody } from './EmptyBody';
 import { LoadingBody } from './LoadingBody';
@@ -34,7 +39,11 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
-export type MilestoneFilterKey = 'keyword' | 'programId' | 'type';
+export type MilestoneFilterKey =
+	| 'keyword'
+	| 'programId'
+	| 'type'
+	| 'studentStatus';
 
 export const DataTable = () => {
 	const [page, setPage] = useState(1);
@@ -43,6 +52,7 @@ export const DataTable = () => {
 		keyword?: string;
 		programId?: string;
 		type?: MilestoneType;
+		studentStatus?: RecordStatus;
 	}>({});
 	const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
 		null,
@@ -69,10 +79,24 @@ export const DataTable = () => {
 		limit: pageSize,
 		keyword: filter.keyword,
 		programId: filter.programId,
+		studentStatus: filter.studentStatus,
 		type: filter.type,
 		dateFrom,
 		dateTo,
 	});
+
+	// Every matching milestone (not just this page) for the summary
+	const { data: allMilestones, isLoading: isSummaryLoading } =
+		useGetPagingMilestones({
+			page: 1,
+			limit: 10000,
+			keyword: filter.keyword,
+			programId: filter.programId,
+			studentStatus: filter.studentStatus,
+			type: filter.type,
+			dateFrom,
+			dateTo,
+		});
 
 	const handleChangeFilter = (key: MilestoneFilterKey, value: string) => {
 		setFilter((prev) => ({ ...prev, [key]: value || undefined }));
@@ -95,6 +119,7 @@ export const DataTable = () => {
 				limit: '10000',
 				keyword: filter.keyword || '',
 				programId: filter.programId || '',
+				studentStatus: filter.studentStatus || '',
 				type: filter.type || '',
 				dateFrom: dateFrom || '',
 				dateTo: dateTo || '',
@@ -106,6 +131,10 @@ export const DataTable = () => {
 			const filterLabels = [
 				filter.programId &&
 					`Program: ${programs?.data.find((item) => item.id === filter.programId)?.name}`,
+				filter.studentStatus &&
+					STUDENT_STATUS_OPTIONS.find(
+						(item) => item.value === filter.studentStatus,
+					)?.label,
 				filter.type &&
 					`Type: ${MILESTONE_TYPE_OPTIONS.find((item) => item.value === filter.type)?.label}`,
 				(dateFrom || dateTo) &&
@@ -145,60 +174,67 @@ export const DataTable = () => {
 	const hasData = Boolean(milestones?.total);
 
 	return (
-		<Paper p="md">
-			{isError && (
-				<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
-					{error.message}
-				</Alert>
-			)}
+		<>
+			<Paper p="md">
+				{isError && (
+					<Alert color="red" mb="md" icon={<IconAlertCircle size={16} />}>
+						{error.message}
+					</Alert>
+				)}
 
-			<Group mb="md">
-				<Box flex={1}>
-					<TableFilter
-						onChangeFilter={handleChangeFilter}
-						dateRange={dateRange}
-						onChangeDateRange={handleChangeDateRange}
-					/>
-				</Box>
+				<Group mb="md">
+					<Box flex={1}>
+						<TableFilter
+							onChangeFilter={handleChangeFilter}
+							dateRange={dateRange}
+							onChangeDateRange={handleChangeDateRange}
+						/>
+					</Box>
 
-				<Button
-					variant="default"
-					leftSection={<IconFileTypePdf size={16} />}
-					loading={isExporting}
-					onClick={handleExport}
-				>
-					Export PDF
-				</Button>
+					<Button
+						variant="default"
+						leftSection={<IconFileTypePdf size={16} />}
+						loading={isExporting}
+						onClick={handleExport}
+					>
+						Export PDF
+					</Button>
 
-				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-					Record Milestone
-				</Button>
-			</Group>
+					<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
+						Record Milestone
+					</Button>
+				</Group>
 
-			<Table.ScrollContainer minWidth={1000}>
-				<Table
-					striped="even"
-					highlightOnHover
-					withTableBorder
-					withColumnBorders
-					verticalSpacing="sm"
-					horizontalSpacing="md"
-				>
-					<TableHeader />
+				<Table.ScrollContainer minWidth={1000}>
+					<Table
+						striped="even"
+						highlightOnHover
+						withTableBorder
+						withColumnBorders
+						verticalSpacing="sm"
+						horizontalSpacing="md"
+					>
+						<TableHeader />
 
-					<Table.Tbody>
-						{isLoading ? <LoadingBody /> : hasData ? rows : <EmptyBody />}
-					</Table.Tbody>
+						<Table.Tbody>
+							{isLoading ? <LoadingBody /> : hasData ? rows : <EmptyBody />}
+						</Table.Tbody>
 
-					<TableFooter
-						total={milestones?.total || 0}
-						page={page}
-						setPage={setPage}
-						pageSize={pageSize}
-						setPageSize={setPageSize}
-					/>
-				</Table>
-			</Table.ScrollContainer>
-		</Paper>
+						<TableFooter
+							total={milestones?.total || 0}
+							page={page}
+							setPage={setPage}
+							pageSize={pageSize}
+							setPageSize={setPageSize}
+						/>
+					</Table>
+				</Table.ScrollContainer>
+			</Paper>
+
+			<MilestoneSummary
+				items={summarizeMilestones(allMilestones?.data ?? [])}
+				isLoading={isSummaryLoading}
+			/>
+		</>
 	);
 };

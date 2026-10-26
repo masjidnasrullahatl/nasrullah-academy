@@ -13,6 +13,7 @@ export const milestoneInclude = {
 			id: true,
 			firstName: true,
 			lastName: true,
+			status: true,
 			family: { select: { id: true, name: true } },
 			programs: studentProgramsInclude,
 		},

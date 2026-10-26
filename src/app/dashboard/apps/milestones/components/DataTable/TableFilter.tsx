@@ -7,11 +7,15 @@ import {
 	IconCategory,
 	IconSearch,
 	IconTrophy,
+	IconUsers,
 } from '@tabler/icons-react';
 
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
-import { MILESTONE_TYPE_OPTIONS } from '../../utils';
+import {
+	MILESTONE_TYPE_OPTIONS,
+	STUDENT_STATUS_OPTIONS,
+} from '../../utils';
 
 import type { MilestoneFilterKey } from '.';
 
@@ -53,6 +57,14 @@ export const TableFilter = ({
 				onChange={(value) => onChangeFilter('programId', value || '')}
 				clearable
 				searchable
+			/>
+
+			<Select
+				placeholder="All students"
+				leftSection={<IconUsers size={16} />}
+				data={STUDENT_STATUS_OPTIONS}
+				onChange={(value) => onChangeFilter('studentStatus', value || '')}
+				clearable
 			/>
 
 			<Select
