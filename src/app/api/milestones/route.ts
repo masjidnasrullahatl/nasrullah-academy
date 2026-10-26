@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { Prisma } from '@prisma/client';
+import { Prisma, RecordStatus } from '@prisma/client';
 import { ZodError } from 'zod/v4';
 
 import { AuthRequest } from '@app/api/types/common';
@@ -27,6 +27,7 @@ const getPaging = async (request: AuthRequest) => {
 	const keyword = searchParams.get('keyword') || '';
 	const studentId = searchParams.get('studentId') || '';
 	const programId = searchParams.get('programId') || '';
+	const studentStatus = searchParams.get('studentStatus') || '';
 	const type = searchParams.get('type') || '';
 	const dateFrom = searchParams.get('dateFrom') || '';
 	const dateTo = searchParams.get('dateTo') || '';
@@ -47,7 +48,13 @@ const getPaging = async (request: AuthRequest) => {
 		};
 	}
 
-	if (programId) where.student = { programs: { some: { programId } } };
+	// Current students are ACTIVE, former students INACTIVE
+	if (programId || studentStatus) {
+		where.student = {
+			...(programId ? { programs: { some: { programId } } } : {}),
+			...(studentStatus ? { status: studentStatus as RecordStatus } : {}),
+		};
+	}
 
 	if (keyword) {
 		where.OR = [

@@ -1,4 +1,4 @@
-import { MilestoneType } from '@prisma/client';
+import { MilestoneType, RecordStatus } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetMilestonesQueryParams } from '@app/api/milestones/types';
@@ -20,6 +20,7 @@ export type MilestoneRow = {
 		id: string;
 		firstName: string;
 		lastName: string;
+		status: RecordStatus;
 		family: { id: string; name: string };
 		programs: Array<{ id: string; name: string }>;
 	};
@@ -39,6 +40,7 @@ export const useGetPagingMilestones = (
 				keyword: params.keyword || '',
 				studentId: params.studentId || '',
 				programId: params.programId || '',
+				studentStatus: params.studentStatus || '',
 				type: params.type || '',
 				dateFrom: params.dateFrom || '',
 				dateTo: params.dateTo || '',

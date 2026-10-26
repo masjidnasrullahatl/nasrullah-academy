@@ -2,7 +2,12 @@ import { MilestoneRow } from '@hooks/react-query/milestones/useGetPagingMileston
 
 import { escapeHtml } from '@utils/printReport';
 
-import { formatCompletedAt, getMilestoneLabel, JUZ_COUNT } from './utils';
+import {
+	formatCompletedAt,
+	getMilestoneLabel,
+	JUZ_COUNT,
+	summarizeMilestones,
+} from './utils';
 
 type ReportStudent = {
 	firstName: string;
@@ -22,6 +27,17 @@ export const buildMilestonesReport = (
 	filters: string[],
 ) => {
 	const totals = countBy(rows);
+
+	const summaryRows = summarizeMilestones(rows)
+		.map(
+			(item) => `<tr>
+				<td>${escapeHtml(item.label)}</td>
+				<td>${item.current}</td>
+				<td>${item.former}</td>
+				<td><b>${item.total}</b></td>
+			</tr>`,
+		)
+		.join('');
 
 	const tableRows = rows
 		.map(
@@ -49,6 +65,14 @@ export const buildMilestonesReport = (
 			<div class="stat"><b>${totals.books}</b>Books completed</div>
 			<div class="stat"><b>${totals.students}</b>Students</div>
 		</div>
+		<h2>Students per milestone</h2>
+		<table>
+			<thead>
+				<tr><th>Milestone</th><th>Current students</th><th>Former students</th><th>Total</th></tr>
+			</thead>
+			<tbody>${summaryRows || '<tr><td colspan="4" class="muted">No milestones found</td></tr>'}</tbody>
+		</table>
+		<h2>All milestones</h2>
 		<table>
 			<thead>
 				<tr><th>#</th><th>Date</th><th>Student</th><th>Family</th><th>Programs</th><th>Milestone</th><th>Notes</th></tr>

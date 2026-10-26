@@ -1,4 +1,4 @@
-import { MilestoneType } from '@prisma/client';
+import { MilestoneType, RecordStatus } from '@prisma/client';
 import z from 'zod/v4';
 
 import { PagingQueryParams } from '@app/api/types/common';
@@ -7,6 +7,7 @@ export type GetMilestonesQueryParams = PagingQueryParams & {
 	keyword?: string;
 	studentId?: string;
 	programId?: string;
+	studentStatus?: RecordStatus;
 	type?: MilestoneType;
 	dateFrom?: string;
 	dateTo?: string;
