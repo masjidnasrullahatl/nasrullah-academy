@@ -78,6 +78,8 @@ model Programs {
 	registrationFee  Decimal   @default(0) @map("registration_fee") @db.Decimal(10, 2)
 	monthlyFees      Decimal[] @default([]) @map("monthly_fees") @db.Decimal(10, 2)
 	classTimes       String[]  @default([]) @map("class_times")
+	// Class times that are full: shown on the form but can't be chosen
+	fullClassTimes   String[]  @default([]) @map("full_class_times")
 	publicInfo       String?   @map("public_info")
 
 	classes     Classes[]

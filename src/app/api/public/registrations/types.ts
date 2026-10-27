@@ -52,5 +52,6 @@ export type PublicProgram = {
 	registrationFee: number;
 	monthlyFees: number[];
 	classTimes: string[];
+	fullClassTimes: string[];
 	cardEnabled: boolean;
 };

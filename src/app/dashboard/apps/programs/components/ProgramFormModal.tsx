@@ -44,6 +44,7 @@ type FormValue = {
 	registrationFee: number;
 	monthlyFees: string;
 	classTimes: string[];
+	fullClassTimes: string[];
 	publicInfo: string;
 };
 
@@ -80,6 +81,7 @@ export const ProgramFormModal = ({ program }: ProgramFormModalProps) => {
 			registrationFee: Number(program?.registrationFee || 0),
 			monthlyFees: (program?.monthlyFees || []).map(Number).join(', '),
 			classTimes: program?.classTimes || [],
+			fullClassTimes: program?.fullClassTimes || [],
 			publicInfo: program?.publicInfo || '',
 		},
 		validate: {
@@ -98,6 +100,9 @@ export const ProgramFormModal = ({ program }: ProgramFormModalProps) => {
 			registrationFee: Number(values.registrationFee) || 0,
 			monthlyFees: parseFees(values.monthlyFees),
 			classTimes: values.classTimes,
+			fullClassTimes: values.fullClassTimes.filter((time) =>
+				values.classTimes.includes(time),
+			),
 			publicInfo: values.publicInfo || null,
 		};
 
@@ -201,10 +206,40 @@ export const ProgramFormModal = ({ program }: ProgramFormModalProps) => {
 
 					<TagsInput
 						label="Class times parents can choose"
-						description='Press Enter after each. Leave empty if there is one schedule. Add "(Full)" at the end of a time to close it.'
+						description="Press Enter after each. Leave empty if there is one schedule."
 						placeholder="Class 1: 9:30 am - 11:30 am"
 						{...form.getInputProps('classTimes')}
 					/>
+
+					{form.values.classTimes.length > 0 && (
+						<Stack gap={6}>
+							<Text size="sm" fw={500}>
+								Full classes
+							</Text>
+							<Text size="xs" c="dimmed">
+								Turn on when a class is full. Parents see it marked Full and
+								can't choose it.
+							</Text>
+							{form.values.classTimes.map((time) => (
+								<Switch
+									key={time}
+									label={time}
+									color="red"
+									checked={form.values.fullClassTimes.includes(time)}
+									onChange={(event) =>
+										form.setFieldValue(
+											'fullClassTimes',
+											event.currentTarget.checked
+												? [...form.values.fullClassTimes, time]
+												: form.values.fullClassTimes.filter(
+														(item) => item !== time,
+													),
+										)
+									}
+								/>
+							))}
+						</Stack>
+					)}
 
 					<Textarea
 						label="Information shown on the registration form"

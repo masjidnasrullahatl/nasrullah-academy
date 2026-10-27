@@ -17,6 +17,7 @@ export const CreateProgramSchema = z.object({
 	registrationFee: z.number().min(0).optional(),
 	monthlyFees: z.array(z.number().min(0)).optional(),
 	classTimes: z.array(z.string().trim().min(1)).optional(),
+	fullClassTimes: z.array(z.string().trim().min(1)).optional(),
 	publicInfo: z.string().optional().nullable(),
 });
 

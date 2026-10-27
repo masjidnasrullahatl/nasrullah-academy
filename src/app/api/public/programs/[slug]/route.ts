@@ -31,6 +31,7 @@ export async function GET(
 		registrationFee: Number(program.registrationFee),
 		monthlyFees: program.monthlyFees.map(Number),
 		classTimes: program.classTimes,
+		fullClassTimes: program.fullClassTimes,
 		cardEnabled: isRegistrationCardEnabled(),
 	};
 
