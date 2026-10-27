@@ -44,6 +44,7 @@ import {
 	useCreateCardUpdateLink,
 	useGetFamilySubscriptions,
 	useLinkSubscription,
+	usePayUnpaidInvoice,
 	useUnlinkSubscription,
 	useUpdateSubscriptionAmount,
 } from '@hooks/react-query/subscriptions/useFamilySubscriptions';
@@ -390,6 +391,9 @@ const SubscriptionCard = ({
 }) => {
 	const { mutateAsync: resume } = useCancelSubscription();
 	const { mutateAsync: unlink } = useUnlinkSubscription();
+	const { mutateAsync: payInvoice, isPending: isCharging } =
+		usePayUnpaidInvoice();
+	const [chargingId, setChargingId] = useState<string | null>(null);
 	const summary = view.summary;
 	const isCancelled = summary?.status === 'canceled';
 	// Another family pays this one for them: changes are made from the payer
@@ -448,6 +452,47 @@ const SubscriptionCard = ({
 						message: errorMessage(error),
 						color: 'red',
 					});
+				}
+			},
+		});
+
+	const handleCharge = (invoice: FamilySubscriptionView['unpaid'][number]) =>
+		modals.openConfirmModal({
+			title: 'Charge the card now?',
+			children: (
+				<Text size="sm">
+					{formatMoney(invoice.amount)} for{' '}
+					{dayjs.unix(invoice.periodStart).format('MMMM YYYY')} will be charged
+					to{' '}
+					{summary?.card
+						? `the ${summary.card.brand} card ending ${summary.card.last4}`
+						: 'the card on file'}
+					. This pays the missed charge itself, so it cannot be charged twice.
+				</Text>
+			),
+			labels: { confirm: 'Charge card', cancel: 'Back' },
+			onConfirm: async () => {
+				setChargingId(invoice.id);
+
+				try {
+					await payInvoice({
+						subscriptionId: view.stripeSubscriptionId,
+						invoiceId: invoice.id,
+					});
+					notifications.show({
+						title: 'Payment received',
+						message: `${formatMoney(invoice.amount)} for ${dayjs.unix(invoice.periodStart).format('MMMM YYYY')} was charged.`,
+						color: 'green',
+					});
+				} catch (error) {
+					notifications.show({
+						title: 'The card was not charged',
+						message: errorMessage(error),
+						color: 'red',
+						autoClose: false,
+					});
+				} finally {
+					setChargingId(null);
 				}
 			},
 		});
@@ -606,6 +651,55 @@ const SubscriptionCard = ({
 							</Anchor>
 						</Grid.Col>
 					</Grid>
+				)}
+
+				{view.unpaid.length > 0 && (
+					<Alert
+						color="red"
+						icon={<IconAlertCircle size={16} />}
+						title="Missed payments"
+					>
+						<Stack gap="sm">
+							{view.unpaid.map((invoice) => (
+								<Group
+									key={invoice.id}
+									justify="space-between"
+									align="flex-start"
+									wrap="nowrap"
+								>
+									<div>
+										<Text size="sm" fw={600}>
+											{dayjs.unix(invoice.periodStart).format('MMMM YYYY')}:{' '}
+											{formatMoney(invoice.amount)} not collected
+										</Text>
+										{invoice.failureMessage && (
+											<Text size="sm">{invoice.failureMessage}</Text>
+										)}
+										<Text size="xs" c="dimmed">
+											{invoice.nextAttemptAt
+												? `Stripe will try again on ${formatDate(invoice.nextAttemptAt)}.`
+												: 'Stripe will not try again automatically.'}
+										</Text>
+									</div>
+									<Button
+										size="xs"
+										color="red"
+										leftSection={<IconCreditCard size={14} />}
+										disabled={!isPayer || (isCharging && chargingId !== invoice.id)}
+										loading={chargingId === invoice.id}
+										onClick={() => handleCharge(invoice)}
+									>
+										Charge card now
+									</Button>
+								</Group>
+							))}
+							{isPayer && (
+								<Text size="xs">
+									If the card keeps failing, use Update credit card first.
+								</Text>
+							)}
+						</Stack>
+					</Alert>
 				)}
 
 				<Stack gap={4}>

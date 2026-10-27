@@ -92,6 +92,20 @@ export const useCancelSubscription = () => {
 	});
 };
 
+export const usePayUnpaidInvoice = () => {
+	const refresh = useRefresh();
+
+	return useMutation({
+		mutationFn: async (params: { subscriptionId: string; invoiceId: string }) =>
+			fetchAuth(
+				`/api/subscriptions/${params.subscriptionId}/invoices/${params.invoiceId}/pay`,
+				{ method: 'POST' },
+			),
+		// Monthly Payments are marked paid by the Stripe webhook
+		onSuccess: refresh,
+	});
+};
+
 export const useCreateCardUpdateLink = () =>
 	useMutation({
 		mutationFn: async (subscriptionId: string) => {

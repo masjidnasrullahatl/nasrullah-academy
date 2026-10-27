@@ -1,6 +1,10 @@
 import z from 'zod/v4';
 
-import type { SubscriptionPayment, SubscriptionSummary } from '@helpers/stripe';
+import type {
+	SubscriptionPayment,
+	SubscriptionSummary,
+	UnpaidInvoice,
+} from '@helpers/stripe';
 
 export const LinkSubscriptionSchema = z.object({
 	stripeSubscriptionId: z
@@ -35,6 +39,8 @@ export type FamilySubscriptionView = {
 	otherFamilies: { id: string; name: string; isPayer: boolean }[];
 	summary: SubscriptionSummary | null;
 	payments: SubscriptionPayment[];
+	// billed but not collected (card declined etc.), can be charged again
+	unpaid: UnpaidInvoice[];
 	error: string | null;
 };
 

@@ -301,6 +301,92 @@ export const listSubscriptionPayments = async (subscriptionId: string) => {
 		);
 };
 
+export type UnpaidInvoice = {
+	id: string;
+	number: string | null;
+	amount: number;
+	// start of the month the charge is for
+	periodStart: number;
+	attemptCount: number;
+	nextAttemptAt: number | null;
+	failureMessage: string | null;
+	status: string;
+};
+
+type StripeOpenInvoice = {
+	id: string;
+	number: string | null;
+	status: string;
+	subscription: string | null;
+	amount_remaining: number;
+	created: number;
+	attempt_count: number;
+	next_payment_attempt: number | null;
+	lines: { data: { period: { start: number } }[] };
+	payment_intent: {
+		last_payment_error: { message?: string; decline_code?: string } | null;
+	} | null;
+};
+
+const UNPAID_STATUSES = ['open', 'uncollectible'];
+
+/** Charges Stripe billed but couldn't collect (e.g. card declined), oldest first. */
+export const listUnpaidInvoices = async (subscriptionId: string) => {
+	const lists = await Promise.all(
+		UNPAID_STATUSES.map((status) =>
+			stripeGet<{ data: StripeOpenInvoice[] }>('/invoices', {
+				subscription: subscriptionId,
+				status,
+				limit: '24',
+				'expand[]': ['data.payment_intent'],
+			}),
+		),
+	);
+
+	return lists
+		.flatMap((list) => list.data)
+		.filter((invoice) => invoice.amount_remaining > 0)
+		.sort((a, b) => a.created - b.created)
+		.map(
+			(invoice): UnpaidInvoice => ({
+				id: invoice.id,
+				number: invoice.number,
+				amount: invoice.amount_remaining / 100,
+				periodStart: invoice.lines.data[0]?.period.start || invoice.created,
+				attemptCount: invoice.attempt_count,
+				nextAttemptAt: invoice.next_payment_attempt,
+				failureMessage:
+					invoice.payment_intent?.last_payment_error?.message || null,
+				status: invoice.status,
+			}),
+		);
+};
+
+/**
+ * Charges the card on file for a charge Stripe already billed. Paying the
+ * existing invoice (never a new charge) means it can't be paid twice: Stripe
+ * refuses an invoice that is already paid.
+ */
+export const payUnpaidInvoice = async (
+	subscriptionId: string,
+	invoiceId: string,
+) => {
+	const invoice = await stripeGet<StripeOpenInvoice>(`/invoices/${invoiceId}`);
+
+	if (invoice.subscription !== subscriptionId) {
+		throw new Error('This charge does not belong to this recurring payment');
+	}
+
+	if (!UNPAID_STATUSES.includes(invoice.status)) {
+		throw new Error('This charge is already paid or was cancelled');
+	}
+
+	return stripePost<{ status: string; amount_paid: number }>(
+		`/invoices/${invoiceId}/pay`,
+		{},
+	);
+};
+
 /**
  * Changes the monthly amount from the next charge on. Nothing is charged or
  * refunded now (no proration).

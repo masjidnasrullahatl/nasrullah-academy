@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import {
 	getSubscriptionSummary,
 	listSubscriptionPayments,
+	listUnpaidInvoices,
 } from '@helpers/stripe';
 
 import { FamilySubscriptionView, SubscriptionLink } from './types';
@@ -88,9 +89,11 @@ export const getFamilySubscriptions = async (
 			];
 
 			try {
-				const [summary, payments] = await Promise.all([
+				const [summary, payments, unpaid] = await Promise.all([
 					getSubscriptionSummary(stripeSubscriptionId),
 					listSubscriptionPayments(stripeSubscriptionId),
+					// Missed charges are extra; don't hide the subscription if they fail
+					listUnpaidInvoices(stripeSubscriptionId).catch(() => []),
 				]);
 
 				return {
@@ -99,6 +102,7 @@ export const getFamilySubscriptions = async (
 					otherFamilies,
 					summary,
 					payments,
+					unpaid,
 					error: null,
 				};
 			} catch (error) {
@@ -108,6 +112,7 @@ export const getFamilySubscriptions = async (
 					otherFamilies,
 					summary: null,
 					payments: [],
+					unpaid: [],
 					error:
 						error instanceof Error
 							? error.message
