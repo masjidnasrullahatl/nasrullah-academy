@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
 			customMonthly: payload.customMonthlyFee,
 		});
 
-		const payByCard =
-			payload.payByCard && isRegistrationCardEnabled() && quote.firstPayment > 0;
+		// Card is the only way to pay whenever card payments are switched on
+		const payByCard = isRegistrationCardEnabled() && quote.firstPayment > 0;
 
 		const registration = await prisma.registrations.create({
 			data: {

@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import {
 	ActionIcon,
 	Alert,
-	Badge,
 	Box,
 	Button,
 	Card,
@@ -65,7 +64,6 @@ type FormValue = {
 	preferredTime: string;
 	notes: string;
 	students: StudentValue[];
-	payByCard: 'card' | 'later';
 	tuitionChoice: 'standard' | 'other';
 	customMonthlyFee: number | string;
 	rulesAccepted: boolean;
@@ -117,7 +115,6 @@ export default function ProgramRegistrationPage() {
 			preferredTime: '',
 			notes: '',
 			students: [emptyStudent()],
-			payByCard: 'later',
 			tuitionChoice: 'standard',
 			customMonthlyFee: '',
 			rulesAccepted: false,
@@ -177,7 +174,9 @@ export default function ProgramRegistrationPage() {
 				? Number(form.values.customMonthlyFee) || null
 				: null,
 	});
-	const payByCard = form.values.payByCard === 'card';
+	// Card is the only way to pay; if card payments are switched off the
+	// registration is still saved and the office follows up
+	const payByCard = program.cardEnabled;
 
 	const handleSubmit = async (values: FormValue) => {
 		setSubmitError('');
@@ -197,7 +196,7 @@ export default function ProgramRegistrationPage() {
 					address: values.address,
 					preferredTime: values.preferredTime || null,
 					notes: values.notes || null,
-					payByCard: values.payByCard === 'card',
+					payByCard,
 					customMonthlyFee:
 						values.tuitionChoice === 'other'
 							? Number(values.customMonthlyFee)
@@ -616,39 +615,19 @@ export default function ProgramRegistrationPage() {
 							The registration fee is paid once. After that, tuition of{' '}
 							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} is
 							due on the 1st of every month.
-							{payByCard && ' Card payments include the processing fee (2.2% + $0.30).'}
+							{payByCard &&
+								' This includes the 2.2% + $0.30 card processing fee.'}
 						</Text>
 					</Stack>
 
-					<Radio.Group {...form.getInputProps('payByCard')}>
-						<Stack gap="sm">
-							<Radio
-								value="card"
-								disabled={!program.cardEnabled}
-								label={
-									<Group gap={6}>
-										<IconCreditCard size={16} />
-										<span>Pay now by card</span>
-										{!program.cardEnabled && (
-											<Badge size="xs" color="gray">
-												Coming soon
-											</Badge>
-										)}
-									</Group>
-								}
-								description={
-									program.cardEnabled
-										? 'Secure checkout by Stripe. Tuition is then charged automatically each month.'
-										: 'Online card payment will be available soon.'
-								}
-							/>
-							<Radio
-								value="later"
-								label="Pay later"
-								description="The Academy office will contact you about payment (Zelle, Cash or Check)."
-							/>
-						</Stack>
-					</Radio.Group>
+					<Group gap="xs" wrap="nowrap" align="flex-start">
+						<IconCreditCard size={18} />
+						<Text size="sm">
+							{payByCard
+								? 'Payment is by card only. Secure checkout by Stripe; tuition is then charged to your card automatically each month.'
+								: 'Online card payment will be available soon. The Academy office will contact you about payment.'}
+						</Text>
+					</Group>
 				</Card>
 
 				{submitError && (
