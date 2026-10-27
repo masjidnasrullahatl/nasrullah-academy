@@ -16,7 +16,6 @@ import {
 	isRegistrationCardEnabled,
 } from '@helpers/stripe';
 
-import { isClassTimeFull } from '@utils/classTimes';
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
 import { SubmitRegistrationSchema } from './types';
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
 		if (
 			payload.preferredTime &&
 			(!program.classTimes.includes(payload.preferredTime) ||
-				isClassTimeFull(payload.preferredTime))
+				program.fullClassTimes.includes(payload.preferredTime))
 		) {
 			return badRequest('That class time is full. Please choose another time.');
 		}

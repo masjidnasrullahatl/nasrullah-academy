@@ -70,6 +70,7 @@ const update = async (
 				registrationFee: data.registrationFee,
 				monthlyFees: data.monthlyFees,
 				classTimes: data.classTimes,
+				fullClassTimes: data.fullClassTimes,
 				publicInfo: data.publicInfo,
 			},
 			include: { _count: { select: { classes: true, invoices: true } } },

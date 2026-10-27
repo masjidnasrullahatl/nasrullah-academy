@@ -67,6 +67,7 @@ const create = async (request: AuthRequest) => {
 				registrationFee: data.registrationFee,
 				monthlyFees: data.monthlyFees,
 				classTimes: data.classTimes,
+				fullClassTimes: data.fullClassTimes,
 				publicInfo: data.publicInfo ?? null,
 			},
 			include: { _count: { select: { classes: true, invoices: true } } },

@@ -40,7 +40,6 @@ import { PublicProgram } from '@app/api/public/registrations/types';
 
 import { RULES_ACKNOWLEDGEMENT, SCHOOL_RULES } from '@configs/schoolRules';
 
-import { classTimeLabel, isClassTimeFull } from '@utils/classTimes';
 import { formatMoney } from '@utils/money';
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
@@ -495,11 +494,11 @@ export default function ProgramRegistrationPage() {
 									<Radio
 										key={time}
 										value={time}
-										disabled={isClassTimeFull(time)}
+										disabled={program.fullClassTimes.includes(time)}
 										label={
 											<Group gap={6}>
-												<span>{classTimeLabel(time)}</span>
-												{isClassTimeFull(time) && (
+												<span>{time}</span>
+												{program.fullClassTimes.includes(time) && (
 													<Badge size="sm" color="red">
 														Full
 													</Badge>
