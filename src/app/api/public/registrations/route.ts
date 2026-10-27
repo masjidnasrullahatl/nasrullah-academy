@@ -16,6 +16,7 @@ import {
 	isRegistrationCardEnabled,
 } from '@helpers/stripe';
 
+import { isClassTimeFull } from '@utils/classTimes';
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
 import { SubmitRegistrationSchema } from './types';
@@ -43,6 +44,14 @@ export async function POST(request: NextRequest) {
 
 		if (!program) return badRequest('Registration is not open for this program');
 
+		if (
+			payload.preferredTime &&
+			(!program.classTimes.includes(payload.preferredTime) ||
+				isClassTimeFull(payload.preferredTime))
+		) {
+			return badRequest('That class time is full. Please choose another time.');
+		}
+
 		// Prices are always worked out on the server, never trusted from the form
 		const quote = getRegistrationQuote({
 			monthlyFees: program.monthlyFees.map(Number),
@@ -51,8 +60,8 @@ export async function POST(request: NextRequest) {
 			customMonthly: payload.customMonthlyFee,
 		});
 
-		const payByCard =
-			payload.payByCard && isRegistrationCardEnabled() && quote.firstPayment > 0;
+		// Card is the only way to pay whenever card payments are switched on
+		const payByCard = isRegistrationCardEnabled() && quote.firstPayment > 0;
 
 		const registration = await prisma.registrations.create({
 			data: {

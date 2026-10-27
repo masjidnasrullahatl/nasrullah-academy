@@ -2,6 +2,7 @@ import { RegistrationStudent } from '@app/api/public/registrations/types';
 
 import { formatMoney } from '@utils/money';
 import { escapeHtml } from '@utils/printReport';
+import { withCardFee } from '@utils/registrationPricing';
 
 const CONTACT = 'Questions? Call 470-253-9391 or reply to this email.';
 
@@ -51,15 +52,23 @@ export const registrationReceivedEmail = (
 		<p>Thank you for registering with Nasrullah Academy. We received your registration for:</p>
 		${studentList(registration.students)}
 		${registration.preferredTime ? `<p>Preferred class time: <b>${escapeHtml(registration.preferredTime)}</b></p>` : ''}
-		${amountRows([
-			['Registration fee (one-time)', formatMoney(registration.registrationFee)],
-			['Monthly tuition (recurring)', formatMoney(registration.monthlyFee)],
-			['Due to start', formatMoney(registration.amountDue)],
-		])}
+		${
+			registration.payByCard
+				? amountRows([
+						['Registration fee (one-time)', formatMoney(registration.registrationFee)],
+						['Monthly tuition (recurring)', formatMoney(withCardFee(registration.monthlyFee))],
+						['Due to start', formatMoney(withCardFee(registration.amountDue))],
+					])
+				: amountRows([
+						['Registration fee (one-time)', formatMoney(registration.registrationFee)],
+						['Monthly tuition (recurring)', formatMoney(registration.monthlyFee)],
+						['Due to start', formatMoney(registration.amountDue)],
+					])
+		}
 		<p>${
 			registration.payByCard
-				? 'You chose to pay by card. Stripe will email you a receipt once the payment goes through.'
-				: 'The Academy office will contact you about payment (Zelle, Cash, Check or Keela).'
+				? 'This includes the 2.2% + $0.30 card processing fee. Stripe will email you a receipt once the payment goes through.'
+				: 'The Academy office will contact you about payment.'
 		}</p>
 		<p>Our staff will review your registration and confirm your child's start shortly.</p>`,
 	),
@@ -83,7 +92,7 @@ export const registrationApprovedEmail = (
 		<p>${
 			isPaid
 				? 'Your first payment has been received. Monthly tuition will be charged to your card automatically.'
-				: 'Please arrange your registration fee and first month with the Academy office (Zelle, Cash, Check or Keela).'
+				: 'Please contact the Academy office to complete your registration fee and first month by card.'
 		}</p>`,
 	),
 });

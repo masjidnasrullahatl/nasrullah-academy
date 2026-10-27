@@ -201,7 +201,7 @@ export const ProgramFormModal = ({ program }: ProgramFormModalProps) => {
 
 					<TagsInput
 						label="Class times parents can choose"
-						description="Press Enter after each. Leave empty if there is one schedule."
+						description='Press Enter after each. Leave empty if there is one schedule. Add "(Full)" at the end of a time to close it.'
 						placeholder="Class 1: 9:30 am - 11:30 am"
 						{...form.getInputProps('classTimes')}
 					/>
