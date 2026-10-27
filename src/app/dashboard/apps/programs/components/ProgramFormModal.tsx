@@ -218,7 +218,7 @@ export const ProgramFormModal = ({ program }: ProgramFormModalProps) => {
 							</Text>
 							<Text size="xs" c="dimmed">
 								Turn on when a class is full. Parents see it marked Full and
-								can't choose it.
+								cannot choose it.
 							</Text>
 							{form.values.classTimes.map((time) => (
 								<Switch
