@@ -645,7 +645,7 @@ export default function ProgramRegistrationPage() {
 							<Radio
 								value="later"
 								label="Pay later"
-								description="The Academy office will contact you about payment (Zelle, Cash, Check, Keela)."
+								description="The Academy office will contact you about payment (Zelle, Cash or Check)."
 							/>
 						</Stack>
 					</Radio.Group>

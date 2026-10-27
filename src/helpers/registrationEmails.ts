@@ -59,7 +59,7 @@ export const registrationReceivedEmail = (
 		<p>${
 			registration.payByCard
 				? 'You chose to pay by card. Stripe will email you a receipt once the payment goes through.'
-				: 'The Academy office will contact you about payment (Zelle, Cash, Check or Keela).'
+				: 'The Academy office will contact you about payment (Zelle, Cash or Check).'
 		}</p>
 		<p>Our staff will review your registration and confirm your child's start shortly.</p>`,
 	),
@@ -83,7 +83,7 @@ export const registrationApprovedEmail = (
 		<p>${
 			isPaid
 				? 'Your first payment has been received. Monthly tuition will be charged to your card automatically.'
-				: 'Please arrange your registration fee and first month with the Academy office (Zelle, Cash, Check or Keela).'
+				: 'Please arrange your registration fee and first month with the Academy office (Zelle, Cash or Check).'
 		}</p>`,
 	),
 });
