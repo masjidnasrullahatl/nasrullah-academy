@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import {
 	ActionIcon,
 	Alert,
+	Badge,
 	Box,
 	Button,
 	Card,
@@ -39,6 +40,7 @@ import { PublicProgram } from '@app/api/public/registrations/types';
 
 import { RULES_ACKNOWLEDGEMENT, SCHOOL_RULES } from '@configs/schoolRules';
 
+import { classTimeLabel, isClassTimeFull } from '@utils/classTimes';
 import { formatMoney } from '@utils/money';
 import { getRegistrationQuote } from '@utils/registrationPricing';
 
@@ -490,7 +492,21 @@ export default function ProgramRegistrationPage() {
 						>
 							<Stack mt="xs" gap="xs">
 								{program.classTimes.map((time) => (
-									<Radio key={time} value={time} label={time} />
+									<Radio
+										key={time}
+										value={time}
+										disabled={isClassTimeFull(time)}
+										label={
+											<Group gap={6}>
+												<span>{classTimeLabel(time)}</span>
+												{isClassTimeFull(time) && (
+													<Badge size="sm" color="red">
+														Full
+													</Badge>
+												)}
+											</Group>
+										}
+									/>
 								))}
 							</Stack>
 						</Radio.Group>
