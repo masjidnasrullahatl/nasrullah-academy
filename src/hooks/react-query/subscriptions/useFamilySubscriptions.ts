@@ -106,6 +106,35 @@ export const usePayUnpaidInvoice = () => {
 	});
 };
 
+export const useChargeCard = () => {
+	const queryClient = useQueryClient();
+	const refresh = useRefresh();
+
+	return useMutation({
+		mutationFn: async (params: {
+			subscriptionId: string;
+			familyId: string;
+			year: number;
+			month: number;
+			amount: number;
+		}) =>
+			fetchAuth(`/api/subscriptions/${params.subscriptionId}/charge`, {
+				method: 'POST',
+				body: JSON.stringify({
+					familyId: params.familyId,
+					year: params.year,
+					month: params.month,
+					amount: params.amount,
+				}),
+			}),
+		onSuccess: async () => {
+			await refresh();
+			// the month is now paid in Monthly Payments
+			await queryClient.invalidateQueries();
+		},
+	});
+};
+
 export const useCreateCardUpdateLink = () =>
 	useMutation({
 		mutationFn: async (subscriptionId: string) => {

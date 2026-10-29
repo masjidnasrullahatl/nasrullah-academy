@@ -35,6 +35,8 @@ const stripeRequest = async <T>(
 	method: 'GET' | 'POST' | 'DELETE',
 	path: string,
 	params?: StripeParams,
+	// same key twice = Stripe returns the first result instead of acting again
+	idempotencyKey?: string,
 ) => {
 	const search = toSearchParams(params);
 	const isGet = method === 'GET';
@@ -47,6 +49,7 @@ const stripeRequest = async <T>(
 				Authorization: `Bearer ${getSecretKey()}`,
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Stripe-Version': STRIPE_VERSION,
+				...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
 			},
 			body: isGet ? undefined : search,
 			cache: 'no-store',
@@ -396,6 +399,119 @@ export const payUnpaidInvoice = async (
 		`/invoices/${invoiceId}/pay`,
 		{},
 	);
+};
+
+type StripePaymentIntent = {
+	id: string;
+	status: string;
+	amount_received: number;
+	created: number;
+	description: string | null;
+	metadata: Record<string, string>;
+	last_payment_error: { message?: string } | null;
+	latest_charge: { receipt_url: string | null } | string | null;
+};
+
+const paymentMethodId = (paymentMethod: StripePaymentMethod | string) =>
+	typeof paymentMethod === 'string' ? paymentMethod : paymentMethod?.id;
+
+/**
+ * Charges the card on file of a recurring payment once (a missed month,
+ * a month after the recurring payment stopped, etc.). Works on cancelled
+ * recurring payments too, as the card stays saved on the customer.
+ */
+export const chargeCardOnFile = async ({
+	subscriptionId,
+	amount,
+	description,
+	metadata,
+	idempotencyKey,
+}: {
+	subscriptionId: string;
+	amount: number;
+	description: string;
+	metadata: Record<string, string>;
+	idempotencyKey: string;
+}) => {
+	const subscription = await getRawSubscription(subscriptionId);
+	const paymentMethod =
+		paymentMethodId(subscription.default_payment_method) ||
+		paymentMethodId(
+			subscription.customer.invoice_settings?.default_payment_method || null,
+		);
+
+	if (!paymentMethod) throw new Error('There is no card on file to charge');
+
+	const params: StripeParams = {
+		amount: String(toCents(amount)),
+		currency: 'usd',
+		customer: subscription.customer.id,
+		payment_method: paymentMethod,
+		off_session: 'true',
+		confirm: 'true',
+		description,
+		'metadata[purpose]': 'manual_charge',
+		'metadata[subscriptionId]': subscriptionId,
+	};
+
+	for (const [key, value] of Object.entries(metadata)) {
+		params[`metadata[${key}]`] = value;
+	}
+
+	if (subscription.customer.email) {
+		params.receipt_email = subscription.customer.email;
+	}
+
+	// A decline comes back as an error with the bank's reason. The card is
+	// part of the key so a retry after a card update isn't blocked.
+	const intent = await stripeRequest<StripePaymentIntent>(
+		'POST',
+		'/payment_intents',
+		params,
+		`${idempotencyKey}-${paymentMethod}`,
+	);
+
+	if (intent.status !== 'succeeded') {
+		throw new Error(
+			intent.last_payment_error?.message || 'The card was not charged',
+		);
+	}
+
+	return intent;
+};
+
+/** Charges made with chargeCardOnFile for a recurring payment, newest first. */
+export const listManualCharges = async (
+	subscriptionId: string,
+	customerId: string,
+) => {
+	const intents = await stripeGet<{ data: StripePaymentIntent[] }>(
+		'/payment_intents',
+		{ customer: customerId, limit: '100', 'expand[]': ['data.latest_charge'] },
+	);
+
+	return intents.data
+		.filter(
+			(intent) =>
+				intent.status === 'succeeded' &&
+				intent.metadata?.purpose === 'manual_charge' &&
+				intent.metadata?.subscriptionId === subscriptionId,
+		)
+		.map(
+			(intent): SubscriptionPayment => ({
+				id: intent.id,
+				number: intent.metadata.month
+					? `Manual charge (${intent.metadata.month})`
+					: 'Manual charge',
+				amount: intent.amount_received / 100,
+				paidAt: intent.created,
+				receiptUrl:
+					intent.latest_charge && typeof intent.latest_charge === 'object'
+						? intent.latest_charge.receipt_url
+						: null,
+				pdfUrl: null,
+			}),
+		);
 };
 
 /**

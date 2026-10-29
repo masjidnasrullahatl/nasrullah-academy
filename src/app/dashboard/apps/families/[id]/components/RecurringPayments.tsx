@@ -22,6 +22,7 @@ import {
 	TextInput,
 	Tooltip,
 } from '@mantine/core';
+import { MonthPickerInput } from '@mantine/dates';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -43,6 +44,7 @@ import { PAY_METHOD_LABELS } from '@configs/enums';
 
 import {
 	useCancelSubscription,
+	useChargeCard,
 	useCreateCardUpdateLink,
 	useGetFamilySubscriptions,
 	useLinkSubscription,
@@ -157,6 +159,88 @@ const CardUpdateModal = ({ subscriptionId }: { subscriptionId: string }) => {
 					</Text>
 				</Stack>
 			)}
+		</Stack>
+	);
+};
+
+const ChargeCardModal = ({
+	subscriptionId,
+	familyId,
+	amount,
+	card,
+}: {
+	subscriptionId: string;
+	familyId: string;
+	amount: number;
+	card: string;
+}) => {
+	const [month, setMonth] = useState<Date | null>(
+		dayjs().startOf('month').toDate(),
+	);
+	const [value, setValue] = useState<number | string>(amount);
+	const { mutateAsync, isPending, error } = useChargeCard();
+	const monthLabel = month ? dayjs(month).format('MMMM YYYY') : '';
+
+	const handleCharge = async () => {
+		if (!month || !(Number(value) > 0)) return;
+
+		await mutateAsync({
+			subscriptionId,
+			familyId,
+			year: dayjs(month).year(),
+			month: dayjs(month).month() + 1,
+			amount: Number(value),
+		});
+		notifications.show({
+			title: 'Payment received',
+			message: `${formatMoney(Number(value))} for ${monthLabel} was charged and marked paid.`,
+			color: 'green',
+		});
+		modals.closeAll();
+	};
+
+	return (
+		<Stack>
+			<Text size="sm">
+				Charges the {card} once. The month is then marked paid in Monthly
+				Payments. A month already marked paid cannot be charged.
+			</Text>
+			<MonthPickerInput
+				label="Month this payment is for"
+				valueFormat="MMMM YYYY"
+				value={month}
+				onChange={(next) => setMonth(next ? dayjs(next).toDate() : null)}
+				withAsterisk
+			/>
+			<NumberInput
+				label="Amount"
+				prefix="$"
+				min={1}
+				decimalScale={2}
+				fixedDecimalScale
+				value={value}
+				onChange={setValue}
+				withAsterisk
+			/>
+			{error && (
+				<Alert color="red" icon={<IconAlertCircle size={16} />}>
+					{errorMessage(error)}
+				</Alert>
+			)}
+			<Group justify="flex-end">
+				<Button variant="default" onClick={() => modals.closeAll()}>
+					Back
+				</Button>
+				<Button
+					color="red"
+					leftSection={<IconCreditCard size={16} />}
+					loading={isPending}
+					disabled={!month || !(Number(value) > 0)}
+					onClick={handleCharge}
+				>
+					Charge {Number(value) > 0 ? formatMoney(Number(value)) : ''}
+				</Button>
+			</Group>
 		</Stack>
 	);
 };
@@ -410,6 +494,20 @@ const SubscriptionCard = ({
 			children: <CardUpdateModal subscriptionId={view.stripeSubscriptionId} />,
 		});
 
+	const openChargeCard = () =>
+		summary?.card &&
+		modals.open({
+			title: 'Charge card',
+			children: (
+				<ChargeCardModal
+					subscriptionId={view.stripeSubscriptionId}
+					familyId={familyId}
+					amount={summary.amount}
+					card={`${summary.card.brand} card ending ${summary.card.last4}`}
+				/>
+			),
+		});
+
 	const openEditAmount = () =>
 		summary &&
 		modals.open({
@@ -542,6 +640,12 @@ const SubscriptionCard = ({
 							</ActionIcon>
 						</Menu.Target>
 						<Menu.Dropdown>
+							<Menu.Item
+								disabled={!isPayer || !summary?.card}
+								onClick={openChargeCard}
+							>
+								Charge card
+							</Menu.Item>
 							<Menu.Item disabled={!canManage} onClick={openEditAmount}>
 								Edit amount
 							</Menu.Item>

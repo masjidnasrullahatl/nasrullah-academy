@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 import {
 	getSubscriptionSummary,
+	listManualCharges,
 	listSubscriptionPayments,
 	listUnpaidInvoices,
 } from '@helpers/stripe';
@@ -123,12 +124,21 @@ export const getFamilySubscriptions = async (
 			];
 
 			try {
-				const [summary, payments, unpaidInvoices] = await Promise.all([
+				const [summary, invoicePayments, unpaidInvoices] = await Promise.all([
 					getSubscriptionSummary(stripeSubscriptionId),
 					listSubscriptionPayments(stripeSubscriptionId),
 					// Missed charges are extra; don't hide the subscription if they fail
 					listUnpaidInvoices(stripeSubscriptionId).catch(() => []),
 				]);
+
+				// Charges staff ran by hand show with the automatic ones
+				const manualCharges = await listManualCharges(
+					stripeSubscriptionId,
+					summary.customer.id,
+				).catch(() => []);
+				const payments = [...invoicePayments, ...manualCharges].sort(
+					(a, b) => b.paidAt - a.paidAt,
+				);
 
 				const unpaid = await Promise.all(
 					unpaidInvoices.map(async (invoice) => ({

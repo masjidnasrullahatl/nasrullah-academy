@@ -19,6 +19,13 @@ export const UpdateSubscriptionAmountSchema = z.object({
 	amount: z.number().positive('Enter the monthly amount').max(10000),
 });
 
+export const ChargeCardSchema = z.object({
+	familyId: z.string().min(1),
+	year: z.number().int().min(2020).max(2100),
+	month: z.number().int().min(1).max(12),
+	amount: z.number().positive('Enter the amount').max(10000),
+});
+
 export const CancelSubscriptionSchema = z.object({
 	when: z.enum(['period_end', 'now', 'resume']),
 });
