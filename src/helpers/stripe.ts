@@ -371,6 +371,7 @@ export const payUnpaidInvoice = async (
 	subscriptionId: string,
 	invoiceId: string,
 	// refuses when the month was already paid another way
+	// eslint-disable-next-line no-unused-vars
 	isMonthPaid: (periodStart: number) => Promise<boolean>,
 ) => {
 	const invoice = await stripeGet<StripeOpenInvoice>(`/invoices/${invoiceId}`);
