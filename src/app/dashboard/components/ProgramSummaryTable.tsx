@@ -1,4 +1,4 @@
-import { Divider, Paper, Table, Title } from '@mantine/core';
+import { Divider, Paper, Table, Text, Title } from '@mantine/core';
 
 import { DashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
@@ -6,9 +6,14 @@ import { formatMoney } from '@utils/money';
 
 type ProgramSummaryTableProps = {
 	data: DashboardSummary['programSummary'];
+	// different students; a child in two programs is in both rows but once here
+	uniqueStudents: number;
 };
 
-export const ProgramSummaryTable = ({ data }: ProgramSummaryTableProps) => {
+export const ProgramSummaryTable = ({
+	data,
+	uniqueStudents,
+}: ProgramSummaryTableProps) => {
 	const totals = data.reduce(
 		(acc, item) => {
 			acc.students += item.students;
@@ -89,7 +94,7 @@ export const ProgramSummaryTable = ({ data }: ProgramSummaryTableProps) => {
 									{totals.classes}
 								</Table.Td>
 								<Table.Td ta="center" fw={700}>
-									{totals.students}
+									{uniqueStudents}
 								</Table.Td>
 								<Table.Td ta="right" fw={700} c="green">
 									{formatMoney(totals.income)}
@@ -105,6 +110,16 @@ export const ProgramSummaryTable = ({ data }: ProgramSummaryTableProps) => {
 					)}
 				</Table>
 			</Table.ScrollContainer>
+
+			{totals.students > uniqueStudents && (
+				<Text size="xs" c="dimmed" mt="xs">
+					{totals.students - uniqueStudents}{' '}
+					{totals.students - uniqueStudents === 1
+						? 'student is in more than one program and is'
+						: 'students are in more than one program and are'}{' '}
+					counted once in the total.
+				</Text>
+			)}
 		</Paper>
 	);
 };
