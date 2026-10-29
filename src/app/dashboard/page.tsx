@@ -78,7 +78,12 @@ export default function DashboardPage() {
 							</Grid.Col>
 						</Grid>
 						<MonthlySummaryTable monthly={summary.monthly} totals={summary.totals} />
-						{!programId && <ProgramSummaryTable data={summary.programSummary} />}
+						{!programId && (
+							<ProgramSummaryTable
+								data={summary.programSummary}
+								uniqueStudents={summary.totals.students}
+							/>
+						)}
 						<ClassProfitLossTable data={summary.classProfitLoss} />
 						<TopUnpaidFamilies data={summary.topUnpaidFamilies} />
 					</>
