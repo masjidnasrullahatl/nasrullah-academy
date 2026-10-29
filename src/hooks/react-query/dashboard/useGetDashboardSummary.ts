@@ -68,6 +68,8 @@ export type DashboardSummary = {
 
 type SummaryParams = {
 	year: number;
+	// 1-12; whole year when empty
+	month?: number;
 	programId?: string;
 };
 
@@ -77,6 +79,7 @@ export const useGetDashboardSummary = (params: SummaryParams) => {
 		queryFn: async () => {
 			const queryParams = new URLSearchParams({
 				year: String(params.year),
+				month: params.month ? String(params.month) : '',
 				programId: params.programId || '',
 			});
 			const response = await fetchAuth(`/api/dashboard/summary?${queryParams.toString()}`);

@@ -5,10 +5,11 @@ import { DashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSu
 
 type MilestonesChartProps = {
 	data: DashboardSummary['milestones'];
-	year: number;
+	// "2026" or one month, e.g. "October 2026"
+	period: string;
 };
 
-export const MilestonesChart = ({ data, year }: MilestonesChartProps) => {
+export const MilestonesChart = ({ data, period }: MilestonesChartProps) => {
 	const stats = [
 		{ label: 'Juz memorized', value: data.totals.juz, color: 'yellow.7' },
 		{ label: 'Books completed', value: data.totals.books, color: 'blue.6' },
@@ -18,7 +19,7 @@ export const MilestonesChart = ({ data, year }: MilestonesChartProps) => {
 	return (
 		<Paper p="md" withBorder>
 			<Stack gap="xs" mb="md">
-				<Title order={4}>Milestones {year}</Title>
+				<Title order={4}>Milestones {period}</Title>
 				<Group gap="xl">
 					{stats.map((stat) => (
 						<div key={stat.label}>

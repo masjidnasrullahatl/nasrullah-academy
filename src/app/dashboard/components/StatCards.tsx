@@ -19,9 +19,11 @@ import { formatMoney } from '@utils/money';
 
 type StatCardsProps = {
 	totals: DashboardSummary['totals'];
+	// "YTD" or the month shown, e.g. "October 2026"
+	period: string;
 };
 
-export const StatCards = ({ totals }: StatCardsProps) => {
+export const StatCards = ({ totals, period }: StatCardsProps) => {
 	return (
 		<SimpleGrid cols={{ base: 2, md: 3 }}>
 			<Surface feel="bordered">
@@ -53,7 +55,7 @@ export const StatCards = ({ totals }: StatCardsProps) => {
 					<IconCoin size={18} />
 				</ThemeIcon>
 				<Text mt="sm" c="dimmed" size="sm">
-					Income (YTD)
+					Income ({period})
 				</Text>
 				<Text fw={700} size="xl">
 					{formatMoney(totals.income)}
@@ -77,7 +79,7 @@ export const StatCards = ({ totals }: StatCardsProps) => {
 					<IconWallet size={18} />
 				</ThemeIcon>
 				<Text mt="sm" c="dimmed" size="sm">
-					Expense (YTD)
+					Expense ({period})
 				</Text>
 				<Text fw={700} size="xl" c={totals.expense > 0 ? 'red' : undefined}>
 					{formatMoney(totals.expense)}
@@ -89,7 +91,7 @@ export const StatCards = ({ totals }: StatCardsProps) => {
 					<IconTrendingUp size={18} />
 				</ThemeIcon>
 				<Text mt="sm" c="dimmed" size="sm">
-					Profit (YTD)
+					Profit ({period})
 				</Text>
 				<Text fw={700} size="xl" c={totals.profit >= 0 ? 'green' : 'red'}>
 					{formatMoney(totals.profit)}

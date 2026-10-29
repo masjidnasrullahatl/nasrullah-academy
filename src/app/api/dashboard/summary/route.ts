@@ -27,14 +27,22 @@ const getSummary = async (request: AuthRequest) => {
 
 	const year = Number(searchParams.get('year') || new Date().getFullYear());
 	const programId = searchParams.get('programId') || '';
+	// 1-12 for one month, otherwise the whole year
+	const monthParam = Number(searchParams.get('month') || 0);
+	const month = monthParam >= 1 && monthParam <= 12 ? monthParam : null;
 
-	const yearStart = new Date(year, 0, 1, 0, 0, 0, 0);
-	const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
+	const firstMonth = month ? month - 1 : 0;
+	const lastMonth = month ? month - 1 : 11;
+	const lastDay = new Date(year, lastMonth + 1, 0).getDate();
+
+	const yearStart = new Date(year, firstMonth, 1, 0, 0, 0, 0);
+	const yearEnd = new Date(year, lastMonth, lastDay, 23, 59, 59, 999);
 
 	const prisma = createClient();
 
 	const invoiceWhere: Prisma.MonthlyInvoicesWhereInput = {
 		year,
+		...(month ? { month } : {}),
 		...countedInvoiceWhere,
 	};
 
@@ -165,8 +173,8 @@ const getSummary = async (request: AuthRequest) => {
 		prisma.milestones.findMany({
 			where: {
 				completedAt: {
-					gte: new Date(Date.UTC(year, 0, 1)),
-					lte: new Date(Date.UTC(year, 11, 31)),
+					gte: new Date(Date.UTC(year, firstMonth, 1)),
+					lte: new Date(Date.UTC(year, lastMonth, lastDay)),
 				},
 				...milestoneStudentWhere,
 			},
