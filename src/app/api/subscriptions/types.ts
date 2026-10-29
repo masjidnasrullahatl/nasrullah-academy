@@ -1,3 +1,4 @@
+import { PayMethod } from '@prisma/client';
 import z from 'zod/v4';
 
 import type {
@@ -40,7 +41,10 @@ export type FamilySubscriptionView = {
 	summary: SubscriptionSummary | null;
 	payments: SubscriptionPayment[];
 	// billed but not collected (card declined etc.), can be charged again
-	unpaid: UnpaidInvoice[];
+	unpaid: (UnpaidInvoice & {
+		// the month is already recorded as paid in Monthly Payments (how)
+		paidInPortal: PayMethod | null;
+	})[];
 	error: string | null;
 };
 

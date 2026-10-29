@@ -10,7 +10,7 @@ import { withStaff } from '@app/api/utils/withStaff';
 import { createClient } from '@helpers/prisma/server';
 import { payUnpaidInvoice } from '@helpers/stripe';
 
-import { isLinkedSubscription } from '../../../../utils';
+import { findPaidMonth, isLinkedSubscription } from '../../../../utils';
 
 // Charges the card on file for a month the automatic payment missed
 const pay = async (
@@ -20,12 +20,19 @@ const pay = async (
 	try {
 		const { subscriptionId, invoiceId } = await params;
 
-		if (!(await isLinkedSubscription(createClient(), subscriptionId))) {
+		const prisma = createClient();
+
+		if (!(await isLinkedSubscription(prisma, subscriptionId))) {
 			return notFound('This subscription is not linked to an Academy family');
 		}
 
 		try {
-			const invoice = await payUnpaidInvoice(subscriptionId, invoiceId);
+			const invoice = await payUnpaidInvoice(
+				subscriptionId,
+				invoiceId,
+				async (periodStart) =>
+					Boolean(await findPaidMonth(prisma, subscriptionId, periodStart)),
+			);
 
 			return success({ invoiceId, status: invoice.status });
 		} catch (error) {

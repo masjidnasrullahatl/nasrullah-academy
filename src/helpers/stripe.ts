@@ -370,6 +370,8 @@ export const listUnpaidInvoices = async (subscriptionId: string) => {
 export const payUnpaidInvoice = async (
 	subscriptionId: string,
 	invoiceId: string,
+	// refuses when the month was already paid another way
+	isMonthPaid: (periodStart: number) => Promise<boolean>,
 ) => {
 	const invoice = await stripeGet<StripeOpenInvoice>(`/invoices/${invoiceId}`);
 
@@ -379,6 +381,14 @@ export const payUnpaidInvoice = async (
 
 	if (!UNPAID_STATUSES.includes(invoice.status)) {
 		throw new Error('This charge is already paid or was cancelled');
+	}
+
+	if (
+		await isMonthPaid(invoice.lines.data[0]?.period.start || invoice.created)
+	) {
+		throw new Error(
+			'This month is already marked paid in Monthly Payments, so the card was not charged',
+		);
 	}
 
 	return stripePost<{ status: string; amount_paid: number }>(

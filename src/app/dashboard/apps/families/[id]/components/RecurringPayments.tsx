@@ -39,6 +39,8 @@ import dayjs from 'dayjs';
 
 import { FamilySubscriptionView } from '@app/api/subscriptions/types';
 
+import { PAY_METHOD_LABELS } from '@configs/enums';
+
 import {
 	useCancelSubscription,
 	useCreateCardUpdateLink,
@@ -675,6 +677,13 @@ const SubscriptionCard = ({
 										{invoice.failureMessage && (
 											<Text size="sm">{invoice.failureMessage}</Text>
 										)}
+										{invoice.paidInPortal && (
+											<Text size="sm" fw={600} c="green">
+												Already marked paid in Monthly Payments (
+												{PAY_METHOD_LABELS[invoice.paidInPortal]}), so it
+												cannot be charged here.
+											</Text>
+										)}
 										<Text size="xs" c="dimmed">
 											{invoice.nextAttemptAt
 												? `Stripe will try again on ${formatDate(invoice.nextAttemptAt)}.`
@@ -685,7 +694,11 @@ const SubscriptionCard = ({
 										size="xs"
 										color="red"
 										leftSection={<IconCreditCard size={14} />}
-										disabled={!isPayer || (isCharging && chargingId !== invoice.id)}
+										disabled={
+											!isPayer ||
+											Boolean(invoice.paidInPortal) ||
+											(isCharging && chargingId !== invoice.id)
+										}
 										loading={chargingId === invoice.id}
 										onClick={() => handleCharge(invoice)}
 									>
