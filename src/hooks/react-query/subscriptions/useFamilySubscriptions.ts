@@ -92,6 +92,49 @@ export const useCancelSubscription = () => {
 	});
 };
 
+export const usePayUnpaidInvoice = () => {
+	const refresh = useRefresh();
+
+	return useMutation({
+		mutationFn: async (params: { subscriptionId: string; invoiceId: string }) =>
+			fetchAuth(
+				`/api/subscriptions/${params.subscriptionId}/invoices/${params.invoiceId}/pay`,
+				{ method: 'POST' },
+			),
+		// Monthly Payments are marked paid by the Stripe webhook
+		onSuccess: refresh,
+	});
+};
+
+export const useChargeCard = () => {
+	const queryClient = useQueryClient();
+	const refresh = useRefresh();
+
+	return useMutation({
+		mutationFn: async (params: {
+			subscriptionId: string;
+			familyId: string;
+			year: number;
+			month: number;
+			amount: number;
+		}) =>
+			fetchAuth(`/api/subscriptions/${params.subscriptionId}/charge`, {
+				method: 'POST',
+				body: JSON.stringify({
+					familyId: params.familyId,
+					year: params.year,
+					month: params.month,
+					amount: params.amount,
+				}),
+			}),
+		onSuccess: async () => {
+			await refresh();
+			// the month is now paid in Monthly Payments
+			await queryClient.invalidateQueries();
+		},
+	});
+};
+
 export const useCreateCardUpdateLink = () =>
 	useMutation({
 		mutationFn: async (subscriptionId: string) => {

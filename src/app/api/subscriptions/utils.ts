@@ -2,7 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 import {
 	getSubscriptionSummary,
+	listManualCharges,
 	listSubscriptionPayments,
+	listUnpaidInvoices,
 } from '@helpers/stripe';
 
 import { FamilySubscriptionView, SubscriptionLink } from './types';
@@ -46,6 +48,40 @@ export const isLinkedSubscription = async (
 		}),
 	);
 
+/**
+ * How the month a Stripe charge is for was already paid in Monthly Payments
+ * (e.g. cash after the card failed), or null. Charging it again would make
+ * the family pay twice.
+ */
+export const findPaidMonth = async (
+	prisma: PrismaClient,
+	stripeSubscriptionId: string,
+	periodStart: number,
+) => {
+	const period = new Date(periodStart * 1000);
+	const links = await prisma.familySubscriptions.findMany({
+		where: { stripeSubscriptionId, programId: { not: null } },
+		select: { familyId: true, programId: true },
+	});
+
+	if (!links.length) return null;
+
+	const paid = await prisma.monthlyInvoices.findFirst({
+		where: {
+			OR: links.map((link) => ({
+				familyId: link.familyId,
+				programId: link.programId as string,
+			})),
+			year: period.getUTCFullYear(),
+			month: period.getUTCMonth() + 1,
+			paymentStatus: 'PAID',
+		},
+		select: { payMethod: true },
+	});
+
+	return paid ? paid.payMethod : null;
+};
+
 /** The family's linked subscriptions with live details from Stripe. */
 export const getFamilySubscriptions = async (
 	prisma: PrismaClient,
@@ -88,10 +124,32 @@ export const getFamilySubscriptions = async (
 			];
 
 			try {
-				const [summary, payments] = await Promise.all([
+				const [summary, invoicePayments, unpaidInvoices] = await Promise.all([
 					getSubscriptionSummary(stripeSubscriptionId),
 					listSubscriptionPayments(stripeSubscriptionId),
+					// Missed charges are extra; don't hide the subscription if they fail
+					listUnpaidInvoices(stripeSubscriptionId).catch(() => []),
 				]);
+
+				// Charges staff ran by hand show with the automatic ones
+				const manualCharges = await listManualCharges(
+					stripeSubscriptionId,
+					summary.customer.id,
+				).catch(() => []);
+				const payments = [...invoicePayments, ...manualCharges].sort(
+					(a, b) => b.paidAt - a.paidAt,
+				);
+
+				const unpaid = await Promise.all(
+					unpaidInvoices.map(async (invoice) => ({
+						...invoice,
+						paidInPortal: await findPaidMonth(
+							prisma,
+							stripeSubscriptionId,
+							invoice.periodStart,
+						),
+					})),
+				);
 
 				return {
 					stripeSubscriptionId,
@@ -99,6 +157,7 @@ export const getFamilySubscriptions = async (
 					otherFamilies,
 					summary,
 					payments,
+					unpaid,
 					error: null,
 				};
 			} catch (error) {
@@ -108,6 +167,7 @@ export const getFamilySubscriptions = async (
 					otherFamilies,
 					summary: null,
 					payments: [],
+					unpaid: [],
 					error:
 						error instanceof Error
 							? error.message

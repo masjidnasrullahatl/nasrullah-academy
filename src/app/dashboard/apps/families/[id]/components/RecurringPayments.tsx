@@ -22,6 +22,7 @@ import {
 	TextInput,
 	Tooltip,
 } from '@mantine/core';
+import { MonthPickerInput } from '@mantine/dates';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 
@@ -39,11 +40,15 @@ import dayjs from 'dayjs';
 
 import { FamilySubscriptionView } from '@app/api/subscriptions/types';
 
+import { PAY_METHOD_LABELS } from '@configs/enums';
+
 import {
 	useCancelSubscription,
+	useChargeCard,
 	useCreateCardUpdateLink,
 	useGetFamilySubscriptions,
 	useLinkSubscription,
+	usePayUnpaidInvoice,
 	useUnlinkSubscription,
 	useUpdateSubscriptionAmount,
 } from '@hooks/react-query/subscriptions/useFamilySubscriptions';
@@ -154,6 +159,88 @@ const CardUpdateModal = ({ subscriptionId }: { subscriptionId: string }) => {
 					</Text>
 				</Stack>
 			)}
+		</Stack>
+	);
+};
+
+const ChargeCardModal = ({
+	subscriptionId,
+	familyId,
+	amount,
+	card,
+}: {
+	subscriptionId: string;
+	familyId: string;
+	amount: number;
+	card: string;
+}) => {
+	const [month, setMonth] = useState<Date | null>(
+		dayjs().startOf('month').toDate(),
+	);
+	const [value, setValue] = useState<number | string>(amount);
+	const { mutateAsync, isPending, error } = useChargeCard();
+	const monthLabel = month ? dayjs(month).format('MMMM YYYY') : '';
+
+	const handleCharge = async () => {
+		if (!month || !(Number(value) > 0)) return;
+
+		await mutateAsync({
+			subscriptionId,
+			familyId,
+			year: dayjs(month).year(),
+			month: dayjs(month).month() + 1,
+			amount: Number(value),
+		});
+		notifications.show({
+			title: 'Payment received',
+			message: `${formatMoney(Number(value))} for ${monthLabel} was charged and marked paid.`,
+			color: 'green',
+		});
+		modals.closeAll();
+	};
+
+	return (
+		<Stack>
+			<Text size="sm">
+				Charges the {card} once. The month is then marked paid in Monthly
+				Payments. A month already marked paid cannot be charged.
+			</Text>
+			<MonthPickerInput
+				label="Month this payment is for"
+				valueFormat="MMMM YYYY"
+				value={month}
+				onChange={(next) => setMonth(next ? dayjs(next).toDate() : null)}
+				withAsterisk
+			/>
+			<NumberInput
+				label="Amount"
+				prefix="$"
+				min={1}
+				decimalScale={2}
+				fixedDecimalScale
+				value={value}
+				onChange={setValue}
+				withAsterisk
+			/>
+			{error && (
+				<Alert color="red" icon={<IconAlertCircle size={16} />}>
+					{errorMessage(error)}
+				</Alert>
+			)}
+			<Group justify="flex-end">
+				<Button variant="default" onClick={() => modals.closeAll()}>
+					Back
+				</Button>
+				<Button
+					color="red"
+					leftSection={<IconCreditCard size={16} />}
+					loading={isPending}
+					disabled={!month || !(Number(value) > 0)}
+					onClick={handleCharge}
+				>
+					Charge {Number(value) > 0 ? formatMoney(Number(value)) : ''}
+				</Button>
+			</Group>
 		</Stack>
 	);
 };
@@ -390,6 +477,9 @@ const SubscriptionCard = ({
 }) => {
 	const { mutateAsync: resume } = useCancelSubscription();
 	const { mutateAsync: unlink } = useUnlinkSubscription();
+	const { mutateAsync: payInvoice, isPending: isCharging } =
+		usePayUnpaidInvoice();
+	const [chargingId, setChargingId] = useState<string | null>(null);
 	const summary = view.summary;
 	const isCancelled = summary?.status === 'canceled';
 	// Another family pays this one for them: changes are made from the payer
@@ -402,6 +492,20 @@ const SubscriptionCard = ({
 		modals.open({
 			title: 'Update credit card',
 			children: <CardUpdateModal subscriptionId={view.stripeSubscriptionId} />,
+		});
+
+	const openChargeCard = () =>
+		summary?.card &&
+		modals.open({
+			title: 'Charge card',
+			children: (
+				<ChargeCardModal
+					subscriptionId={view.stripeSubscriptionId}
+					familyId={familyId}
+					amount={summary.amount}
+					card={`${summary.card.brand} card ending ${summary.card.last4}`}
+				/>
+			),
 		});
 
 	const openEditAmount = () =>
@@ -452,6 +556,47 @@ const SubscriptionCard = ({
 			},
 		});
 
+	const handleCharge = (invoice: FamilySubscriptionView['unpaid'][number]) =>
+		modals.openConfirmModal({
+			title: 'Charge the card now?',
+			children: (
+				<Text size="sm">
+					{formatMoney(invoice.amount)} for{' '}
+					{dayjs.unix(invoice.periodStart).format('MMMM YYYY')} will be charged
+					to{' '}
+					{summary?.card
+						? `the ${summary.card.brand} card ending ${summary.card.last4}`
+						: 'the card on file'}
+					. This pays the missed charge itself, so it cannot be charged twice.
+				</Text>
+			),
+			labels: { confirm: 'Charge card', cancel: 'Back' },
+			onConfirm: async () => {
+				setChargingId(invoice.id);
+
+				try {
+					await payInvoice({
+						subscriptionId: view.stripeSubscriptionId,
+						invoiceId: invoice.id,
+					});
+					notifications.show({
+						title: 'Payment received',
+						message: `${formatMoney(invoice.amount)} for ${dayjs.unix(invoice.periodStart).format('MMMM YYYY')} was charged.`,
+						color: 'green',
+					});
+				} catch (error) {
+					notifications.show({
+						title: 'The card was not charged',
+						message: errorMessage(error),
+						color: 'red',
+						autoClose: false,
+					});
+				} finally {
+					setChargingId(null);
+				}
+			},
+		});
+
 	const handleUnlink = () =>
 		modals.openConfirmModal({
 			title: 'Remove from this family?',
@@ -495,6 +640,12 @@ const SubscriptionCard = ({
 							</ActionIcon>
 						</Menu.Target>
 						<Menu.Dropdown>
+							<Menu.Item
+								disabled={!isPayer || !summary?.card}
+								onClick={openChargeCard}
+							>
+								Charge card
+							</Menu.Item>
 							<Menu.Item disabled={!canManage} onClick={openEditAmount}>
 								Edit amount
 							</Menu.Item>
@@ -606,6 +757,66 @@ const SubscriptionCard = ({
 							</Anchor>
 						</Grid.Col>
 					</Grid>
+				)}
+
+				{view.unpaid.length > 0 && (
+					<Alert
+						color="red"
+						icon={<IconAlertCircle size={16} />}
+						title="Missed payments"
+					>
+						<Stack gap="sm">
+							{view.unpaid.map((invoice) => (
+								<Group
+									key={invoice.id}
+									justify="space-between"
+									align="flex-start"
+									wrap="nowrap"
+								>
+									<div>
+										<Text size="sm" fw={600}>
+											{dayjs.unix(invoice.periodStart).format('MMMM YYYY')}:{' '}
+											{formatMoney(invoice.amount)} not collected
+										</Text>
+										{invoice.failureMessage && (
+											<Text size="sm">{invoice.failureMessage}</Text>
+										)}
+										{invoice.paidInPortal && (
+											<Text size="sm" fw={600} c="green">
+												Already marked paid in Monthly Payments (
+												{PAY_METHOD_LABELS[invoice.paidInPortal]}), so it
+												cannot be charged here.
+											</Text>
+										)}
+										<Text size="xs" c="dimmed">
+											{invoice.nextAttemptAt
+												? `Stripe will try again on ${formatDate(invoice.nextAttemptAt)}.`
+												: 'Stripe will not try again automatically.'}
+										</Text>
+									</div>
+									<Button
+										size="xs"
+										color="red"
+										leftSection={<IconCreditCard size={14} />}
+										disabled={
+											!isPayer ||
+											Boolean(invoice.paidInPortal) ||
+											(isCharging && chargingId !== invoice.id)
+										}
+										loading={chargingId === invoice.id}
+										onClick={() => handleCharge(invoice)}
+									>
+										Charge card now
+									</Button>
+								</Group>
+							))}
+							{isPayer && (
+								<Text size="xs">
+									If the card keeps failing, use Update credit card first.
+								</Text>
+							)}
+						</Stack>
+					</Alert>
 				)}
 
 				<Stack gap={4}>

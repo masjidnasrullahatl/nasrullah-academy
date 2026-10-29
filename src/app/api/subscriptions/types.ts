@@ -1,6 +1,11 @@
+import { PayMethod } from '@prisma/client';
 import z from 'zod/v4';
 
-import type { SubscriptionPayment, SubscriptionSummary } from '@helpers/stripe';
+import type {
+	SubscriptionPayment,
+	SubscriptionSummary,
+	UnpaidInvoice,
+} from '@helpers/stripe';
 
 export const LinkSubscriptionSchema = z.object({
 	stripeSubscriptionId: z
@@ -12,6 +17,13 @@ export const LinkSubscriptionSchema = z.object({
 
 export const UpdateSubscriptionAmountSchema = z.object({
 	amount: z.number().positive('Enter the monthly amount').max(10000),
+});
+
+export const ChargeCardSchema = z.object({
+	familyId: z.string().min(1),
+	year: z.number().int().min(2020).max(2100),
+	month: z.number().int().min(1).max(12),
+	amount: z.number().positive('Enter the amount').max(10000),
 });
 
 export const CancelSubscriptionSchema = z.object({
@@ -35,6 +47,11 @@ export type FamilySubscriptionView = {
 	otherFamilies: { id: string; name: string; isPayer: boolean }[];
 	summary: SubscriptionSummary | null;
 	payments: SubscriptionPayment[];
+	// billed but not collected (card declined etc.), can be charged again
+	unpaid: (UnpaidInvoice & {
+		// the month is already recorded as paid in Monthly Payments (how)
+		paidInPortal: PayMethod | null;
+	})[];
 	error: string | null;
 };
 
