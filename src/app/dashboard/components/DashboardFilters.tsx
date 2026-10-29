@@ -1,23 +1,38 @@
 import { Divider, Group, Paper, Select, Text } from '@mantine/core';
 
-import { IconCalendar, IconCategory } from '@tabler/icons-react';
+import {
+	IconCalendar,
+	IconCalendarMonth,
+	IconCategory,
+} from '@tabler/icons-react';
+import dayjs from 'dayjs';
 
 import { useGetDashboardYears } from '@hooks/react-query/dashboard/useGetDashboardYears';
 import { useGetPagingPrograms } from '@hooks/react-query/programs/useGetPagingPrograms';
 
+const MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => ({
+	value: String(index + 1),
+	label: dayjs().month(index).format('MMMM'),
+}));
+
 type DashboardFiltersProps = {
 	year: number;
+	month?: number;
 	programId?: string;
 	// eslint-disable-next-line no-unused-vars
 	onChangeYear: (value: number) => void;
+	// eslint-disable-next-line no-unused-vars
+	onChangeMonth: (value?: number) => void;
 	// eslint-disable-next-line no-unused-vars
 	onChangeProgram: (value?: string) => void;
 };
 
 export const DashboardFilters = ({
 	year,
+	month,
 	programId,
 	onChangeYear,
+	onChangeMonth,
 	onChangeProgram,
 }: DashboardFiltersProps) => {
 	const { data: years } = useGetDashboardYears();
@@ -41,6 +56,18 @@ export const DashboardFilters = ({
 						label: String(yearItem),
 					}))}
 					onChange={(value) => onChangeYear(Number(value || year))}
+					labelProps={{ mb: 8 }}
+				/>
+
+				<Select
+					label="Month"
+					placeholder="All months"
+					leftSection={<IconCalendarMonth size={16} />}
+					clearable
+					w={{ base: '100%', sm: 200 }}
+					value={month ? String(month) : null}
+					data={MONTH_OPTIONS}
+					onChange={(value) => onChangeMonth(value ? Number(value) : undefined)}
 					labelProps={{ mb: 8 }}
 				/>
 

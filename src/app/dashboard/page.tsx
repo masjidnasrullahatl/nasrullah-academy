@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 
 import { Alert, Container, Grid, SimpleGrid, Stack } from '@mantine/core';
 
+import dayjs from 'dayjs';
+
 import { useGetDashboardSummary } from '@hooks/react-query/dashboard/useGetDashboardSummary';
 
 import { ClassProfitLossTable } from './components/ClassProfitLossTable';
@@ -22,9 +24,18 @@ import { TopUnpaidFamilies } from './components/TopUnpaidFamilies';
 export default function DashboardPage() {
 	const currentYear = new Date().getFullYear();
 	const [year, setYear] = useState(currentYear);
+	const [month, setMonth] = useState<number | undefined>();
 	const [programId, setProgramId] = useState<string | undefined>();
 
-	const summaryParams = useMemo(() => ({ year, programId }), [year, programId]);
+	const summaryParams = useMemo(
+		() => ({ year, month, programId }),
+		[year, month, programId],
+	);
+
+	// "October 2026" for one month, "2026" for the whole year
+	const periodLabel = month
+		? dayjs(new Date(year, month - 1, 1)).format('MMMM YYYY')
+		: String(year);
 
 	const {
 		data: summary,
@@ -39,8 +50,10 @@ export default function DashboardPage() {
 
 				<DashboardFilters
 					year={year}
+					month={month}
 					programId={programId}
 					onChangeYear={setYear}
+					onChangeMonth={setMonth}
 					onChangeProgram={setProgramId}
 				/>
 
@@ -50,7 +63,7 @@ export default function DashboardPage() {
 					<DashboardSkeleton />
 				) : (
 					<>
-						<StatCards totals={summary.totals} />
+						<StatCards totals={summary.totals} period={month ? periodLabel : 'YTD'} />
 						<SimpleGrid cols={{ base: 1, lg: 3 }}>
 							<IncomeChart data={summary.monthly} />
 							<GenderDonut genderSplit={summary.genderSplit} />
@@ -58,7 +71,7 @@ export default function DashboardPage() {
 						</SimpleGrid>
 						<Grid>
 							<Grid.Col span={{ base: 12, lg: 8 }}>
-								<MilestonesChart data={summary.milestones} year={year} />
+								<MilestonesChart data={summary.milestones} period={periodLabel} />
 							</Grid.Col>
 							<Grid.Col span={{ base: 12, lg: 4 }}>
 								<TopHifzProgress data={summary.milestones.topHifz} />
