@@ -3,6 +3,7 @@ import {
 	IconCategory,
 	IconChalkboard,
 	IconClipboardList,
+	IconHeartHandshake,
 	IconKey,
 	IconLayoutDashboard,
 	IconReceipt,
@@ -78,6 +79,11 @@ export const SIDEBAR_LINKS = [
 				label: 'Monthly Payments',
 				icon: IconReceipt,
 				link: PATH_FINANCE.payments,
+			},
+			{
+				label: 'Scholarships',
+				icon: IconHeartHandshake,
+				link: PATH_FINANCE.scholarships,
 			},
 			{
 				label: 'Pay Periods',

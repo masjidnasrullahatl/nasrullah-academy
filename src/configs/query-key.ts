@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
 		GET_PAGING: 'registrations.get-paging',
 		GET_DETAIL: 'registrations.get-detail',
 	},
+	SCHOLARSHIPS: { GET_PAGING: 'scholarships.get-paging' },
 	MILESTONES: {
 		GET_PAGING: 'milestones.get-paging',
 		BOOKS: 'milestones.books',

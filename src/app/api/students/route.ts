@@ -8,6 +8,8 @@ import { withStaff } from '@app/api/utils/withStaff';
 
 import { createClient } from '@helpers/prisma/server';
 
+import { isScholarshipCurrent } from '@utils/scholarship';
+
 import { catchZodError } from '../utils/catchZodError';
 import { internalServerError, success } from '../utils/response';
 
@@ -64,16 +66,32 @@ const getPaging = async (request: AuthRequest) => {
 			enrollments: { include: { class: true } },
 			programs: studentProgramsInclude,
 			milestones: { select: { type: true } },
+			scholarships: {
+				select: {
+					amountReceived: true,
+					monthlyAmount: true,
+					startMonth: true,
+					endMonth: true,
+				},
+			},
 		},
 		where,
 	});
 
 	return NextResponse.json({
-		data: students.map(({ milestones, ...student }) => ({
+		data: students.map(({ milestones, scholarships, ...student }) => ({
 			...student,
 			programs: mapStudentPrograms(student.programs),
 			juzCount: milestones.filter((item) => item.type === 'JUZ').length,
 			bookCount: milestones.filter((item) => item.type === 'BOOK').length,
+			onScholarship: scholarships.some((item) =>
+				isScholarshipCurrent({
+					amountReceived: Number(item.amountReceived),
+					monthlyAmount: Number(item.monthlyAmount),
+					startMonth: item.startMonth.toISOString(),
+					endMonth: item.endMonth?.toISOString() || null,
+				}),
+			),
 		})),
 		total,
 		error: null,
