@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { markMonthPaidByCard } from '@app/api/registrations/utils';
 
+import { isLinkedSubscription } from '@app/api/subscriptions/utils';
+
 import { createClient } from '@helpers/prisma/server';
 import { applyCardUpdate, verifyStripeWebhook } from '@helpers/stripe';
 
@@ -17,6 +19,11 @@ type StripeEvent = {
  *   for registrations and for families linked to the subscription.
  * - checkout.session.completed for a card update: puts the new card on the
  *   subscription (the return page does this too; doing it twice is harmless).
+ *
+ * The masjid's Stripe account also sends events for donations and other
+ * payments (masjid CRM). Anything that isn't an Academy registration or an
+ * Academy recurring payment is acknowledged and left alone, so Stripe doesn't
+ * count it as a failure and keep retrying.
  */
 export async function POST(request: NextRequest) {
 	const payload = await request.text();
@@ -34,7 +41,14 @@ export async function POST(request: NextRequest) {
 			event.type === 'checkout.session.completed' &&
 			object.metadata?.purpose === 'card_update'
 		) {
-			await applyCardUpdate(String(object.id));
+			const cardSubscriptionId = object.metadata?.subscriptionId;
+
+			if (
+				cardSubscriptionId &&
+				(await isLinkedSubscription(prisma, String(cardSubscriptionId)))
+			) {
+				await applyCardUpdate(String(object.id));
+			}
 
 			return NextResponse.json({ received: true });
 		}
@@ -44,6 +58,14 @@ export async function POST(request: NextRequest) {
 				object.metadata?.registrationId || object.client_reference_id;
 
 			if (!registrationId) return NextResponse.json({ received: true });
+
+			// Donations and other masjid payments aren't Academy registrations
+			const existing = await prisma.registrations.findUnique({
+				where: { id: String(registrationId) },
+				select: { id: true },
+			});
+
+			if (!existing) return NextResponse.json({ received: true });
 
 			const registration = await prisma.registrations.update({
 				where: { id: registrationId },
