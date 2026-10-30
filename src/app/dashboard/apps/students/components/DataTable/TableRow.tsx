@@ -69,7 +69,16 @@ export const TableRow = ({ student, page, index, pageSize }: Props) => {
 				{(page - 1) * pageSize + index + 1}
 			</Table.Td>
 
-			<Table.Td>{`${student.firstName} ${student.lastName}`}</Table.Td>
+			<Table.Td>
+				<Group gap={6}>
+					{`${student.firstName} ${student.lastName}`}
+					{student.onScholarship && (
+						<Badge size="sm" color="grape" variant="light">
+							Scholarship
+						</Badge>
+					)}
+				</Group>
+			</Table.Td>
 
 			<Table.Td>{student.family?.name}</Table.Td>
 

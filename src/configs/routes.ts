@@ -46,6 +46,7 @@ export const PATH_FINANCE = {
 	root: ROOT_FINANCE,
 	payments: path(ROOT_FINANCE, '/payments'),
 	payPeriods: path(ROOT_FINANCE, '/pay-periods'),
+	scholarships: path(ROOT_FINANCE, '/scholarships'),
 };
 
 export const PATH_ACCOUNTS = {
