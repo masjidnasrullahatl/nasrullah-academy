@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { markMonthPaidByCard } from '@app/api/registrations/utils';
-
 import { isLinkedSubscription } from '@app/api/subscriptions/utils';
 
 import { createClient } from '@helpers/prisma/server';
