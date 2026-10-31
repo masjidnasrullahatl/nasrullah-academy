@@ -212,6 +212,11 @@ model Scholarships {
 	endMonth       DateTime? @map("end_month") @db.Date
 	notes          String?
 
+	// what was added to Monthly Payments, so an edit or delete can undo it
+	postedInvoiceId String?  @map("posted_invoice_id")
+	postedAmount    Decimal? @map("posted_amount") @db.Decimal(10, 2)
+	postedNote      String?  @map("posted_note")
+
 	studentId String   @map("student_id")
 	student   Students @relation(fields: [studentId], references: [id], onDelete: Cascade)
 

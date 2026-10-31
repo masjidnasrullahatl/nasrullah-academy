@@ -46,19 +46,12 @@ export const useGetPagingScholarships = (params: GetScholarshipsQueryParams) =>
 		},
 	});
 
-// Student rows show a scholarship badge, so refresh them along with the list
+// A scholarship also changes student badges, Monthly Payments and the
+// dashboard totals, so everything is refreshed
 const useRefresh = () => {
 	const queryClient = useQueryClient();
 
-	return () =>
-		Promise.all([
-			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.SCHOLARSHIPS.GET_PAGING],
-			}),
-			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.STUDENTS.GET_PAGING],
-			}),
-		]);
+	return () => queryClient.invalidateQueries();
 };
 
 export const useSaveScholarship = () => {
