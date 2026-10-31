@@ -67,12 +67,7 @@ const getPaging = async (request: AuthRequest) => {
 			programs: studentProgramsInclude,
 			milestones: { select: { type: true } },
 			scholarships: {
-				select: {
-					amountReceived: true,
-					monthlyAmount: true,
-					startMonth: true,
-					endMonth: true,
-				},
+				select: { startMonth: true, endMonth: true },
 			},
 		},
 		where,
@@ -85,12 +80,10 @@ const getPaging = async (request: AuthRequest) => {
 			juzCount: milestones.filter((item) => item.type === 'JUZ').length,
 			bookCount: milestones.filter((item) => item.type === 'BOOK').length,
 			onScholarship: scholarships.some((item) =>
-				isScholarshipCurrent({
-					amountReceived: Number(item.amountReceived),
-					monthlyAmount: Number(item.monthlyAmount),
-					startMonth: item.startMonth.toISOString(),
-					endMonth: item.endMonth?.toISOString() || null,
-				}),
+				isScholarshipCurrent(
+					item.startMonth.toISOString(),
+					item.endMonth?.toISOString() || null,
+				),
 			),
 		})),
 		total,
