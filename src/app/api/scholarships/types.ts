@@ -11,7 +11,7 @@ export const ScholarshipSchema = z.object({
 	studentId: z.string().min(1, 'Student is required'),
 	donorName: z.string().trim().optional().nullable(),
 	amountReceived: z.number().positive('Enter the amount received'),
-	receivedAt: z.string().optional().nullable(),
+	receivedAt: z.string().min(1, 'Date received is required'),
 	startMonth: z.string().min(1, 'First month is required'),
 	endMonth: z.string().min(1, 'Last month is required'),
 	notes: z.string().optional().nullable(),

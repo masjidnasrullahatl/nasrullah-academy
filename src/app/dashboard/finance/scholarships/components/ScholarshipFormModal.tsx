@@ -68,6 +68,7 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 			studentId: (value) => (value ? null : 'Student is required'),
 			amountReceived: (value) =>
 				Number(value) > 0 ? null : 'Enter the amount received',
+			receivedAt: (value) => (value ? null : 'Date received is required'),
 			startMonth: (value) => (value ? null : 'First month is required'),
 			endMonth: (value, values) => {
 				if (!value) return 'Last month is required';
@@ -96,7 +97,7 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 				studentId: values.studentId,
 				donorName: values.donorName || null,
 				amountReceived: Number(values.amountReceived),
-				receivedAt: toDay(values.receivedAt),
+				receivedAt: toDay(values.receivedAt) as string,
 				startMonth: toMonth(values.startMonth) as string,
 				endMonth: toMonth(values.endMonth) as string,
 				notes: values.notes || null,
@@ -149,8 +150,9 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 					<Grid.Col span={{ base: 12, md: 6 }}>
 						<DateInput
 							label="Date received"
+							description="The money counts in this month's totals"
 							valueFormat="MM/DD/YYYY"
-							clearable
+							withAsterisk
 							{...form.getInputProps('receivedAt')}
 						/>
 					</Grid.Col>
