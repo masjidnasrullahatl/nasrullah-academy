@@ -32,19 +32,28 @@ import {
 } from '@hooks/react-query/scholarships/useScholarships';
 
 import { formatMoney } from '@utils/money';
-import { getScholarshipProgress, ScholarshipStatus } from '@utils/scholarship';
+import { getScholarshipStatus, ScholarshipStatus } from '@utils/scholarship';
 
 import { ScholarshipFormModal } from './ScholarshipFormModal';
 
 const STATUS_BADGES: Record<ScholarshipStatus, [string, string]> = {
 	UPCOMING: ['blue', 'Upcoming'],
-	ACTIVE: ['green', 'Active'],
-	ENDING_SOON: ['orange', 'Ending soon'],
+	CURRENT: ['green', 'Current'],
 	ENDED: ['gray', 'Ended'],
 };
 
 const monthLabel = (value: string) =>
 	dayjs(value.slice(0, 10)).format('MMMM YYYY');
+
+const dateLabel = (value: string | null) =>
+	value ? dayjs(value.slice(0, 10)).format('MM/DD/YYYY') : '-';
+
+const coversLabel = ({ startMonth, endMonth }: ScholarshipRow) => {
+	const first = monthLabel(startMonth);
+	const last = endMonth ? monthLabel(endMonth) : null;
+
+	return !last || last === first ? first : `${first} to ${last}`;
+};
 
 const ScholarshipTableRow = ({
 	scholarship,
@@ -53,8 +62,10 @@ const ScholarshipTableRow = ({
 }) => {
 	const { mutateAsync: deleteScholarship } = useDeleteScholarship();
 
-	const progress = getScholarshipProgress(scholarship);
-	const [color, label] = STATUS_BADGES[progress.status];
+	const [color, label] =
+		STATUS_BADGES[
+			getScholarshipStatus(scholarship.startMonth, scholarship.endMonth)
+		];
 	const studentName = `${scholarship.student.firstName} ${scholarship.student.lastName}`;
 
 	const handleEdit = () =>
@@ -92,15 +103,11 @@ const ScholarshipTableRow = ({
 				</Text>
 			</Table.Td>
 			<Table.Td>{scholarship.donorName || 'Anonymous'}</Table.Td>
-			<Table.Td ta="right">{formatMoney(scholarship.amountReceived)}</Table.Td>
-			<Table.Td ta="right">{formatMoney(scholarship.monthlyAmount)}</Table.Td>
-			<Table.Td ta="right">{formatMoney(progress.used)}</Table.Td>
 			<Table.Td ta="right" fw={600}>
-				{formatMoney(progress.remaining)}
+				{formatMoney(scholarship.amountReceived)}
 			</Table.Td>
-			<Table.Td>
-				{monthLabel(scholarship.startMonth)} to {progress.coveredThrough || '-'}
-			</Table.Td>
+			<Table.Td>{dateLabel(scholarship.receivedAt)}</Table.Td>
+			<Table.Td>{coversLabel(scholarship)}</Table.Td>
 			<Table.Td>
 				<Badge color={color} variant="light">
 					{label}
@@ -166,7 +173,7 @@ export const ScholarshipsTable = () => {
 				</Button>
 			</Group>
 
-			<Table.ScrollContainer minWidth={1000}>
+			<Table.ScrollContainer minWidth={800}>
 				<Table
 					striped="even"
 					highlightOnHover
@@ -178,10 +185,8 @@ export const ScholarshipsTable = () => {
 						<Table.Tr>
 							<Table.Th>Student</Table.Th>
 							<Table.Th>Paid by</Table.Th>
-							<Table.Th ta="right">Received</Table.Th>
-							<Table.Th ta="right">Monthly</Table.Th>
-							<Table.Th ta="right">Used</Table.Th>
-							<Table.Th ta="right">Remaining</Table.Th>
+							<Table.Th ta="right">Amount received</Table.Th>
+							<Table.Th>Date received</Table.Th>
 							<Table.Th>Covers</Table.Th>
 							<Table.Th>Status</Table.Th>
 							<Table.Th w={1} />
@@ -196,7 +201,7 @@ export const ScholarshipsTable = () => {
 						))}
 						{!isLoading && !data?.data.length && (
 							<Table.Tr>
-								<Table.Td colSpan={9}>
+								<Table.Td colSpan={7}>
 									<Text size="sm" c="dimmed" ta="center">
 										No scholarships yet
 									</Text>

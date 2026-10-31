@@ -15,7 +15,6 @@ export type ScholarshipRow = {
 	donorName: string | null;
 	amountReceived: number;
 	receivedAt: string | null;
-	monthlyAmount: number;
 	startMonth: string;
 	endMonth: string | null;
 	notes: string | null;

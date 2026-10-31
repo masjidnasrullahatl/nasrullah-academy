@@ -7,7 +7,6 @@ import {
 	NumberInput,
 	Select,
 	Stack,
-	Text,
 	Textarea,
 	TextInput,
 } from '@mantine/core';
@@ -27,9 +26,6 @@ import {
 } from '@hooks/react-query/scholarships/useScholarships';
 import { useGetPagingStudents } from '@hooks/react-query/students/useGetPagingStudents';
 
-import { formatMoney } from '@utils/money';
-import { getScholarshipProgress } from '@utils/scholarship';
-
 type Props = {
 	scholarship?: ScholarshipRow;
 };
@@ -39,7 +35,6 @@ type FormValue = {
 	donorName: string;
 	amountReceived: number | string;
 	receivedAt: Date | null;
-	monthlyAmount: number | string;
 	startMonth: Date | null;
 	endMonth: Date | null;
 	notes: string;
@@ -65,7 +60,6 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 			donorName: scholarship?.donorName || '',
 			amountReceived: scholarship?.amountReceived ?? '',
 			receivedAt: toDate(scholarship?.receivedAt),
-			monthlyAmount: scholarship?.monthlyAmount ?? '',
 			startMonth: toDate(scholarship?.startMonth),
 			endMonth: toDate(scholarship?.endMonth),
 			notes: scholarship?.notes || '',
@@ -74,9 +68,15 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 			studentId: (value) => (value ? null : 'Student is required'),
 			amountReceived: (value) =>
 				Number(value) > 0 ? null : 'Enter the amount received',
-			monthlyAmount: (value) =>
-				Number(value) > 0 ? null : 'Enter the monthly amount',
-			startMonth: (value) => (value ? null : 'Start month is required'),
+			startMonth: (value) => (value ? null : 'First month is required'),
+			endMonth: (value, values) => {
+				if (!value) return 'Last month is required';
+
+				return values.startMonth &&
+					dayjs(value).isBefore(dayjs(values.startMonth), 'month')
+					? 'Last month cannot be before the first month'
+					: null;
+			},
 		},
 	});
 
@@ -89,17 +89,6 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 		[students],
 	);
 
-	const { amountReceived, monthlyAmount, startMonth, endMonth } = form.values;
-	const preview =
-		Number(amountReceived) > 0 && Number(monthlyAmount) > 0 && startMonth
-			? getScholarshipProgress({
-					amountReceived: Number(amountReceived),
-					monthlyAmount: Number(monthlyAmount),
-					startMonth: toMonth(startMonth) as string,
-					endMonth: toMonth(endMonth),
-				})
-			: null;
-
 	const handleSubmit = async (values: FormValue) => {
 		await mutateAsync({
 			id: scholarship?.id,
@@ -108,9 +97,8 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 				donorName: values.donorName || null,
 				amountReceived: Number(values.amountReceived),
 				receivedAt: toDay(values.receivedAt),
-				monthlyAmount: Number(values.monthlyAmount),
 				startMonth: toMonth(values.startMonth) as string,
-				endMonth: toMonth(values.endMonth),
+				endMonth: toMonth(values.endMonth) as string,
 				notes: values.notes || null,
 			},
 		});
@@ -166,17 +154,7 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 							{...form.getInputProps('receivedAt')}
 						/>
 					</Grid.Col>
-					<Grid.Col span={{ base: 12, md: 4 }}>
-						<NumberInput
-							label="Monthly amount"
-							prefix="$"
-							min={0}
-							decimalScale={2}
-							withAsterisk
-							{...form.getInputProps('monthlyAmount')}
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, md: 4 }}>
+					<Grid.Col span={{ base: 12, md: 6 }}>
 						<MonthPickerInput
 							label="First month"
 							valueFormat="MMMM YYYY"
@@ -184,22 +162,16 @@ export const ScholarshipFormModal = ({ scholarship }: Props) => {
 							{...form.getInputProps('startMonth')}
 						/>
 					</Grid.Col>
-					<Grid.Col span={{ base: 12, md: 4 }}>
+					<Grid.Col span={{ base: 12, md: 6 }}>
 						<MonthPickerInput
 							label="Last month"
+							description="Same as the first month for a one-month payment"
 							valueFormat="MMMM YYYY"
-							clearable
+							withAsterisk
 							{...form.getInputProps('endMonth')}
 						/>
 					</Grid.Col>
 				</Grid>
-
-				{preview && (
-					<Text size="sm" c="dimmed">
-						Covers through {preview.coveredThrough || '-'}.{' '}
-						{formatMoney(preview.remaining)} left today.
-					</Text>
-				)}
 
 				<Textarea
 					label="Notes"

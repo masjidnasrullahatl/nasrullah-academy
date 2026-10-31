@@ -200,15 +200,14 @@ model Milestones {
 	@@map("milestones")
 }
 
-// Someone pays for a student whose parent can't. The money is kept here and
-// used one monthly amount at a time; family payment rows aren't touched.
+// Someone pays for a student whose parent can't, for the months from
+// startMonth to endMonth. Family payment rows aren't touched.
 model Scholarships {
 	id String @id @default(uuid())
 
 	donorName      String?   @map("donor_name")
 	amountReceived Decimal   @map("amount_received") @db.Decimal(10, 2)
 	receivedAt     DateTime? @map("received_at") @db.Date
-	monthlyAmount  Decimal   @map("monthly_amount") @db.Decimal(10, 2)
 	startMonth     DateTime  @map("start_month") @db.Date
 	endMonth       DateTime? @map("end_month") @db.Date
 	notes          String?

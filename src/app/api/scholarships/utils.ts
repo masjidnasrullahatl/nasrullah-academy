@@ -26,7 +26,6 @@ type ScholarshipWithStudent = Prisma.ScholarshipsGetPayload<{
 export const mapScholarship = (scholarship: ScholarshipWithStudent) => ({
 	...scholarship,
 	amountReceived: Number(scholarship.amountReceived),
-	monthlyAmount: Number(scholarship.monthlyAmount),
 	student: {
 		...scholarship.student,
 		programs: mapStudentPrograms(scholarship.student.programs),
@@ -40,8 +39,7 @@ export const toScholarshipData = (payload: ScholarshipPayload) => ({
 	donorName: payload.donorName || null,
 	amountReceived: payload.amountReceived,
 	receivedAt: toDate(payload.receivedAt),
-	monthlyAmount: payload.monthlyAmount,
 	startMonth: new Date(payload.startMonth),
-	endMonth: toDate(payload.endMonth),
+	endMonth: new Date(payload.endMonth),
 	notes: payload.notes || null,
 });
