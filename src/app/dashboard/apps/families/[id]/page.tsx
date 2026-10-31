@@ -39,6 +39,7 @@ import { StudentFormModal } from '../../students/components/StudentFormModal';
 import { FamilyFormModal } from '../components/FamilyFormModal';
 
 import { RecurringPayments } from './components/RecurringPayments';
+import { ScholarshipNotice } from './components/ScholarshipNotice';
 
 // Birthdays are stored as midnight UTC; use the date part so the local
 // timezone doesn't shift them to the day before
@@ -144,6 +145,8 @@ export default function FamilyDetailPage() {
 							</Button>
 						}
 					/>
+
+					<ScholarshipNotice familyId={familyId} />
 
 					<Paper p="md">
 						<Grid>

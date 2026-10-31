@@ -24,10 +24,13 @@ const getPaging = async (request: AuthRequest) => {
 	const page = Number(searchParams.get('page') || 1);
 	const limit = Number(searchParams.get('limit') || 10);
 	const keyword = searchParams.get('keyword') || '';
+	const familyId = searchParams.get('familyId') || '';
 
 	const prisma = createClient();
 
 	const where: Prisma.ScholarshipsWhereInput = {};
+
+	if (familyId) where.student = { familyId };
 
 	if (keyword) {
 		where.OR = [

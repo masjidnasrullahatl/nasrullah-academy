@@ -4,6 +4,7 @@ import { PagingQueryParams } from '@app/api/types/common';
 
 export type GetScholarshipsQueryParams = PagingQueryParams & {
 	keyword?: string;
+	familyId?: string;
 };
 
 export const ScholarshipSchema = z.object({
