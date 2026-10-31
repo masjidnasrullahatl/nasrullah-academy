@@ -19,6 +19,54 @@ const getPreviousMonth = (year: number, month: number) => {
 	return { year, month: month - 1 };
 };
 
+/**
+ * family:program pairs whose active students are all on a scholarship for
+ * this month, so nothing is due. A family with another child in the program
+ * pays as usual; its monthly fee already leaves the scholarship child out.
+ */
+const getFullyCovered = async (
+	prisma: ReturnType<typeof createClient>,
+	year: number,
+	month: number,
+) => {
+	const monthStart = new Date(Date.UTC(year, month - 1, 1));
+
+	const scholarships = await prisma.scholarships.findMany({
+		where: {
+			startMonth: { lte: monthStart },
+			OR: [{ endMonth: null }, { endMonth: { gte: monthStart } }],
+		},
+		select: { studentId: true, student: { select: { familyId: true } } },
+	});
+
+	const coveredIds = new Set(scholarships.map((item) => item.studentId));
+
+	const students = await prisma.students.findMany({
+		where: {
+			status: 'ACTIVE',
+			familyId: { in: scholarships.map((item) => item.student.familyId) },
+		},
+		select: {
+			id: true,
+			familyId: true,
+			programs: { select: { programId: true } },
+		},
+	});
+
+	const covered = new Set<string>();
+	const notCovered = new Set<string>();
+
+	for (const student of students) {
+		for (const { programId } of student.programs) {
+			(coveredIds.has(student.id) ? covered : notCovered).add(
+				`${student.familyId}:${programId}`,
+			);
+		}
+	}
+
+	return new Set([...covered].filter((key) => !notCovered.has(key)));
+};
+
 const generateInvoices = async (request: AuthRequest) => {
 	try {
 		const body = await request.json();
@@ -86,21 +134,37 @@ const generateInvoices = async (request: AuthRequest) => {
 			(item) => !existingKeys.has(`${item.familyId}:${item.programId}`),
 		);
 
+		const fullyCovered = await getFullyCovered(prisma, data.year, data.month);
+
 		const { count } = await prisma.monthlyInvoices.createMany({
-			data: toCreate.map((item) => ({
-				familyId: item.familyId,
-				programId: item.programId,
-				year: data.year,
-				month: data.month,
-				studentCount: item.studentCount,
-				tuitionFee: item.monthlyFee,
-				totalDue: item.monthlyFee,
-				balance: item.monthlyFee,
-				payMethod:
-					previousPayMethods.get(`${item.familyId}:${item.programId}`) ||
-					'NA',
-				paymentStatus: 'UNPAID',
-			})),
+			data: toCreate.map((item) => {
+				const key = `${item.familyId}:${item.programId}`;
+				const base = {
+					familyId: item.familyId,
+					programId: item.programId,
+					year: data.year,
+					month: data.month,
+					studentCount: item.studentCount,
+				};
+
+				if (fullyCovered.has(key)) {
+					return {
+						...base,
+						payMethod: 'FREE' as const,
+						paymentStatus: 'NA' as const,
+						notes: 'Scholarship: no fee due this month.',
+					};
+				}
+
+				return {
+					...base,
+					tuitionFee: item.monthlyFee,
+					totalDue: item.monthlyFee,
+					balance: item.monthlyFee,
+					payMethod: previousPayMethods.get(key) || ('NA' as const),
+					paymentStatus: 'UNPAID' as const,
+				};
+			}),
 			skipDuplicates: true,
 		});
 

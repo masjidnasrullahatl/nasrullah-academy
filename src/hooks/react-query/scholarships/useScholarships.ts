@@ -36,6 +36,7 @@ export const useGetPagingScholarships = (params: GetScholarshipsQueryParams) =>
 				page: params.page.toString(),
 				limit: params.limit.toString(),
 				keyword: params.keyword || '',
+				familyId: params.familyId || '',
 			});
 
 			const response = await fetchAuth(`/api/scholarships?${queryParams}`);
