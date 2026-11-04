@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { markMonthPaidByCard } from '@app/api/registrations/utils';
-import { isLinkedSubscription } from '@app/api/subscriptions/utils';
+import {
+	getChargeMonth,
+	isLinkedSubscription,
+} from '@app/api/subscriptions/utils';
 
 import { createClient } from '@helpers/prisma/server';
 import { applyCardUpdate, verifyStripeWebhook } from '@helpers/stripe';
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
 				object.lines?.data?.[0]?.period?.start ||
 				object.created ||
 				Date.now() / 1000;
-			const period = new Date(periodStart * 1000);
+			const { year, month } = getChargeMonth(periodStart);
 
 			for (const link of links) {
 				if (!link.programId) continue;
@@ -136,8 +139,8 @@ export async function POST(request: NextRequest) {
 					prisma,
 					link.familyId,
 					link.programId,
-					period.getUTCFullYear(),
-					period.getUTCMonth() + 1,
+					year,
+					month,
 				);
 			}
 		}

@@ -49,6 +49,18 @@ export const isLinkedSubscription = async (
 	);
 
 /**
+ * The school month a recurring charge pays for. Families charged near the
+ * end of a month (e.g. Oct 30 or 31) are paying for the next month.
+ */
+export const getChargeMonth = (periodStart: number) => {
+	const date = new Date(periodStart * 1000);
+	const isMonthEnd = date.getUTCDate() >= 25;
+	const index = date.getUTCFullYear() * 12 + date.getUTCMonth() + (isMonthEnd ? 1 : 0);
+
+	return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+};
+
+/**
  * How the month a Stripe charge is for was already paid in Monthly Payments
  * (e.g. cash after the card failed), or null. Charging it again would make
  * the family pay twice.
@@ -58,7 +70,7 @@ export const findPaidMonth = async (
 	stripeSubscriptionId: string,
 	periodStart: number,
 ) => {
-	const period = new Date(periodStart * 1000);
+	const { year, month } = getChargeMonth(periodStart);
 	const links = await prisma.familySubscriptions.findMany({
 		where: { stripeSubscriptionId, programId: { not: null } },
 		select: { familyId: true, programId: true },
@@ -72,8 +84,8 @@ export const findPaidMonth = async (
 				familyId: link.familyId,
 				programId: link.programId as string,
 			})),
-			year: period.getUTCFullYear(),
-			month: period.getUTCMonth() + 1,
+			year,
+			month,
 			paymentStatus: 'PAID',
 		},
 		select: { payMethod: true },
