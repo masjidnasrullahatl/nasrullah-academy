@@ -42,14 +42,16 @@ export const GenerateMonthButton = ({
 		programId: programId || undefined,
 	});
 
-	const isGenerated = Boolean(year && month && existingInvoices?.total);
+	// Card payments add rows as they arrive, so a started month still needs
+	// its unpaid families added
+	const hasRows = Boolean(year && month && existingInvoices?.total);
 
 	const monthLabel = month
 		? MONTH_OPTIONS.find((item) => Number(item.value) === month)?.label || month
 		: '-';
 
 	const handleGenerate = () => {
-		if (!year || !month || isGenerated) return;
+		if (!year || !month) return;
 
 		const targetYear = year;
 		const targetMonth = month;
@@ -58,7 +60,7 @@ export const GenerateMonthButton = ({
 			: 'All programs';
 
 		modals.open({
-			title: 'Generate month invoices',
+			title: hasRows ? 'Add missing families' : 'Generate month invoices',
 			size: 'md',
 			children: (
 				<Stack>
@@ -69,8 +71,9 @@ export const GenerateMonthButton = ({
 						Program: <b>{targetProgram}</b>
 					</Text>
 					<Text size="sm" c="dimmed">
-						Creates one unpaid row per family, prefilled with the kids and
-						monthly fee set on the family. Existing rows are not overwritten.
+						Creates an unpaid row for every family that does not have one yet,
+						prefilled with the kids and monthly fee set on the family. Rows
+						already there, such as card payments, are not changed.
 					</Text>
 
 					<ModalFooter>
@@ -88,8 +91,10 @@ export const GenerateMonthButton = ({
 									});
 
 									notifications.show({
-										title: 'Invoices generated',
-										message: `Created ${result.created} invoices`,
+										title: result.created ? 'Rows added' : 'Nothing to add',
+										message: result.created
+											? `Added ${result.created} unpaid ${result.created === 1 ? 'row' : 'rows'}`
+											: 'Every family already has a row this month',
 										color: 'green',
 									});
 								} catch (error: any) {
@@ -103,7 +108,7 @@ export const GenerateMonthButton = ({
 								modals.closeAll();
 							}}
 						>
-							Generate
+							{hasRows ? 'Add missing families' : 'Generate'}
 						</Button>
 					</ModalFooter>
 				</Stack>
@@ -131,8 +136,8 @@ export const GenerateMonthButton = ({
 				label={
 					!year || !month
 						? 'Select year and month first'
-						: isGenerated
-							? `${monthLabel} ${year} has already been generated`
+						: hasRows
+							? `Adds an unpaid row for each family without one in ${monthLabel} ${year}`
 							: 'Generate invoices for selected month'
 				}
 			>
@@ -140,9 +145,9 @@ export const GenerateMonthButton = ({
 					onClick={handleGenerate}
 					leftSection={<IconSparkles size={16} />}
 					loading={isPending}
-					disabled={!year || !month || isGenerated}
+					disabled={!year || !month}
 				>
-					{isGenerated ? 'Month generated' : 'Generate month'}
+					{hasRows ? 'Add missing families' : 'Generate month'}
 				</Button>
 			</Tooltip>
 		</Group>
