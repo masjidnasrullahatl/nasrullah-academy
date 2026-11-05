@@ -175,6 +175,12 @@ export default function ProgramRegistrationPage() {
 				? Number(form.values.customMonthlyFee) || null
 				: null,
 	});
+	const firstMonthName = dayjs(
+		new Date(quote.firstMonth.year, quote.firstMonth.month - 1, 1),
+	).format('MMMM');
+	const nextMonthName = dayjs(
+		new Date(quote.firstMonth.year, quote.firstMonth.month, 1),
+	).format('MMMM');
 	// Card is the only way to pay; if card payments are switched off the
 	// registration is still saved and the office follows up
 	const payByCard = program.cardEnabled;
@@ -612,10 +618,11 @@ export default function ProgramRegistrationPage() {
 						</Group>
 						<Group justify="space-between">
 							<Text size="sm">
-								First month tuition ({kids}{' '}
-								{kids === 1 ? 'child' : 'children'})
+								{firstMonthName} tuition, {firstMonthName.slice(0, 3)}{' '}
+								{quote.firstMonth.day} to {quote.firstMonth.daysInMonth} (
+								{quote.firstMonth.days} of {quote.firstMonth.daysInMonth} days)
 							</Text>
-							<Text size="sm">{formatMoney(quote.monthly)}</Text>
+							<Text size="sm">{formatMoney(quote.firstMonth.amount)}</Text>
 						</Group>
 						<Divider />
 						<Group justify="space-between">
@@ -627,9 +634,9 @@ export default function ProgramRegistrationPage() {
 							</Text>
 						</Group>
 						<Text size="xs" c="dimmed">
-							The registration fee is paid once. After that, tuition of{' '}
+							The registration fee is paid once. Full tuition of{' '}
 							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} is
-							due on the 1st of every month.
+							charged on the 1st of every month, starting {nextMonthName} 1.
 							{payByCard &&
 								' This includes the 2.2% + $0.30 card processing fee.'}
 						</Text>

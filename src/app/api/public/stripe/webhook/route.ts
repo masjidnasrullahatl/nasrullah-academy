@@ -10,6 +10,8 @@ import {
 import { createClient } from '@helpers/prisma/server';
 import { applyCardUpdate, verifyStripeWebhook } from '@helpers/stripe';
 
+import { schoolToday } from '@utils/registrationPricing';
+
 type StripeEvent = {
 	type: string;
 	data: { object: Record<string, any> };
@@ -82,14 +84,15 @@ export async function POST(request: NextRequest) {
 
 			// Already approved: mark this month's row paid too
 			if (registration.familyId) {
-				const now = new Date();
+				// The month the family registered in, at the school
+				const { year, month } = schoolToday(registration.createdAt);
 
 				await markMonthPaidByCard(
 					prisma,
 					registration.familyId,
 					registration.programId,
-					now.getFullYear(),
-					now.getMonth() + 1,
+					year,
+					month,
 				);
 			}
 		}

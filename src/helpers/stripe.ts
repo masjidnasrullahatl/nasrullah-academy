@@ -79,8 +79,11 @@ type CheckoutParams = {
 	description: string;
 	// charged every month, card fee included
 	monthlyAmount: number;
-	// charged once with the first payment (registration fee + its card fee)
+	// charged once with the first payment (registration fee and the rest of
+	// this month's tuition, with the card fee)
 	oneTimeAmount: number;
+	// when the monthly charge starts (the next 1st), unix seconds
+	billingCycleAnchor?: number;
 	successUrl: string;
 	cancelUrl: string;
 };
@@ -106,6 +109,14 @@ export const createCheckoutSession = async (params: CheckoutParams) => {
 
 	if (isSubscription) {
 		body['subscription_data[metadata][registrationId]'] = params.registrationId;
+
+		// The first month is in the one-time amount; full tuition starts on the 1st
+		if (params.billingCycleAnchor) {
+			body['subscription_data[billing_cycle_anchor]'] = String(
+				params.billingCycleAnchor,
+			);
+			body['subscription_data[proration_behavior]'] = 'none';
+		}
 		body[`line_items[${index}][price_data][currency]`] = 'usd';
 		body[`line_items[${index}][price_data][product_data][name]`] =
 			`${params.description} - monthly tuition`;
@@ -120,7 +131,7 @@ export const createCheckoutSession = async (params: CheckoutParams) => {
 	if (params.oneTimeAmount > 0) {
 		body[`line_items[${index}][price_data][currency]`] = 'usd';
 		body[`line_items[${index}][price_data][product_data][name]`] =
-			`${params.description} - registration fee`;
+			`${params.description} - registration fee and first month`;
 		body[`line_items[${index}][price_data][unit_amount]`] = String(
 			toCents(params.oneTimeAmount),
 		);

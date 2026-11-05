@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 
 import { RegistrationStudent } from '@app/api/public/registrations/types';
 
-import { tuitionForKids } from '@utils/registrationPricing';
+import { schoolToday, tuitionForKids } from '@utils/registrationPricing';
 
 type Tx = Prisma.TransactionClient | PrismaClient;
 
@@ -53,10 +53,11 @@ const studentNotes = (student: RegistrationStudent) =>
 		.filter(Boolean)
 		.join('\n') || null;
 
-const currentPeriod = () => {
-	const now = new Date();
+// The month a date falls in at the school
+const schoolPeriod = (date = new Date()) => {
+	const { year, month } = schoolToday(date);
 
-	return { year: now.getFullYear(), month: now.getMonth() + 1 };
+	return { year, month };
 };
 
 const paidFields = (invoice: {
@@ -171,7 +172,8 @@ export const approveRegistration = async (
 		update: { studentCount: kids, monthlyFee },
 	});
 
-	const { year, month } = currentPeriod();
+	// The row for the month the family registered in
+	const { year, month } = schoolPeriod(registration.createdAt);
 	const invoiceKey = {
 		familyId_programId_year_month: {
 			familyId: family.id,
@@ -188,9 +190,13 @@ export const approveRegistration = async (
 	const registrationFee =
 		Number(existingInvoice?.registrationFee || 0) +
 		Number(registration.registrationFee);
+	// The first month is only the days left after registering
 	const tuitionFee = existingInvoice
 		? Number(existingInvoice.tuitionFee)
-		: monthlyFee;
+		: Math.max(
+				Number(registration.amountDue) - Number(registration.registrationFee),
+				0,
+			);
 	const bookFee = Number(existingInvoice?.bookFee || 0);
 	const totalDue = registrationFee + tuitionFee + bookFee;
 	const alreadyPaid = Number(existingInvoice?.totalPaid || 0);
