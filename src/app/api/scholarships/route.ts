@@ -9,8 +9,13 @@ import { withStaff } from '@app/api/utils/withStaff';
 import { createClient } from '@helpers/prisma/server';
 
 import { catchZodError } from '../utils/catchZodError';
-import { internalServerError, success } from '../utils/response';
+import {
+	badRequest,
+	internalServerError,
+	success,
+} from '../utils/response';
 
+import { postScholarship, ScholarshipPostError } from './posting';
 import { ScholarshipSchema } from './types';
 import {
 	mapScholarship,
@@ -67,9 +72,21 @@ const create = async (request: AuthRequest) => {
 	try {
 		const payload = ScholarshipSchema.parse(await request.json());
 
-		const scholarship = await createClient().scholarships.create({
-			data: toScholarshipData(payload),
-			include: scholarshipInclude,
+		const scholarship = await createClient().$transaction(async (tx) => {
+			const { id } = await tx.scholarships.create({
+				data: toScholarshipData(payload),
+			});
+
+			await postScholarship(tx, {
+				...payload,
+				id,
+				donorName: payload.donorName || null,
+			});
+
+			return tx.scholarships.findUniqueOrThrow({
+				where: { id },
+				include: scholarshipInclude,
+			});
 		});
 
 		return success(mapScholarship(scholarship));
@@ -77,6 +94,10 @@ const create = async (request: AuthRequest) => {
 		console.log('Create scholarship error', error);
 
 		if (error instanceof ZodError) return catchZodError(error);
+
+		if (error instanceof ScholarshipPostError) {
+			return badRequest(error.message);
+		}
 
 		return internalServerError();
 	}
