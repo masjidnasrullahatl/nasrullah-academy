@@ -618,9 +618,16 @@ export default function ProgramRegistrationPage() {
 						</Group>
 						<Group justify="space-between">
 							<Text size="sm">
-								{firstMonthName} tuition, {firstMonthName.slice(0, 3)}{' '}
-								{quote.firstMonth.day} to {quote.firstMonth.daysInMonth} (
-								{quote.firstMonth.days} of {quote.firstMonth.daysInMonth} days)
+								{quote.firstMonth.isProrated ? (
+									<>
+										{firstMonthName} tuition, {firstMonthName.slice(0, 3)}{' '}
+										{quote.firstMonth.day} to {quote.firstMonth.daysInMonth} (
+										{quote.firstMonth.days} of {quote.firstMonth.daysInMonth}{' '}
+										days)
+									</>
+								) : (
+									<>{firstMonthName} tuition (full month)</>
+								)}
 							</Text>
 							<Text size="sm">{formatMoney(quote.firstMonth.amount)}</Text>
 						</Group>
@@ -637,8 +644,8 @@ export default function ProgramRegistrationPage() {
 							The registration fee is paid once. Full tuition of{' '}
 							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} is
 							charged on the 1st of every month, starting {nextMonthName} 1.{' '}
-							Stripe works out the amount for this month to the hour, so it may differ
-							slightly.
+							Registering on the 1st to the 15th pays the full month; from the
+							16th, only the days left.
 							{payByCard &&
 								' This includes the 2.2% + $0.30 card processing fee.'}
 						</Text>

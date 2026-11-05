@@ -20,17 +20,22 @@ export const schoolToday = (date = new Date()) => {
 	return { year: value('year'), month: value('month'), day: value('day') };
 };
 
+// Registering up to this day pays the full month; after it, only the days left
+export const FULL_MONTH_LAST_DAY = 15;
+
 /**
- * Tuition for the rest of the month a family registers in: the days from
- * the registration day to the month's end, out of the days in the month.
- * Registering on the 1st pays the full month.
+ * Tuition for the month a family registers in. Registering on the 1st to
+ * the 15th pays the full month; from the 16th, only the days from the
+ * registration day to the month's end, out of the days in the month.
  */
 export const getFirstMonth = (monthly: number, today = schoolToday()) => {
 	const daysInMonth = new Date(today.year, today.month, 0).getDate();
-	const days = daysInMonth - today.day + 1;
+	const isProrated = today.day > FULL_MONTH_LAST_DAY;
+	const days = isProrated ? daysInMonth - today.day + 1 : daysInMonth;
 
 	return {
 		...today,
+		isProrated,
 		days,
 		daysInMonth,
 		amount: round2((monthly * days) / daysInMonth),
