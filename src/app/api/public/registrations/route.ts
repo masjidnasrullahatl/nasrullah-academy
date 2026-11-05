@@ -19,6 +19,7 @@ import {
 import {
 	getNextFirstOfMonth,
 	getRegistrationQuote,
+	withCardFee,
 } from '@utils/registrationPricing';
 
 import { SubmitRegistrationSchema } from './types';
@@ -89,20 +90,23 @@ export async function POST(request: NextRequest) {
 			},
 		});
 
-		await sendEmail({
-			to: payload.email,
-			...registrationReceivedEmail(program.name, {
-				familyName: payload.fatherName,
-				students: payload.students,
-				preferredTime: payload.preferredTime || null,
-				payByCard,
-				registrationFee: quote.registration,
-				monthlyFee: quote.monthly,
-				amountDue: quote.firstPayment,
-			}),
-		});
+		const sendReceivedEmail = () =>
+			sendEmail({
+				to: payload.email,
+				...registrationReceivedEmail(program.name, {
+					familyName: payload.fatherName,
+					students: payload.students,
+					preferredTime: payload.preferredTime || null,
+					payByCard,
+					registrationFee: quote.registration,
+					monthlyFee: quote.monthly,
+					amountDue: quote.firstPayment,
+				}),
+			});
 
 		if (!payByCard) {
+			await sendReceivedEmail();
+
 			return NextResponse.json({
 				data: { id: registration.id, checkoutUrl: null },
 				error: null,
@@ -112,23 +116,37 @@ export async function POST(request: NextRequest) {
 		const origin = NEXT_PUBLIC_SITE_URL || request.nextUrl.origin;
 		const thanksUrl = `${origin}/register/${program.slug}/thanks`;
 
-		const session = await createCheckoutSession({
-			registrationId: registration.id,
-			email: payload.email,
-			description: `${program.name} (${payload.students.length} ${
-				payload.students.length === 1 ? 'child' : 'children'
-			})`,
-			monthlyAmount: quote.card.monthly,
-			oneTimeAmount: quote.card.firstPayment,
-			billingCycleAnchor: getNextFirstOfMonth(),
-			successUrl: `${thanksUrl}?paid=1`,
-			cancelUrl: `${thanksUrl}?paid=0`,
-		});
+		let session: { id: string; url: string };
+
+		try {
+			session = await createCheckoutSession({
+				registrationId: registration.id,
+				email: payload.email,
+				description: `${program.name} (${payload.students.length} ${
+					payload.students.length === 1 ? 'child' : 'children'
+				})`,
+				monthlyAmount: quote.card.monthly,
+				oneTimeAmount: withCardFee(quote.registration),
+				billingCycleAnchor: getNextFirstOfMonth(),
+				successUrl: `${thanksUrl}?paid=1`,
+				cancelUrl: `${thanksUrl}?paid=0`,
+			});
+		} catch (error) {
+			// Nothing was paid: don't keep a registration the parent can't finish
+			console.log('Registration checkout error', error);
+			await prisma.registrations.delete({ where: { id: registration.id } });
+
+			return badRequest(
+				'We could not open the card payment page. Please try again, or call the Academy office at 470-253-9391.',
+			);
+		}
 
 		await prisma.registrations.update({
 			where: { id: registration.id },
 			data: { stripeSessionId: session.id },
 		});
+
+		await sendReceivedEmail();
 
 		return NextResponse.json({
 			data: { id: registration.id, checkoutUrl: session.url },
