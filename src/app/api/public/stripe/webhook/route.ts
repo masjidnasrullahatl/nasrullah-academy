@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { generateMonth } from '@app/api/invoices/generateMonth';
 import { markMonthPaidByCard } from '@app/api/registrations/utils';
 import {
 	getChargeMonth,
@@ -131,6 +132,11 @@ export async function POST(request: NextRequest) {
 				object.created ||
 				Date.now() / 1000;
 			const { year, month } = getChargeMonth(periodStart);
+
+			// The whole month first, so families who haven't paid show as unpaid
+			if (links.length || registration?.familyId) {
+				await generateMonth(prisma, year, month);
+			}
 
 			for (const link of links) {
 				if (!link.programId) continue;

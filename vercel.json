@@ -1,0 +1,8 @@
+{
+	"crons": [
+		{
+			"path": "/api/public/cron/generate-month",
+			"schedule": "0 10 * * *"
+		}
+	]
+}
