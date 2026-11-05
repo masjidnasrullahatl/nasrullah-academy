@@ -79,9 +79,14 @@ type CheckoutParams = {
 	description: string;
 	// charged every month, card fee included
 	monthlyAmount: number;
-	// charged once with the first payment (registration fee with its card fee)
+	// charged once with the first payment, card fee included
 	oneTimeAmount: number;
-	// when the monthly charge starts (the next 1st), unix seconds
+	oneTimeName?: string;
+	// The monthly charge starts on this date (the next 1st), unix seconds.
+	// trialEnd: nothing more is charged until then, so this month's tuition
+	// must be in the one-time amount. billingCycleAnchor: Stripe itself
+	// charges the rest of this month now.
+	trialEnd?: number;
 	billingCycleAnchor?: number;
 	successUrl: string;
 	cancelUrl: string;
@@ -109,10 +114,10 @@ export const createCheckoutSession = async (params: CheckoutParams) => {
 	if (isSubscription) {
 		body['subscription_data[metadata][registrationId]'] = params.registrationId;
 
-		// Full tuition starts on the 1st; Stripe charges the days left in this
-		// month now. (Checkout can't skip that charge when there are one-time
-		// items, so the first month isn't a one-time item.)
-		if (params.billingCycleAnchor) {
+		// Full tuition starts on the 1st
+		if (params.trialEnd) {
+			body['subscription_data[trial_end]'] = String(params.trialEnd);
+		} else if (params.billingCycleAnchor) {
 			body['subscription_data[billing_cycle_anchor]'] = String(
 				params.billingCycleAnchor,
 			);
@@ -131,7 +136,7 @@ export const createCheckoutSession = async (params: CheckoutParams) => {
 	if (params.oneTimeAmount > 0) {
 		body[`line_items[${index}][price_data][currency]`] = 'usd';
 		body[`line_items[${index}][price_data][product_data][name]`] =
-			`${params.description} - registration fee`;
+			`${params.description} - ${params.oneTimeName || 'registration fee'}`;
 		body[`line_items[${index}][price_data][unit_amount]`] = String(
 			toCents(params.oneTimeAmount),
 		);

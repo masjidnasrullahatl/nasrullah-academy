@@ -116,6 +116,18 @@ export async function POST(request: NextRequest) {
 		const origin = NEXT_PUBLIC_SITE_URL || request.nextUrl.origin;
 		const thanksUrl = `${origin}/register/${program.slug}/thanks`;
 
+		// This month's tuition (full, or the days left from the 16th) is paid
+		// with the registration fee, and the monthly charge starts on the 1st.
+		// Stripe needs that to be 48 hours away; registering in the last day
+		// or two, Stripe works out the few days left itself instead.
+		const nextFirst = getNextFirstOfMonth();
+		const canDelayToFirst = nextFirst - Date.now() / 1000 > 49 * 60 * 60;
+		const monthName = new Date(
+			quote.firstMonth.year,
+			quote.firstMonth.month - 1,
+			1,
+		).toLocaleString('en-US', { month: 'long' });
+
 		let session: { id: string; url: string };
 
 		try {
@@ -126,8 +138,16 @@ export async function POST(request: NextRequest) {
 					payload.students.length === 1 ? 'child' : 'children'
 				})`,
 				monthlyAmount: quote.card.monthly,
-				oneTimeAmount: withCardFee(quote.registration),
-				billingCycleAnchor: getNextFirstOfMonth(),
+				...(canDelayToFirst
+					? {
+							oneTimeAmount: quote.card.firstPayment,
+							oneTimeName: `registration fee and ${monthName} tuition`,
+							trialEnd: nextFirst,
+						}
+					: {
+							oneTimeAmount: withCardFee(quote.registration),
+							billingCycleAnchor: nextFirst,
+						}),
 				successUrl: `${thanksUrl}?paid=1`,
 				cancelUrl: `${thanksUrl}?paid=0`,
 			});
