@@ -636,7 +636,9 @@ export default function ProgramRegistrationPage() {
 						<Text size="xs" c="dimmed">
 							The registration fee is paid once. Full tuition of{' '}
 							{formatMoney(payByCard ? quote.card.monthly : quote.monthly)} is
-							charged on the 1st of every month, starting {nextMonthName} 1.
+							charged on the 1st of every month, starting {nextMonthName} 1.{' '}
+							Stripe works out this month's amount to the hour, so it may differ
+							slightly.
 							{payByCard &&
 								' This includes the 2.2% + $0.30 card processing fee.'}
 						</Text>

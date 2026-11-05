@@ -19,6 +19,7 @@ import {
 import {
 	getNextFirstOfMonth,
 	getRegistrationQuote,
+	withCardFee,
 } from '@utils/registrationPricing';
 
 import { SubmitRegistrationSchema } from './types';
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
 				payload.students.length === 1 ? 'child' : 'children'
 			})`,
 			monthlyAmount: quote.card.monthly,
-			oneTimeAmount: quote.card.firstPayment,
+			oneTimeAmount: withCardFee(quote.registration),
 			billingCycleAnchor: getNextFirstOfMonth(),
 			successUrl: `${thanksUrl}?paid=1`,
 			cancelUrl: `${thanksUrl}?paid=0`,
