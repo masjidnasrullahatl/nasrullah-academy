@@ -16,7 +16,10 @@ import {
 	isRegistrationCardEnabled,
 } from '@helpers/stripe';
 
-import { getRegistrationQuote } from '@utils/registrationPricing';
+import {
+	getNextFirstOfMonth,
+	getRegistrationQuote,
+} from '@utils/registrationPricing';
 
 import { SubmitRegistrationSchema } from './types';
 
@@ -116,7 +119,8 @@ export async function POST(request: NextRequest) {
 				payload.students.length === 1 ? 'child' : 'children'
 			})`,
 			monthlyAmount: quote.card.monthly,
-			oneTimeAmount: Math.max(quote.card.firstPayment - quote.card.monthly, 0),
+			oneTimeAmount: quote.card.firstPayment,
+			billingCycleAnchor: getNextFirstOfMonth(),
 			successUrl: `${thanksUrl}?paid=1`,
 			cancelUrl: `${thanksUrl}?paid=0`,
 		});

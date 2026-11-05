@@ -5,6 +5,43 @@ export const CARD_FEE_FIXED = 0.3;
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
+/** Today's date at the school (Atlanta), whatever the server's time zone. */
+export const schoolToday = (date = new Date()) => {
+	const parts = new Intl.DateTimeFormat('en-US', {
+		timeZone: 'America/New_York',
+		year: 'numeric',
+		month: 'numeric',
+		day: 'numeric',
+	}).formatToParts(date);
+
+	const value = (type: string) =>
+		Number(parts.find((part) => part.type === type)?.value);
+
+	return { year: value('year'), month: value('month'), day: value('day') };
+};
+
+/**
+ * Tuition for the rest of the month a family registers in: the days from
+ * the registration day to the month's end, out of the days in the month.
+ * Registering on the 1st pays the full month.
+ */
+export const getFirstMonth = (monthly: number, today = schoolToday()) => {
+	const daysInMonth = new Date(today.year, today.month, 0).getDate();
+	const days = daysInMonth - today.day + 1;
+
+	return {
+		...today,
+		days,
+		daysInMonth,
+		amount: round2((monthly * days) / daysInMonth),
+	};
+};
+
+/** 1st of the month after the registration month, when full tuition starts (unix seconds). */
+export const getNextFirstOfMonth = (today = schoolToday()) =>
+	// 10:00 UTC is early morning in Atlanta
+	Date.UTC(today.year, today.month, 1, 10) / 1000;
+
 /**
  * Monthly tuition for a number of children. monthlyFees[i] is the total for
  * i + 1 children; beyond the last tier each extra child adds the last step.
@@ -29,23 +66,28 @@ export const getRegistrationQuote = ({
 	registrationFee,
 	kids,
 	customMonthly,
+	today,
 }: {
 	monthlyFees: number[];
 	registrationFee: number;
 	kids: number;
 	// amount the parent agreed with the office, instead of the standard price
 	customMonthly?: number | null;
+	today?: ReturnType<typeof schoolToday>;
 }) => {
 	const standardMonthly = tuitionForKids(monthlyFees, kids);
 	const monthly = customMonthly ? round2(customMonthly) : standardMonthly;
 	const registration = round2(registrationFee * kids);
-	const firstPayment = round2(monthly + registration);
+	const firstMonth = getFirstMonth(monthly, today);
+	// Due at registration: the registration fee and the rest of this month
+	const firstPayment = round2(firstMonth.amount + registration);
 
 	return {
 		monthly,
 		standardMonthly,
 		isCustom: Boolean(customMonthly) && monthly !== standardMonthly,
 		registration,
+		firstMonth,
 		firstPayment,
 		card: {
 			monthly: withCardFee(monthly),
