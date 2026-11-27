@@ -7,6 +7,7 @@ export type ScholarshipStatement = {
 	month: number;
 	donor: string;
 	donors: string[];
+	families: Array<{ id: string; name: string }>;
 	students: Array<{
 		id: string;
 		studentName: string;
@@ -39,6 +40,7 @@ export const useScholarshipStatement = (params: {
 	year?: number;
 	month?: number;
 	donor?: string;
+	familyId?: string;
 }) =>
 	useQuery({
 		queryKey: ['scholarship-statement', params],
@@ -48,6 +50,7 @@ export const useScholarshipStatement = (params: {
 				year: String(params.year),
 				month: String(params.month),
 				donor: params.donor || '',
+				familyId: params.familyId || '',
 			});
 
 			const response = await fetchAuth(`/api/scholarships/statement?${query}`);

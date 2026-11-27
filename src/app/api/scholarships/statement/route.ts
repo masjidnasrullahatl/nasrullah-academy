@@ -26,6 +26,7 @@ const getStatement = async (request: AuthRequest) => {
 		const year = Number(searchParams.get('year'));
 		const month = Number(searchParams.get('month'));
 		const donor = (searchParams.get('donor') || '').trim();
+		const familyId = (searchParams.get('familyId') || '').trim();
 
 		if (!year || !month || month < 1 || month > 12) {
 			return badRequest('Choose a month');
@@ -50,13 +51,27 @@ const getStatement = async (request: AuthRequest) => {
 			.filter(Boolean)
 			.sort();
 
-		const scholarships = active
+		const donorScholarships = active
 			.filter(
 				(item) =>
 					!donor ||
 					(item.donorName || '').trim().toLowerCase() === donor.toLowerCase(),
 			)
 			.map(mapScholarship);
+
+		// the families this donor covers this month, to print one family per page
+		const families = [
+			...new Map(
+				donorScholarships.map((item) => [
+					item.student.family.id,
+					{ id: item.student.family.id, name: item.student.family.name },
+				]),
+			).values(),
+		].sort((a, b) => a.name.localeCompare(b.name));
+
+		const scholarships = familyId
+			? donorScholarships.filter((item) => item.student.family.id === familyId)
+			: donorScholarships;
 
 		const students = scholarships.map((item) => {
 			const months = item.endMonth
@@ -107,7 +122,7 @@ const getStatement = async (request: AuthRequest) => {
 		}));
 
 		return NextResponse.json({
-			data: { year, month, donor, donors, students, payments },
+			data: { year, month, donor, donors, families, students, payments },
 			error: null,
 		});
 	} catch (error) {

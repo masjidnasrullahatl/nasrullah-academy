@@ -35,11 +35,13 @@ const Statement = () => {
 	const year = Number(searchParams.get('year')) || undefined;
 	const month = Number(searchParams.get('month')) || undefined;
 	const donor = searchParams.get('donor') || '';
+	const familyId = searchParams.get('familyId') || '';
 
 	const { data, isLoading, error } = useScholarshipStatement({
 		year,
 		month,
 		donor,
+		familyId,
 	});
 
 	if (!year || !month || !donor) {
@@ -108,6 +110,11 @@ const Statement = () => {
 				<div>
 					<b>Donor:</b> {donor}
 				</div>
+				{familyId && data.students[0] && (
+					<div>
+						<b>Family:</b> {data.students[0].familyName}
+					</div>
+				)}
 				<div>
 					<b>Issued:</b> {dayjs().format('MMMM D, YYYY')}
 				</div>
