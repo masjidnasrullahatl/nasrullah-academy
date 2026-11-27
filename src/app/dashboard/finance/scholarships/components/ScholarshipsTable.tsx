@@ -20,6 +20,7 @@ import {
 	IconAlertCircle,
 	IconEdit,
 	IconPlus,
+	IconPrinter,
 	IconSearch,
 	IconTrash,
 } from '@tabler/icons-react';
@@ -34,6 +35,7 @@ import {
 import { formatMoney } from '@utils/money';
 import { getScholarshipStatus, ScholarshipStatus } from '@utils/scholarship';
 
+import { DonorStatementModal } from './DonorStatementModal';
 import { ScholarshipFormModal } from './ScholarshipFormModal';
 
 const STATUS_BADGES: Record<ScholarshipStatus, [string, string]> = {
@@ -168,6 +170,19 @@ export const ScholarshipsTable = () => {
 					placeholder="Search by student, family or who paid"
 					onChange={(event) => debounceKeyword(event.target.value)}
 				/>
+				<Button
+					variant="default"
+					leftSection={<IconPrinter size={16} />}
+					onClick={() =>
+						modals.open({
+							title: 'Donor statement',
+							size: 'md',
+							children: <DonorStatementModal />,
+						})
+					}
+				>
+					Donor statement
+				</Button>
 				<Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
 					Add Scholarship
 				</Button>

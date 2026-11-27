@@ -140,6 +140,16 @@ export const generateMonth = async (
 				};
 			}
 
+			// A family set to pay nothing (free) shows as Free, no fee due
+			if (Number(item.monthlyFee) <= 0) {
+				return {
+					...base,
+					payMethod: 'FREE' as const,
+					paymentStatus: 'NA' as const,
+					notes: 'Free: no fee due this month.',
+				};
+			}
+
 			return {
 				...base,
 				tuitionFee: item.monthlyFee,
